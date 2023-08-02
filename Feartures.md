@@ -1,0 +1,2 @@
+- ~~Support for Arabic, Arabic-Indic, Khmer, Devanagari, Punjabi, Bengali, Tamil, Burmese and Coptic~~
+    - _For being really unnecessary I threw this out the window._

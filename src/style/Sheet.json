@@ -1,0 +1,26 @@
+{
+    "END"      : "\u001b[0m",
+    "BOLD"     : "\u001b[1m",
+    "DIM"      : "\u001b[2m",
+    "ITALIC"   : "\u001b[3m",
+    "UNDERLINE": "\u001b[4m",
+    "BLINK"    : "\u001b[5m",
+    "BLINK2"   : "\u001b[6m",
+    "SELECTED" : "\u001b[7m",
+    "INVISIBLE": "\u001b[8m",
+    "STRIKE"   : "\u001b[9m",
+
+    "WHITE"    : "\u001b[37m",
+    "BLACK"    : "\u001b[30m",
+    "YELLOW"   : "\u001b[93m",
+    "RED"      : "\u001b[31m",
+    "VIOLET"   : "\u001b[35m",
+    "GREEN"    : "\u001b[32m",
+    "LETTUCE"  : "\u001b[92m",
+    "BLUE"     : "\u001b[34m",
+    "SKY"      : "\u001b[96m",
+    "DARK_RED" : "\u001b[91m",
+    "GRAY"     : "\u001b[33m",
+    "ORANGE"   : "\u001b[33m",
+    "GOLD"     : "\u001b[93m"
+}
