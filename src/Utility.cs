@@ -1,4 +1,3 @@
-using System.Data;
 using System.Text.Json;
 
 namespace Util;
@@ -16,16 +15,18 @@ public class Position
 {
     public int Line;
     public int Column;
+    public int Index;
 
-    public Position(int line = 1, int column = 1)
+    public Position(int line = 1, int column = 1, int index = 0)
     {
-        this.Line = line;
+        this.Line   = line;
         this.Column = column;
+        this.Index  = index;
     }
 
      public override string ToString()
      {
-        return $"(Ln {Line}, Col {Column})";
+        return $"{Line}:{Column}";
      }
 }
 
@@ -43,10 +44,33 @@ public class Span
     public override string ToString()
     {
         if (End != null)
-            return $"{Start}:{End}";
+            return $"{Start} => {End}";
         else
             return Start.ToString();
+    }
 
+    public bool Includes(Span other)
+    {
+        if (End is null)
+            throw new ArgumentException("The span doesn't include an end point.");
+
+        return Start.Index <= other.Start.Index && End.Index >= other.Start.Index;
+    }
+
+    // I know it can be simpler but I really don't care
+    public bool Intersects(Span other)
+    {
+        if (other.End is null)
+            throw new ArgumentException("The span doesn't include an end point.");
+
+        if (Start.Index >= other.Start.Index && Start.Index <= other.End.Index)
+            return true;
+
+        if (End is not null)
+            if (End.Index >= other.End.Index && End.Index >= other.Start.Index)
+                return true;
+
+        return false;
     }
 }
 
@@ -65,15 +89,14 @@ public class C
 
     public static readonly string WHITE     = "\u001b[37m";
     public static readonly string BLACK     = "\u001b[30m";
-    public static readonly string GRAY      = "\u001b[33m";
     public static readonly string RED       = "\u001b[31m";
     public static readonly string RED2      = "\u001b[91m";
     public static readonly string ORANGE    = "\u001b[33m";
-    public static readonly string GOLD      = "\u001b[93m";
-    public static readonly string YELLOW    = "\u001b[93m";
+    public static readonly string YELLOW    = "\u001b[33m";
+    public static readonly string YELLOW2   = "\u001b[93m";
     public static readonly string GREEN     = "\u001b[32m";
     public static readonly string LETTUCE   = "\u001b[92m";
-    public static readonly string SKY       = "\u001b[96m";
+    public static readonly string SKY       = "\u001b[94m";
     public static readonly string BLUE      = "\u001b[34m";
     public static readonly string VIOLET    = "\u001b[35m";
 

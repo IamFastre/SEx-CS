@@ -1,30 +1,29 @@
 ﻿using System.Text;
+using Util;
 using Lexing;
+using Parsing;
+using AST;
+using Diagnosing;
 
-Console.OutputEncoding = Encoding.UTF8;
-
+string line;
+Diagnostics diagnostics;
+Parser parser;
 
 while (true)
 {
-    string text;
-    bool REPL = false;
+    Console.Write(">> ");
+    line = Console.ReadLine()!;
+    diagnostics = Diagnostics.REPL(line);
+    parser = new(line, diagnostics);
 
-    if (REPL)
-    {
-        Console.Write($">> ");
-        text = Console.ReadLine()!;
-    }
-    else
-    {
-        Console.Write("Read now (enter)?");
-        Console.ReadLine();
-        text = File.ReadAllText(@"D:\DevShit\C#\SEx-C\test\file.sex", Encoding.UTF8);
-    }
+    Console.WriteLine();
+    diagnostics.Throw();
 
-    Lexer lexer = new(text);
-    lexer.Start();
-    foreach (var item in lexer.Tokens)
-    {
-        Console.WriteLine(item);
-    }
+    Console.WriteLine("\nTokens:");
+    foreach (var tk in parser.Tokens)
+        Console.WriteLine(tk);
+
+    Console.WriteLine("\nNodes:");
+    foreach (var nd in parser.Tree)
+        Console.WriteLine(nd);
 }
