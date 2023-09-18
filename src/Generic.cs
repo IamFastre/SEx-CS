@@ -1,15 +1,5 @@
-using System.Text.Json;
+namespace SEx.Generic;
 
-namespace Util;
-
-public static class JSONReader
-{
-    public static T? Read<T>(string filePath)
-    {
-        string text = File.ReadAllText(filePath);
-        return JsonSerializer.Deserialize<T>(text);
-    }
-}
 
 public class Position
 {
@@ -19,10 +9,12 @@ public class Position
 
     public Position(int line = 1, int column = 1, int index = 0)
     {
-        this.Line   = line;
-        this.Column = column;
-        this.Index  = index;
+        Line   = line;
+        Column = column;
+        Index  = index;
     }
+
+    public static readonly Position Template = new(0,0,0);
 
      public override string ToString()
      {
@@ -32,18 +24,21 @@ public class Position
 
 public class Span
 {
-    public Position  Start;
-    public Position? End;
+    public Position Start, End;
+    public int Length;
 
     public Span(Position start, Position? end = null)
     {
-        this.Start = start;
-        this.End = end;
+        Start = start;
+        End = end ?? start;
+        Length = End.Index - Start.Index + 1;
     }
+
+    public static readonly Span Template = new(Position.Template);
 
     public override string ToString()
     {
-        if (End != null)
+        if (Start != End)
             return $"{Start} => {End}";
         else
             return Start.ToString();

@@ -1,23 +1,34 @@
-using Diagnosing;
-using Util;
+using SEx.Analysis;
+using SEx.Generic;
 
-namespace Lexing;
+namespace SEx.Lex;
 
 // An enumeration of the token types possible in the source code
 public enum TokenType
 {
     Bad,
+    Comment,
+    EOF,
+
     WhiteSpace,
     Integer,
     Float,
     Char,
     String,
+
     Identifier,
     Keyword,
+    Null,
+
     Operator,
     Separator,
-    EOF,
-    Comment,
+
+    OpenParenthesis,
+    CloseParenthesis,
+    OpenCurlyBracket,
+    CloseCurlyBracket,
+    OpenSquareBracket,
+    CloseSquareBracket,
 }
 
 
@@ -35,6 +46,8 @@ public class Token
         Type  = type;
         Span  = span;
     }
+
+    public static readonly Token Template = new(null, TokenType.Null, Span.Template);
 
      public override string ToString()
      {
@@ -62,29 +75,16 @@ public class Lexer
     private char Peek(int i = 1)
         => Index+i < Source.Length ? Source[Index+i] : '\0';
 
-    private bool EOF
-    {
-        get { return Index >= Source.Length; }
-    }
+    private bool EOF => Index >= Source.Length; // End of file
+    private bool EOL => Current == '\n';        // End of line
 
-    private char Current
-    {
-        get
-        {
-            return Peek(0);
-        }
-    }
+    private char Current => Peek(0);
 
     public Lexer(string source, Diagnostics? diagnostics = null)
     {
         // If no diagnostics object is passed, create a new one
-        Diagnostics = diagnostics ?? new Diagnostics("<unknown>", source);
-
-        if (source.Length > 0 && source[^1] == '\0')
-            Source = source;
-        else
-            Source = source + '\0';
-
+        Diagnostics = diagnostics ?? new Diagnostics();
+        Source = source;
         Tokens = new();
     }
 
@@ -135,12 +135,14 @@ public class Lexer
             return value;
         }
 
-        void SyncTok()
+        string SyncValue()
         {
             var range = span.Start.Index..(Index+1);
 
             value    = Source[range];
             span.End = GetPosition();
+
+            return value;
         }
 
         // If it's a whitespace, just add a whitespace token and advance
@@ -148,15 +150,28 @@ public class Lexer
             return new Token(value, TokenType.WhiteSpace, span);
 
         // If it's a zero terminator return EOF token and advance
-        if (Current == '\0')
+        if (Current == '\0' || EOF)
             return new Token(value, TokenType.EOF, span);
 
 
         if (AreUpcoming(Checker.BigOprts))
-        {
-            SyncTok();
-            return new Token(value, TokenType.Operator, span);
-        }
+            return new Token(SyncValue(), TokenType.Operator, span);
+
+        // If it's some sort of bracket, this regards whether
+        // it's opening or closing for now
+        if (Current == '(')
+            return new Token(value, TokenType.OpenParenthesis, span);
+        if (Current == '[')
+            return new Token(value, TokenType.OpenSquareBracket, span);
+        if (Current == '{')
+            return new Token(value, TokenType.OpenCurlyBracket, span);
+
+        if (Current == ')')
+            return new Token(value, TokenType.CloseParenthesis, span);
+        if (Current == ']')
+            return new Token(value, TokenType.CloseSquareBracket, span);
+        if (Current == '}')
+            return new Token(value, TokenType.CloseCurlyBracket, span);
 
         // If it's an operator that can be doubled
         if (Checker.Operators.Contains(Current))
@@ -205,14 +220,14 @@ public class Lexer
         if (Checker.OpnQuotes.Contains(Current))
         {
             // Get the closing quote for that opening one
-            char clsQuote = Checker.ClsQuotes[Checker.GetQuoteIndex(Current)];
+            char clsQuote = Checker.GetOtherPair(Current);
             Index++;
 
             while (Current != clsQuote)
             {
-                if (EOF || Current == '\n')
+                if (EOF || EOL)
                 {
-                    Diagnostics.NewError(ErrorType.SyntaxError, $"Unterminated string literal", span);
+                    Diagnostics.Add(ExceptionType.SyntaxError, $"Unterminated string literal", span);
                     return new Token(value, TokenType.Bad, span);
                 }
 
@@ -227,11 +242,11 @@ public class Lexer
         {
             Index++;
 
-            while (!(Current == '\'' && Peek(-1) != '\\'))
+            while (!(Current == '\''))
             {
-                if (EOF || Current == '\n')
+                if (EOF || EOL)
                 {
-                    Diagnostics.NewError(ErrorType.SyntaxError, $"Unterminated character literal", span);
+                    Diagnostics.Add(ExceptionType.SyntaxError, $"Unterminated character literal", span);
                     return new Token(value, TokenType.Bad, span);
                 }
 
@@ -247,7 +262,7 @@ public class Lexer
             return new Token(value, TokenType.Separator, span);
 
         // If no type is met, it's bad
-        Diagnostics.NewError(ErrorType.SyntaxError, $"Unrecognized character: {Current}", span);
+        Diagnostics.Add(ExceptionType.SyntaxError, $"Unrecognized character: {Current}", span);
         return new Token(value, TokenType.Bad, span);
     }
 
@@ -295,21 +310,21 @@ public class Lexer
     /// <summary>
     /// The IsUpcoming function checks if a given sequence matches the upcoming characters in a string
     /// </summary>
-    /// <param name="seq">A string representing a sequence of characters</param>
+    /// <param name="sequence">A string representing a sequence of characters</param>
     /// <returns>
     /// The method is returning a boolean value
     /// </returns>
-    private bool IsUpcoming(string seq)
+    private bool IsUpcoming(string sequence)
     {
-        for (int i = 0; i < seq.Length; i++)
+        for (int i = 0; i < sequence.Length; i++)
         {
-            if (!(seq[i] == Peek(i)))
+            if (!(sequence[i] == Peek(i)))
             {
                 return false;
             }
         }
 
-        Index += seq.Length - 1;
+        Index += sequence.Length - 1;
         return true;
     }
 
@@ -317,14 +332,13 @@ public class Lexer
     /// The function `AreUpcoming` checks if any of the given sequences are upcoming
     /// using the `IsUpcoming` method
     /// </summary>
-    /// <param name="seqs">A string array containing sequences of characters to check</param>
-    /// <returns>
+    /// <param name="sequences">A string array containing sequences of characters to check</param>
     /// <returns>
     /// The method `AreUpcoming` returns a boolean value
     /// </returns>
-    private bool AreUpcoming(params string[] seqs)
+    private bool AreUpcoming(params string[] sequences)
     {
-        foreach (var seq in seqs)
+        foreach (var seq in sequences)
         {
             if (IsUpcoming(seq))
                 return true;
@@ -340,20 +354,24 @@ public class Lexer
 static class Checker
 {
     // Some checks definitions
-    public static char[] Separators = {',','.',';',':','?'};
-    public static char[] Operators  = {'=','+','-','*','/','%','!','&','|','^'};
-    public static char[] OpnQuotes  = {'"','«','„','“'};
-    public static char[] ClsQuotes  = {'"','»','“','”'};
-    
+    public static char[] Separators  = {',','.',';',':','?'};
+    public static char[] Operators   = {'=','+','-','*','/','%','!','&','|','^'};
+
+    public static char[] OpnQuotes   = {'"','«','„','“'};
+    public static char[] ClsQuotes   = {'"','»','“','”'};
+
     public static string[] Keywords = {"if","else","while","import"};
     public static string[] BigOprts = {"==","!=","++","--","??=","??","&&","||","^^","**"};
 
-    // Return its index to decide which is its closing quotation mark
-    public static int GetQuoteIndex(char C)
+
+    public static char GetOtherPair(char C)
     {
+        // Quotation marks
         if (OpnQuotes.Contains(C))
-            return Array.IndexOf(OpnQuotes, C);
-        else
-            return Array.IndexOf(ClsQuotes, C);
+            return ClsQuotes[Array.IndexOf(OpnQuotes, C)];
+        if (ClsQuotes.Contains(C))
+            return OpnQuotes[Array.IndexOf(ClsQuotes, C)];
+
+        throw new Exception($"Char \"{C}\" seems to not having a pair.");
     }
 }

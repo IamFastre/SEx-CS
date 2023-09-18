@@ -1,24 +1,43 @@
-using Util;
-using Lexing;
+using SEx.Generic;
+using SEx.Lex;
+using SEx.Analysis;
 
-namespace AST;
+namespace SEx.AST;
 
 public enum NodeType
 {
     Bad,
-    Number,
+    Unknown,
     Integer,
     Float,
     Char,
     String,
     Identifier,
+    ParenExpression,
     BinaryOperation,
+}
+
+public class SyntaxTree
+{
+    public Statement? Root { get; }
+    public Token EOF { get; }
+
+    public SyntaxTree(Statement? root, Diagnostics diagnostics, Token eof)
+    {
+        Root = root;
+        EOF = eof;
+    }
+
+    public override string ToString()
+    {
+        return $"{Root}";
+    }
 }
 
 public abstract class Node
 {
     public Span? Span;
-    public NodeType Type;
+    public abstract NodeType Type { get; }
 
     public abstract override string ToString();
 }
@@ -29,25 +48,39 @@ public abstract class Expression : Statement {}
 public abstract class Literal : Expression
 {
     public Token? Token;
-    public dynamic? Value;
+    public string? Value;
 
     public sealed override string ToString()
     {
-        return $"({Type}: {Token!.Value})";
+        return $"{Type}: {Token!.Value}";
     }
 
     public string Full => $"{this} at {Span}";
+    public static readonly UnknownLiteral Unknown = new(Token.Template);
 }
 
-public sealed class IntegerLiteral : Literal
+public sealed class UnknownLiteral : Literal
 {
-    public IntegerLiteral(Token token)
+    public new readonly byte? Value = null;
+    public UnknownLiteral(Token token)
     {
         Token = token;
-        Value = int.Parse(token.Value!);
-        Span = token.Span;
-        Type = NodeType.Integer;
+        Span = Token.Span;
     }
+
+    public override NodeType Type => NodeType.Unknown;
+}
+
+public sealed class IntLiteral : Literal
+{
+    public IntLiteral(Token token)
+    {
+        Token = token;
+        Value = token.Value;
+        Span = token.Span;
+    }
+
+    public override NodeType Type => NodeType.Integer;
 }
 
 public sealed class FloatLiteral : Literal
@@ -55,10 +88,11 @@ public sealed class FloatLiteral : Literal
     public FloatLiteral(Token token)
     {
         Token = token;
-        Value = float.Parse(token.Value!);
+        Value = token.Value;
         Span = token.Span;
-        Type = NodeType.Float;
     }
+
+    public override NodeType Type => NodeType.Float;
 }
 
 public sealed class CharLiteral : Literal
@@ -66,10 +100,11 @@ public sealed class CharLiteral : Literal
     public CharLiteral(Token token)
     {
         Token = token;
-        Value = char.Parse(token.Value!);
+        Value = token.Value;
         Span = token.Span;
-        Type = NodeType.Char;
     }
+
+    public override NodeType Type => NodeType.Char;
 }
 
 public sealed class StringLiteral : Literal
@@ -77,10 +112,11 @@ public sealed class StringLiteral : Literal
     public StringLiteral(Token token)
     {
         Token = token;
-        Value = token.Value![1..^1];
+        Value = token.Value;
         Span = token.Span;
-        Type = NodeType.String;
     }
+
+    public override NodeType Type => NodeType.String;
 }
 
 public sealed class IdentifierLiteral : Literal
@@ -90,9 +126,34 @@ public sealed class IdentifierLiteral : Literal
         Token = token;
         Value = token.Value!.ToString();
         Span = token.Span;
-        Type = NodeType.Identifier;
+    }
+
+    public override NodeType Type => NodeType.Identifier;
+}
+
+public sealed class ParenExpression : Expression
+{
+    public Token OpenParen;
+    public Expression? Expression;
+    public Token CloseParen;
+
+    public ParenExpression(Token openParen, Expression? expression,Token closeParen)
+    {
+        OpenParen = openParen;
+        Expression = expression;
+        CloseParen = closeParen;
+
+        Span = new Span(OpenParen.Span.Start, CloseParen.Span.End);
+    }
+
+    public override NodeType Type => NodeType.ParenExpression;
+
+    public override string ToString()
+    {
+        return $"({Expression})";
     }
 }
+
 
 public sealed class BinaryExpression : Expression
 {
@@ -106,11 +167,13 @@ public sealed class BinaryExpression : Expression
         Operator = binOperator;
         RHS = rightHandExpr;
 
-        Type = NodeType.BinaryOperation;
+        Span = new Span(LHS.Span!.Start, RHS.Span!.End);
     }
+
+    public override NodeType Type => NodeType.BinaryOperation;
 
     public override string ToString()
     {
-        return $"(BinOp: {LHS} {Operator.Value} {RHS})";
+        return $"<BinOp: {LHS} {Operator.Value} {RHS}>";
     }
 }
