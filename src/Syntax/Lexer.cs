@@ -1,65 +1,7 @@
-using SEx.Analysis;
+using SEx.Diagnose;
 using SEx.Generic;
 
 namespace SEx.Lex;
-
-// An enumeration of the token types possible in the source code
-public enum TokenType
-{
-    Bad,
-    Comment,
-    EOF,
-
-    WhiteSpace,
-    Integer,
-    Float,
-    Char,
-    String,
-
-    Identifier,
-    Keyword,
-    Null,
-
-    Operator,
-    Separator,
-
-    OpenParenthesis,
-    CloseParenthesis,
-    OpenCurlyBracket,
-    CloseCurlyBracket,
-    OpenSquareBracket,
-    CloseSquareBracket,
-}
-
-
-// The Token class represents a token in a programming language,
-// storing its value, type, and position in the source code
-public class Token
-{
-    public string? Value;
-    public TokenType Type;
-    public Span Span;
-
-    public Token(string? value, TokenType type, Span span)
-    {
-        Value = value;
-        Type  = type;
-        Span  = span;
-    }
-
-    public static readonly Token Template = new(null, TokenType.Null, Span.Template);
-
-     public override string ToString()
-     {
-        TokenType[] noVal = {TokenType.WhiteSpace, TokenType.EOF};
-
-        var val = !noVal.Contains(Type) || Value == null ? $": {Value}" : "";
-
-        return $"[{Type}{val}]";
-     }
-
-    public string Full => $"{this} at {Span}";
-}
 
 
 
@@ -86,29 +28,18 @@ public class Lexer
         Diagnostics = diagnostics ?? new Diagnostics();
         Source = source;
         Tokens = new();
-    }
 
-
-    /// <summary>
-    /// The Start function is a method in C# that is used to initialize and start a program or
-    /// application.
-    /// </summary>
-    public Lexer Initialize()
-    {
         while (true)
         {
             var token = GetToken();
             Tokens.Add(token);
 
-            if (token.Type == TokenType.EOF)
+            if (token.Kind == TokenKind.EOF)
                 break;
 
             Index++;
         }
-
-        return this;
     }
-
 
     public Token GetToken()
     {
@@ -117,20 +48,20 @@ public class Lexer
         var span  = new Span(GetPosition());
 
         // It adds to the value, very straight forward
-        // The "advance" parameter however determines when to increment
+        // The "advanceWhen" parameter however determines when to increment
         // that's if to increment at all:
         // • -1 => Before adding to value
         // •  0 => Never
         // •  1 => After adding to value
         // and it returns the value in case it's needed yk
-        string AddValue(int advance = 0)
+        string AddValue(int advanceWhen = 0)
         {
-            if (advance == -1) Index++;
+            if (advanceWhen == -1) Index++;
 
             value += Current.ToString();
             span.End = GetPosition();
 
-            if (advance == 1) Index++;
+            if (advanceWhen == 1) Index++;
 
             return value;
         }
@@ -147,39 +78,84 @@ public class Lexer
 
         // If it's a whitespace, just add a whitespace token and advance
         if (char.IsWhiteSpace(Current))
-            return new Token(value, TokenType.WhiteSpace, span);
+            return new Token(value, TokenKind.WhiteSpace, span);
 
         // If it's a zero terminator return EOF token and advance
         if (Current == '\0' || EOF)
-            return new Token(value, TokenType.EOF, span);
+            return new Token(value, TokenKind.EOF, span);
 
+        if (AreUpcoming(Checker.Assignments))
+            return new Token(SyncValue(), TokenKind.AssignmentOperator, span);
 
-        if (AreUpcoming(Checker.BigOprts))
-            return new Token(SyncValue(), TokenType.Operator, span);
-
-        // If it's some sort of bracket, this regards whether
-        // it's opening or closing for now
-        if (Current == '(')
-            return new Token(value, TokenType.OpenParenthesis, span);
-        if (Current == '[')
-            return new Token(value, TokenType.OpenSquareBracket, span);
-        if (Current == '{')
-            return new Token(value, TokenType.OpenCurlyBracket, span);
-
-        if (Current == ')')
-            return new Token(value, TokenType.CloseParenthesis, span);
-        if (Current == ']')
-            return new Token(value, TokenType.CloseSquareBracket, span);
-        if (Current == '}')
-            return new Token(value, TokenType.CloseCurlyBracket, span);
-
-        // If it's an operator that can be doubled
-        if (Checker.Operators.Contains(Current))
+        switch (Current)
         {
-            if (Peek() == '=')
-                AddValue(-1);
-
-            return new Token(value, TokenType.Operator, span);
+            // Operators
+            // Check big ones first
+            case char when IsUpcoming("=="):
+                return new Token(SyncValue(), TokenKind.IsEqual, span);
+            case char when IsUpcoming("!="):
+                return new Token(SyncValue(), TokenKind.NotEqual, span);
+            case char when IsUpcoming("**"):
+                return new Token(SyncValue(), TokenKind.Power, span);
+            case char when IsUpcoming("++"):
+                return new Token(SyncValue(), TokenKind.Increment, span);
+            case char when IsUpcoming("--"):
+                return new Token(SyncValue(), TokenKind.Decrement, span);
+            case char when IsUpcoming("&&"):
+                return new Token(SyncValue(), TokenKind.LogicalAND, span);
+            case char when IsUpcoming("||"):
+                return new Token(SyncValue(), TokenKind.LogicalOR, span);
+            case char when IsUpcoming("^^"):
+                return new Token(SyncValue(), TokenKind.LogicalXOR, span);
+            case char when IsUpcoming("??"):
+                return new Token(SyncValue(), TokenKind.NullishCoalescing , span);
+            // then check if they're small ones
+            case '=':
+                return new Token(value, TokenKind.Equal, span);
+            case '+':
+                return new Token(value, TokenKind.Plus, span);
+            case '-':
+                return new Token(value, TokenKind.Minus, span);
+            case '*':
+                return new Token(value, TokenKind.Asterisk, span);
+            case '/':
+                return new Token(value, TokenKind.ForwardSlash, span);
+            case '%':
+                return new Token(value, TokenKind.Percent, span);
+            case '!':
+                return new Token(value, TokenKind.ExclamationMark, span);
+            case '&':
+                return new Token(value, TokenKind.AND, span);
+            case '|':
+                return new Token(value, TokenKind.OR, span);
+            case '^':
+                return new Token(value, TokenKind.XOR, span);
+            // Punctuational
+            case '.':
+                return new Token(value, TokenKind.Dot, span);
+            case ',':
+                return new Token(value, TokenKind.Comma, span);
+            case ':':
+                return new Token(value, TokenKind.Colon, span);
+            case ';':
+                return new Token(value, TokenKind.Semicolon, span);
+            case '$':
+                return new Token(value, TokenKind.DollarSign, span);
+            case '?':
+                return new Token(value, TokenKind.QuestionMark, span);
+            // Brackets
+            case '(':
+                return new Token(value, TokenKind.OpenParenthesis, span);
+            case '[':
+                return new Token(value, TokenKind.OpenSquareBracket, span);
+            case '{':
+                return new Token(value, TokenKind.OpenCurlyBracket, span);
+            case ')':
+                return new Token(value, TokenKind.CloseParenthesis, span);
+            case ']':
+                return new Token(value, TokenKind.CloseSquareBracket, span);
+            case '}':
+                return new Token(value, TokenKind.CloseCurlyBracket, span);
         }
 
         // If it's a digit or a dot
@@ -196,7 +172,7 @@ public class Lexer
             }
 
             // Decide for whether it's a float or integer
-            var type =  dots() == 1 ? TokenType.Float : TokenType.Integer;
+            var type =  dots() == 1 ? TokenKind.Float : TokenKind.Integer;
             return new Token(value, type, span);
         }
 
@@ -205,14 +181,15 @@ public class Lexer
         if (char.IsLetter(Current) || Current == '_')
         {
             while (char.IsLetterOrDigit(Peek()) || Peek() == '_')
-            {
                 AddValue(-1);
-            }
 
             if (Checker.Keywords.Contains(value))
-                return new Token(value, TokenType.Keyword, span);
+                return new Token(value, TokenKind.Keyword, span);
 
-            return new Token(value, TokenType.Identifier, span);
+            if (Checker.Booleans.Contains(value))
+                return new Token(value, TokenKind.Boolean, span);
+
+            return new Token(value, TokenKind.Identifier, span);
         }
 
         // If it's an opening quotation mark
@@ -228,14 +205,14 @@ public class Lexer
                 if (EOF || EOL)
                 {
                     Diagnostics.Add(ExceptionType.SyntaxError, $"Unterminated string literal", span);
-                    return new Token(value, TokenType.Bad, span);
+                    return new Token(value, TokenKind.Unknown, span);
                 }
 
                 AddValue(1);
             }
 
             AddValue();
-            return new Token(value, TokenType.String, span);
+            return new Token(value, TokenKind.String, span);
         }
 
         if (Current == '\'')
@@ -247,23 +224,23 @@ public class Lexer
                 if (EOF || EOL)
                 {
                     Diagnostics.Add(ExceptionType.SyntaxError, $"Unterminated character literal", span);
-                    return new Token(value, TokenType.Bad, span);
+                    return new Token(value, TokenKind.Unknown, span);
                 }
 
                 AddValue(1);
             }
 
             AddValue();
-            return new Token(value, TokenType.Char, span);
+            return new Token(value, TokenKind.Char, span);
         }
 
         // Checking it last as other token types might start with a separator character
         if (Checker.Separators.Contains(Current))
-            return new Token(value, TokenType.Separator, span);
+            return new Token(value, TokenKind.Separator, span);
 
         // If no type is met, it's bad
-        Diagnostics.Add(ExceptionType.SyntaxError, $"Unrecognized character: {Current}", span);
-        return new Token(value, TokenType.Bad, span);
+        Diagnostics.Add(ExceptionType.SyntaxError, $"Unrecognized character {Current} (U+{(int)Current:X4})", span);
+        return new Token(value, TokenKind.Unknown, span);
     }
 
 
@@ -345,33 +322,5 @@ public class Lexer
         }
 
         return false;
-    }
-}
-
-
-
-// Provides methods and definitions for checking various characters and symbols
-static class Checker
-{
-    // Some checks definitions
-    public static char[] Separators  = {',','.',';',':','?'};
-    public static char[] Operators   = {'=','+','-','*','/','%','!','&','|','^'};
-
-    public static char[] OpnQuotes   = {'"','«','„','“'};
-    public static char[] ClsQuotes   = {'"','»','“','”'};
-
-    public static string[] Keywords = {"if","else","while","import"};
-    public static string[] BigOprts = {"==","!=","++","--","??=","??","&&","||","^^","**"};
-
-
-    public static char GetOtherPair(char C)
-    {
-        // Quotation marks
-        if (OpnQuotes.Contains(C))
-            return ClsQuotes[Array.IndexOf(OpnQuotes, C)];
-        if (ClsQuotes.Contains(C))
-            return OpnQuotes[Array.IndexOf(ClsQuotes, C)];
-
-        throw new Exception($"Char \"{C}\" seems to not having a pair.");
     }
 }

@@ -1,39 +1,13 @@
 using System.Text.RegularExpressions;
 using SEx.AST;
-using SEx.Analysis;
+using SEx.Diagnose;
 using SEx.Parse;
 using SEx.Generic;
+using SEx.Lex;
+using SEx.Generic.Constants;
+using SEx.Generic.Logic;
 
 namespace SEx.Evaluate;
-
-public class NodeValue
-{
-    public NodeValue(dynamic value, Node node) 
-    {
-        Value = value;
-        Node = node;
-    }
-
-    public dynamic Value { get; }
-    public Node Node { get; }
-    public NodeType Type => Value switch
-    {
-        null    => NodeType.Unknown,
-        Int128  => NodeType.Integer,
-        decimal => NodeType.Float,
-        char    => NodeType.Char,
-        string  => NodeType.String,
-
-        _ => throw new Exception("Unknown value")
-    };
-
-    public override string ToString()
-    {
-        return $"{Type} >> {Value}";
-    }
-
-    public static readonly NodeValue Unknown = new(null!, Literal.Unknown);
-}
 
 public class Evaluator
 {
@@ -49,6 +23,13 @@ public class Evaluator
         Value = Evaluate(Tree.Root!) ?? NodeValue.Unknown;
     }
 
+    public Evaluator(Parser parser)
+    {
+        Diagnostics = parser.Diagnostics;
+        Tree = parser.Tree;
+        Value = Evaluate(Tree.Root!) ?? NodeValue.Unknown;
+    }
+
     public void Except(string message, Span span, ExceptionType type = ExceptionType.SyntaxError)
     {
         Diagnostics.Add(
@@ -58,21 +39,25 @@ public class Evaluator
         );
     }
 
-    public NodeValue Evaluate(Node tree)
+    private NodeValue Evaluate(Node tree)
     {
         return EvaluateStatement((Statement) tree);
     }
 
-    public NodeValue EvaluateStatement(Statement statement)
+    private NodeValue EvaluateStatement(Statement statement)
     {
         return EvaluateExpression((Expression) statement);
     }
 
-    public NodeValue EvaluateExpression(Expression node)
+    private NodeValue EvaluateExpression(Expression node)
     {
         dynamic? value;
         switch (node)
             {
+                case BooleanLiteral BL:
+                    value = BL.Value == CONSTS.TRUE;
+                    return new NodeValue(value, BL);
+
                 case IntLiteral IL:
                     if (!Int128.TryParse(IL.Value, out _))
                     {
@@ -83,16 +68,16 @@ public class Evaluator
                     return new NodeValue(value, IL);
 
                 case FloatLiteral FL:
-                    if (!decimal.TryParse(FL.Value, out _))
+                    if (!double.TryParse(FL.Value, out _))
                     {
                         Except($"Float is either too big or too precise", FL.Span!, ExceptionType.OverflowError);
                         return NodeValue.Unknown;
                     }
-                    value = decimal.Parse(FL.Value!);
+                    value = double.Parse(FL.Value!);
                     return new NodeValue(value, FL);
 
                 case CharLiteral CL:
-                    string? c = Prepare(CL.Value![1..^1], node);
+                    string? c = Prepare(CL.Value!, node);
 
                     if (c is null) return NodeValue.Unknown;
                     if (!char.TryParse(c, out _))
@@ -104,9 +89,12 @@ public class Evaluator
                     return new NodeValue(value, CL);
 
                 case StringLiteral SL:
-                    value = Prepare(SL.Value![1..^1], node);
+                    value = Prepare(SL.Value!, node);
                     if (value is null) return NodeValue.Unknown;
                     return new NodeValue(value, SL);
+
+                case UnaryExpression ue:
+                    return EvaluateUnaryOperation(ue);
 
                 case BinaryExpression be:
                     return EvaluateBinaryOperation(be);
@@ -114,26 +102,28 @@ public class Evaluator
                 case ParenExpression pe:
                     return EvaluateParenExpression(pe);
 
+                case IdentifierLiteral IL:
+                    return NodeValue.Unknown;
+
+                case null:
+                    return NodeValue.Unknown;
+
                 default:
-                    throw new Exception("Unexpected node type");
+                    throw new Exception($"Unexpected node type {node?.Kind}");
         }
 
         string? Prepare(string str, Node node)
         {
-            try
-            {
-                str = Regex.Unescape(str);
-            }
+            try { return str.ToEscaped(); }
             catch
             {
                 Except($"Invalid escape sequence", node.Span!, ExceptionType.StringParseError);
                 return null;
             }
-            return str;
         }
     }
 
-    public NodeValue EvaluateParenExpression(ParenExpression expr)
+    private NodeValue EvaluateParenExpression(ParenExpression expr)
     {
         dynamic? value = expr.Expression is not null
             ? EvaluateExpression(expr.Expression).Value
@@ -142,106 +132,261 @@ public class Evaluator
         return new NodeValue(value, expr);
     }
 
-    public NodeValue EvaluateBinaryOperation(BinaryExpression expr)
+    private NodeValue EvaluateUnaryOperation(UnaryExpression unExpr)
     {
-        var left  = EvaluateExpression(expr.LHS);
-        var op    = expr.Operator.Value;
-        var right = EvaluateExpression(expr.RHS);
-
-        // if (left.Value is null || right.Value is null)
-        //     return NodeValue.Null;
+        var op      = unExpr.Operator;
+        var operand = EvaluateExpression(unExpr.Operand);
 
         dynamic? value;
 
-        if (Check(Mode.ALL, (left.Type, right.Type), NodeType.Integer, NodeType.Float))
+        if (CheckKind(operand.Kind, NodeKind.Integer, NodeKind.Float))
         {
-            var (operand1, operand2) = (decimal.Parse(left.Value.ToString()), decimal.Parse(right.Value.ToString()));
-            switch (op)
+            switch (op.Kind)
             {
-                case "+":
-                    value = operand1 + operand2;
-                    return new NodeValue(Proper(value), expr);
-                case "-":
-                    value = operand1 - operand2;
-                    return new NodeValue(Proper(value), expr);
-                case "*":
-                    value = operand1 * operand2;
-                    return new NodeValue(Proper(value), expr);
-                case "/":
-                    value = operand1 / operand2;
-                    return new NodeValue(Proper(value), expr);
-                case "%":
-                    value = operand1 % operand2;
-                    return new NodeValue(Proper(value), expr);
-                case "**":
-                    value = Math.Pow((double) operand1, (double) operand2);
-                    return new NodeValue(Proper(value), expr);
-                default:
-                    break;
-            }
+                case TokenKind.Plus:
+                    value = operand.Value;
+                    return new NodeValue(value, unExpr);
 
-            static dynamic Proper(dynamic value)
-                => Math.Floor(value) == Math.Ceiling(value)
-                    ? (Int128 ) value
-                    : (decimal) value;
+                case TokenKind.Minus:
+                    value = -operand.Value;
+                    return new NodeValue(value, unExpr);
+            }
         }
 
-        if (Check(Mode.ANY, (left.Type, right.Type), NodeType.String))
+        Except($"Cannot perform operation \"{op.Value}\" on {operand.Kind}", unExpr.Span!, ExceptionType.TypeError);
+        return NodeValue.Unknown;
+    }
+
+    private NodeValue EvaluateBinaryOperation(BinaryExpression binExpr)
+    {
+        var left  = EvaluateExpression(binExpr.LHS);
+        var op    = binExpr.Operator;
+        var right = EvaluateExpression(binExpr.RHS);
+
+        if (op.Kind.IsBoolOp())
+            return EvaluateConditionalOperation(binExpr);
+
+        dynamic? value;
+
+        if (CheckKinds(Mode.ALL, (left.Kind, right.Kind), NodeKind.Integer, NodeKind.Float))
         {
-            switch (op)
+            double operand1, operand2;
+            try { (operand1, operand2) = (double.Parse(left.ToString()), double.Parse(right.ToString())); }
+            catch
             {
-                case "+":
-                    var (operand1, operand2) = (left.Value.ToString(), right.Value.ToString());
+                Except($"Number is either too big or too precise", binExpr.Span!, ExceptionType.OverflowError);
+                return NodeValue.Unknown;
+            }
+
+            switch (op.Kind)
+            {
+                case TokenKind.Plus:
+                    value = operand1 + operand2;
+                    return new NodeValue(Proper(value), binExpr);
+
+                case TokenKind.Minus:
+                    value = operand1 - operand2;
+                    return new NodeValue(Proper(value), binExpr);
+
+                case TokenKind.Asterisk:
+                    value = operand1 * operand2;
+                    return new NodeValue(Proper(value), binExpr);
+
+                case TokenKind.ForwardSlash:
+                    value = operand1 / operand2;
+                    return new NodeValue(Proper(value), binExpr);
+
+                case TokenKind.Percent:
+                    value = operand1 % operand2;
+                    return new NodeValue(Proper(value), binExpr);
+
+                case TokenKind.Power:
+                    value = Math.Pow((double) operand1, (double) operand2);
+                    return new NodeValue(Proper(value), binExpr);
+            }
+        }
+
+        if (CheckKinds(Mode.ALL, (left.Kind, right.Kind), NodeKind.Integer, NodeKind.Boolean))
+        {
+            dynamic operand1, operand2;
+            if (left.Kind == NodeKind.Boolean && right.Kind == NodeKind.Boolean)
+                (operand1, operand2) = (left.Value, right.Value);
+            else
+                (operand1, operand2) = (GetInt(left), GetInt(right));
+
+            switch (op.Kind)
+            {
+                case TokenKind.AND:
+                    value = operand1 & operand2;
+                    return new NodeValue(Proper(value, true), binExpr);
+
+                case TokenKind.OR:
+                    value = operand1 | operand2;
+                    return new NodeValue(Proper(value, true), binExpr);
+
+                case TokenKind.XOR:
+                    value = operand1 ^ operand2;
+                    return new NodeValue(Proper(value, true), binExpr);
+            }
+        }
+
+        if (CheckKinds(Mode.ANY, (left.Kind, right.Kind), NodeKind.String))
+        {
+            switch (op.Kind)
+            {
+                case TokenKind.Plus:
+                    var (operand1, operand2) = (left.ToString(), right.ToString());
                     value = operand1 + operand2;
 
-                    return new NodeValue(value, expr);
+                    return new NodeValue(value, binExpr);
 
-                case "*":
+                case TokenKind.Asterisk:
                     value   = string.Empty;
-                    var str = left.Value is string ? left.Value : right.Value;
-                    var num = left.Value is int ? left.Value : right.Value;
+                    string str;
+                    int num;
+                    try
+                    {
+                        str = left.Kind is NodeKind.String
+                            ? (string) left.Value
+                            : (string) right.Value;
 
-                    int _;
-                    if (int.TryParse(num, out _) || str is not string) break;
+                        num = left.Kind is NodeKind.Integer
+                            ? (int) left.Value
+                            : right.Kind is NodeKind.Integer
+                            ? (int) right.Value
+                            : throw new Exception("Neither is integer");
+                    }
+                    catch { break; }
+
+                    if (num < 0)
+                    {
+                        num = -num;
+                        char[] charArray = str.ToCharArray();
+                        Array.Reverse(charArray);
+                        str = new string(charArray);
+                    }
 
                     for (int i = 0; i < num; i++)
                     {
                         value += str;
                     }
-                    return new NodeValue(value, expr);
-
-                default:
-                    break;
+                    return new NodeValue(value, binExpr);
             }
 
         }
 
-        if (Check(Mode.ANY, (left.Type, right.Type), NodeType.Char))
+        if (CheckKinds(Mode.ANY, (left.Kind, right.Kind), NodeKind.Char))
         {
-            switch (op)
+            switch (op.Kind)
             {
-                case "+":
-                    if (left.Type is NodeType.Integer || right.Type is NodeType.Integer)
+                case TokenKind.Plus:
+                    if (left.Kind is NodeKind.Integer || right.Kind is NodeKind.Integer)
                         value = (char) (left.Value + right.Value);
                     else
                         break;
-                    return new NodeValue(value, expr);
+                    return new NodeValue(value, binExpr);
 
-                default:
-                    break;
+                case TokenKind.Minus:
+                    if (left.Kind is NodeKind.Integer || right.Kind is NodeKind.Integer)
+                        value = (char) (left.Value - right.Value);
+                    else
+                        break;
+                    return new NodeValue(value, binExpr);
             }
         }
 
-        Except($"Cannot perform operation \"{op}\" on {left.Type} and {right.Type}", expr.Span!, ExceptionType.TypeError);
+        if (CheckKinds(Mode.ANY, (left.Kind, right.Kind), NodeKind.Boolean))
+        {
+            switch (op.Kind)
+            {
+                case TokenKind.Plus:
+                    value = GetInt(left) + GetInt(right);
+                    return new NodeValue(value, binExpr);
+            }
+        }
+
+        Except($"Cannot perform operation \"{op.Value}\" on {left.Kind} and {right.Kind}", binExpr.Span!, ExceptionType.TypeError);
         return NodeValue.Unknown;
+    }
+
+    private NodeValue EvaluateConditionalOperation(BinaryExpression binExpr)
+    {
+        var left  = GetBool(EvaluateExpression(binExpr.LHS));
+        var op    = binExpr.Operator;
+        var right = GetBool(EvaluateExpression(binExpr.RHS));
+
+        bool? value;
+        switch (op.Kind)
+        {
+            case TokenKind.LogicalAND:
+                value = left && right;
+                break;
+
+            case TokenKind.LogicalOR:
+                value = left || right;
+                break;
+            
+            case TokenKind.LogicalXOR:
+                value = (left || right) && !(left && right);
+                break;
+
+            case TokenKind.AND:
+                value = right & left;
+                return new NodeValue(value, binExpr);
+
+            case TokenKind.OR:
+                value = right | left;
+                return new NodeValue(value, binExpr);
+
+            case TokenKind.XOR:
+                value = right ^ left;
+                return new NodeValue(value, binExpr);
+
+            default:
+                throw new Exception($"Operator {op.Kind} is not a boolean operator");
+        }
+        return new NodeValue(value, binExpr);
     }
 
     //=====================================================================//
     //=====================================================================//
 
-    public static bool Check(Mode mode, (NodeType, NodeType) nodes, params NodeType[] types)
+    public static bool GetBool(NodeValue value)
+        => value.Kind switch
+        {
+            NodeKind.Unknown => false,
+            NodeKind.Boolean => (bool) value.Value,
+            NodeKind.Integer => (bool) (value.Value != 0),
+            NodeKind.Char    => (bool) (value.Value != '\0'),
+            NodeKind.String  => (bool) (value.Value != ""),
+            _ => true,
+        };
+
+    public static Int128 GetInt(NodeValue value)
     {
-        NodeType[] operands = {nodes.Item1, nodes.Item2};
+        return value.Kind is NodeKind.Integer
+            ? value.Value
+            : value.Kind is NodeKind.Boolean
+            ? (value.Value ? 1 : 0)
+            : throw new Exception($"Can't convert {value.Kind} to int");
+    }
+
+    public static dynamic Proper(dynamic value, bool canBeBool = false)
+    {
+        if (canBeBool && value is bool)
+            return value;
+
+        return Math.Floor((double) value) == Math.Ceiling((double) value)
+                ? (Int128)value
+                : (double)value;
+    }
+
+    public static bool CheckKind(NodeKind node, params NodeKind[] types)
+        => types.Contains(node);
+
+    public static bool CheckKinds(Mode mode, (NodeKind, NodeKind) nodes, params NodeKind[] types)
+    {
+        NodeKind[] operands = {nodes.Item1, nodes.Item2};
 
         if (mode is Mode.ANY)
             return operands.Any(v => types.Contains(v));
