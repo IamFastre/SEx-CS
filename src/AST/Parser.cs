@@ -2,6 +2,7 @@ using SEx.Generic;
 using SEx.Lex;
 using SEx.AST;
 using SEx.Diagnose;
+using SEx.Generic.Constants;
 
 namespace SEx.Parse;
 
@@ -78,7 +79,7 @@ public class Parser
         message ??= EOF ? "Expression not expected to end yet" : $"Unexpected \"{Current.Kind}\"";
         Except(message);
 
-        return new Token(null, kind, Current.Span);
+        return new Token(CONSTS.NULL, kind, Current.Span);
     }
 
     private Expression? Primary()

@@ -1,3 +1,4 @@
+using SEx.Generic.Constants;
 using SEx.Lex;
 
 namespace SEx.AST;
@@ -5,7 +6,7 @@ namespace SEx.AST;
 public abstract class Literal : Expression
 {
     public Token? Token;
-    public string? Value;
+    public string Value = "";
 
     public static readonly UnknownLiteral Unknown = new(Token.Template);
 
@@ -23,9 +24,20 @@ public sealed class UnknownLiteral : Literal
     public UnknownLiteral(Token token)
     {
         Token = token;
-        Value = null;
+        Value = CONSTS.NULL;
         Span  = Token.Span;
         Kind  = NodeKind.Unknown;
+    }
+}
+
+public sealed class NullLiteral : Literal
+{
+    public NullLiteral(Token token)
+    {
+        Token = token;
+        Value = CONSTS.NULL;
+        Span  = token.Span;
+        Kind  = NodeKind.Null;
     }
 }
 

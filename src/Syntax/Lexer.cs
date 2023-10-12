@@ -1,5 +1,6 @@
 using SEx.Diagnose;
 using SEx.Generic;
+using SEx.Generic.Constants;
 
 namespace SEx.Lex;
 
@@ -108,7 +109,9 @@ public class Lexer
             case char when IsUpcoming("^^"):
                 return new Token(SyncValue(), TokenKind.LogicalXOR, span);
             case char when IsUpcoming("??"):
-                return new Token(SyncValue(), TokenKind.NullishCoalescing , span);
+                return new Token(SyncValue(), TokenKind.NullishCoalescing, span);
+            case char when IsUpcoming(CONSTS.IN):
+                return new Token(SyncValue(), TokenKind.InOperator, span);
             // then check if they're small ones
             case '=':
                 return new Token(value, TokenKind.Equal, span);
@@ -194,7 +197,7 @@ public class Lexer
 
         // If it's an opening quotation mark
         // loop until you reach its end and add it as a token and advance
-        if (Checker.OpnQuotes.Contains(Current))
+        if (Checker.OpnDQuotes.Contains(Current))
         {
             // Get the closing quote for that opening one
             char clsQuote = Checker.GetOtherPair(Current);
@@ -215,11 +218,13 @@ public class Lexer
             return new Token(value, TokenKind.String, span);
         }
 
-        if (Current == '\'')
+        if (Checker.OpnSQuotes.Contains(Current))
         {
+            // Get the closing quote for that opening one
+            char clsQuote = Checker.GetOtherPair(Current);
             Index++;
 
-            while (!(Current == '\''))
+            while (Current != clsQuote)
             {
                 if (EOF || EOL)
                 {

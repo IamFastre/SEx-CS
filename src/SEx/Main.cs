@@ -1,11 +1,12 @@
 using System.Text;
 using SEx.Diagnose;
 using SEx.AST;
-using SEx.Evaluate;
+using SEx.Evaluation;
 using SEx.Lex;
 using SEx.Parse;
 using SEx.Generic.Logic;
 using SEx.Generic.Constants;
+using SEx.Generic;
 
 namespace SEx;
 
@@ -38,7 +39,7 @@ public class Runner
 
         try
         {
-            var evaluator = new Evaluator(parser);
+            var evaluator = new Evaluation.Evaluator(parser);
             Value         = evaluator.Value;
         }
         catch (Exception e) { Console.WriteLine(e); }
@@ -60,9 +61,10 @@ public class Runner
 public class REPL
 {
 
-    private bool TreeShown  = false;
-    private bool UseLiteral = true;
-    private bool PrintOut   = true;
+    private bool TreeShown    = false;
+    private bool TokensShown  = false;
+    private bool UseLiteral   = true;
+    private bool PrintOut     = true;
 
     public void Start(string readlineChevron = "{#} ", string outputChevron = "")
     {
@@ -94,11 +96,19 @@ public class REPL
         output = outputChevron + PrintValue(runner.Value);
         output = UseLiteral ? output.ToLiteral() : output;
 
+        if (TokensShown)
+        {
+            Console.WriteLine($"• {C.RED}Tokens{C.END} ↴");
+            foreach (var tk in runner.Tokens!)
+                Console.Write($"{tk} ");
+            Console.WriteLine('\n');
+        }
+
         if (TreeShown)
         {
+            Console.WriteLine($"• {C.RED}Tree{C.END} ↴ "); //↓
             runner.SyntaxTree?.Root?.PrintTree();
-            if (line != "")
-                Console.WriteLine();
+            Console.WriteLine();
         }
 
         if (PrintOut)
@@ -119,24 +129,32 @@ public class REPL
         if (!match("#", true))
             return false;
 
-        if (match("TOGGLE", true))
+        if (match("TREE"))
         {
-            if (match("TREE"))
-            {
-                TreeShown = !TreeShown;
-                Console.WriteLine($"AST set to {TreeShown}");
-            }
-    
-            else if (match("ESCAPE"))
-            {
-                UseLiteral = !UseLiteral;
-                Console.WriteLine($"Literal view set to {UseLiteral}");
-            }
+            TreeShown = !TreeShown;
+            Console.WriteLine($"AST set to {TreeShown}");
+        }
 
-            else
-            {
-                Console.WriteLine($"I have no idea what you need me to toggle.");
-            }
+        if (match("TOKENS"))
+        {
+            TokensShown = !TokensShown;
+            Console.WriteLine($"Tokens view set to {TokensShown}");
+        }
+
+        if (match("DEBUG"))
+        {
+            TreeShown   = !TreeShown;
+            TokensShown = !TokensShown;
+            UseLiteral  = !UseLiteral;
+            Console.WriteLine($"AST set to {TreeShown}");
+            Console.WriteLine($"Tokens view set to {TokensShown}");
+            Console.WriteLine($"Literal view set to {UseLiteral}");
+        }
+
+        if (match("ESCAPE"))
+        {
+            UseLiteral = !UseLiteral;
+            Console.WriteLine($"Literal view set to {UseLiteral}");
         }
 
         if (match("CLEAR"))

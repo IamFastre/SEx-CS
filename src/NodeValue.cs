@@ -1,6 +1,6 @@
 using SEx.AST;
 
-namespace SEx.Evaluate;
+namespace SEx.Evaluation;
 
 public class NodeValue
 {

@@ -27,6 +27,6 @@ public class SyntaxException
         Console.WriteLine($"{C.RED}{Type}{C.END}: {C.RED2}{Text}{C.END}");
         if (Line is not null)
         Console.WriteLine($"  {C.RED}×> {C.DIM}{C.ITALIC}{Line}{C.END}");
-        Console.WriteLine($"  {C.ORANGE}at {Name}, <{Span}>{C.END}");
+        Console.WriteLine($"  {C.YELLOW2}at {Name}, <{Span}>{C.END}");
     }
 }

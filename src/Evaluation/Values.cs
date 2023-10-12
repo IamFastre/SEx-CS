@@ -1,33 +1,31 @@
 
-using System.Numerics;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using SEx.AST;
 using SEx.Generic.Constants;
-using SEx.Lex;
-using SEx.Semantics;
 
-namespace SEx.Symbols.Types;
+namespace SEx.Evaluator.Values;
 
-internal enum VTypes
+internal abstract class LiteralValue
 {
-    Integer,
-}
-
-internal abstract class LiteralValue<T>
-{
-    public T? Value { get; }
+    public object? Value { get; }
+    public abstract ValType Type { get; }
+    public static object Parse(object value) { throw new Exception(); }
     public abstract override string ToString();
-    public static T Parse(object value) { throw new Exception(); }
 }
 
-internal sealed class BoolValue : LiteralValue<bool>
+internal sealed class NullValue : LiteralValue
+{
+
+    public new byte? Value => null;
+    public override ValType Type => ValType.Boolean;
+
+    public static new byte? Parse(object value) => null;
+    public override string ToString() => CONSTS.NULL;   
+}
+
+internal sealed class BoolValue : LiteralValue
 {
 
     public new bool Value { get; }
-
-    public BoolValue(SemanticLiteral literal) : this(literal.Value) { }
-    public BoolValue(Literal literal) : this(literal.Value!) { }
-    public BoolValue(Token literal) : this(literal.Value!) { }
+    public override ValType Type => ValType.Boolean;
 
     public BoolValue(object value)
     {
@@ -55,14 +53,11 @@ internal sealed class BoolValue : LiteralValue<bool>
     }
 }
 
-internal sealed class IntegerValue : LiteralValue<double>
+internal sealed class IntegerValue : LiteralValue
 {
 
     public new double Value { get; }
-
-    public IntegerValue(SemanticLiteral literal) : this(literal.Value) { }
-    public IntegerValue(Literal literal) : this(literal.Value!) { }
-    public IntegerValue(Token literal) : this(literal.Value!) { }
+    public override ValType Type => ValType.Integer;
 
     public IntegerValue(object value)
     {
@@ -85,14 +80,11 @@ internal sealed class IntegerValue : LiteralValue<double>
     }
 }
 
-internal sealed class FloatValue : LiteralValue<double>
+internal sealed class FloatValue : LiteralValue
 {
 
     public new double Value { get; }
-
-    public FloatValue(SemanticLiteral literal) : this(literal.Value) { }
-    public FloatValue(Literal literal) : this(literal.Value!) { }
-    public FloatValue(Token literal) : this(literal.Value!) { }
+    public override ValType Type => ValType.Float;
 
     public FloatValue(object value)
     {
@@ -112,14 +104,11 @@ internal sealed class FloatValue : LiteralValue<double>
     }
 }
 
-internal sealed class CharValue : LiteralValue<char>
+internal sealed class CharValue : LiteralValue
 {
 
     public new char Value { get; }
-
-    public CharValue(SemanticLiteral literal) : this(literal.Value) { }
-    public CharValue(Literal literal) : this(literal.Value!) { }
-    public CharValue(Token literal) : this(literal.Value!) { }
+    public override ValType Type => ValType.Char;
 
     public CharValue(object value)
     {
@@ -135,14 +124,11 @@ internal sealed class CharValue : LiteralValue<char>
     public override string ToString() => Value.ToString();   
 }
 
-internal sealed class StringValue : LiteralValue<string>
+internal sealed class StringValue : LiteralValue
 {
 
     public new string Value { get; }
-
-    public StringValue(SemanticLiteral literal) : this(literal.Value) { }
-    public StringValue(Literal literal) : this(literal.Value!) { }
-    public StringValue(Token literal) : this(literal.Value!) { }
+    public override ValType Type => ValType.String;
 
     public StringValue(object value)
     {

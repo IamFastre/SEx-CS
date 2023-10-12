@@ -4,11 +4,14 @@ public enum NodeKind
 {
     Bad,
     Unknown,
+
+    Null,
     Boolean,
     Integer,
     Float,
     Char,
     String,
+
     Identifier,
     ParenExpression,
     UnaryOperation,

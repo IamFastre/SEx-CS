@@ -3,6 +3,8 @@ namespace SEx.Generic.Constants;
 
 internal static class CONSTS
 {
+    public static readonly string NULL   = "null";
+
     public static readonly string TRUE   = "true";
     public static readonly string FALSE  = "false";
 
@@ -12,4 +14,6 @@ internal static class CONSTS
 
     public static readonly string IMPORT = "import";
     public static readonly string EXPORT = "export";
+
+    public static readonly string IN     = "in";
 }

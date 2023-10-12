@@ -21,7 +21,7 @@ public abstract class Node
         // string PINK = C.RGB(252, 88, 217);
 
         static string leaf(string a, string b)
-            => $"<{C.YELLOW2}{a}: {C.LETTUCE}'{b}'{C.END}>";
+            => $"<{C.YELLOW2}{a}: {C.GREEN2}'{b}'{C.END}>";
 
 
         var children = GetChildren();
@@ -31,7 +31,7 @@ public abstract class Node
             return;
         }
 
-        Console.WriteLine($"[{C.SKY}{C.BLINK}{Kind}{C.END}]");
+        Console.WriteLine($"[{C.BLUE2}{C.BLINK}{Kind}{C.END}]");
         foreach (var child in children)
         {
             if (child == children.LastOrDefault())

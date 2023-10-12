@@ -1,5 +1,6 @@
 using SEx.AST;
 using SEx.Generic;
+using SEx.Generic.Constants;
 
 namespace SEx.Lex;
 
@@ -7,26 +8,26 @@ namespace SEx.Lex;
 // storing its value, type, and position in the source code
 public class Token : Node
 {
-    public string? Value;
+    public string Value = "";
     public new TokenKind Kind { get; }
     public new Span Span;
 
-    public Token(string? value, TokenKind kind, Span span)
+    public Token(string value, TokenKind kind, Span span)
     {
         Value = value;
         Kind  = kind;
         Span  = span;
     }
 
-    public static readonly Token Template = new(null, TokenKind.Null, Span.Template);
+    public static readonly Token Template = new(CONSTS.NULL, TokenKind.Null, Span.Template);
 
      public override string ToString()
      {
         TokenKind[] noVal = {TokenKind.WhiteSpace, TokenKind.EOF};
 
-        var val = !noVal.Contains(Kind) || Value == null ? $": {Value}" : "";
+        var val = !noVal.Contains(Kind) || Value == null ? $": {C.GREEN2}{Value}" : "";
 
-        return $"[{Kind}{val}]";
+        return $"[{C.YELLOW2}{Kind}{val}{C.END}]";
      }
 
     public override IEnumerable<Node> GetChildren() { yield return this; }

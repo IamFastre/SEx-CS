@@ -10,6 +10,7 @@ public enum TokenKind
     Comment,
 
     // Literal kinds
+    Boolean,
     Integer,
     Float,
     Char,
@@ -18,7 +19,7 @@ public enum TokenKind
     // Identifier kinds
     Identifier,
     Keyword,
-    Boolean,
+    InOperator,
     Null,
 
     // Operational kinds
@@ -29,6 +30,7 @@ public enum TokenKind
     ForwardSlash,
     Percent,
     Power,
+
     AND,
     OR,
     XOR,

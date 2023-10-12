@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using SEx.AST;
 using SEx.Diagnose;
 using SEx.Parse;
@@ -7,7 +6,7 @@ using SEx.Lex;
 using SEx.Generic.Constants;
 using SEx.Generic.Logic;
 
-namespace SEx.Evaluate;
+namespace SEx.Evaluation;
 
 public class Evaluator
 {
