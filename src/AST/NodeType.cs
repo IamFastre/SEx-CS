@@ -17,6 +17,7 @@ public enum NodeKind
 
     AssignmentExpression,
     CompoundAssignmentExpression,
+
     ParenExpression,
     UnaryOperation,
     BinaryOperation,

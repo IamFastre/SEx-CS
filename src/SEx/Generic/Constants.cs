@@ -15,6 +15,7 @@ internal static class CONSTS
 
     public const string IMPORT  = "import";
     public const string EXPORT  = "export";
+    public const string DELETE  = "delete";
 
     public const string IN      = "in";
 

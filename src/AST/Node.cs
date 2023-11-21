@@ -97,6 +97,7 @@ public sealed class Statement : Node
         Span = expressions.Length > 0
              ? new(Body.First().Span, Body.Last().Span)
              : new();
+        Kind = NodeKind.Statement;
     }
 
     public override string ToString() => $"<Statement[{Body.Length}]>";

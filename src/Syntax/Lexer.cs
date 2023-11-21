@@ -208,17 +208,20 @@ public class Lexer
             while (char.IsLetterOrDigit(Peek()) || Peek() == '_')
                 AddValue(-1);
 
-            if (value == CONSTS.NULL)
-                return FabricateToken(TokenKind.Null);
-
             if (value == CONSTS.IN)
                 return FabricateToken(TokenKind.InOperator);
 
-            if (Checker.Keywords.Contains(value))
-                return FabricateToken(TokenKind.Keyword);
+            if (value == CONSTS.DELETE)
+                return FabricateToken(TokenKind.Delete);
+
+            if (value == CONSTS.NULL)
+                return FabricateToken(TokenKind.Null);
 
             if (Checker.Booleans.Contains(value))
                 return FabricateToken(TokenKind.Boolean);
+
+            if (Checker.Keywords.Contains(value))
+                return FabricateToken(TokenKind.Keyword);
 
             return FabricateToken(TokenKind.Identifier);
         }

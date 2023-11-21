@@ -45,6 +45,8 @@ public enum TokenKind
     Decrement,
     ExclamationMark,
 
+    Delete,
+
     // Assignment kinds
     __ASSIGNMENT_START__,
     Equal,

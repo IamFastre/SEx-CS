@@ -120,7 +120,7 @@ internal class Analyzer
 
     private SemanticAssignment BindCompoundAssignExpression(CompoundAssignmentExpression caexpr)
     {
-        var expr = BindBinaryExpression(new BinaryExpression(caexpr.Assignee, caexpr.Operator, caexpr.Expression));
+        var expr = BindBinaryExpression(new(caexpr.Assignee, caexpr.Operator, caexpr.Expression));
         return new(caexpr.Assignee, caexpr.Operator, expr);
     }
 }

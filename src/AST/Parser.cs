@@ -66,7 +66,7 @@ public class Parser
             return Eat();
 
         message ??= EOF ? "Expression not expected to end yet" : $"Unexpected \"{Current.Value}\"";
-        Except(message, info:EOF ? ExceptionInfo.Parser : ExceptionInfo.ReParser);
+        Except(message, info: !EOF ? ExceptionInfo.Parser : ExceptionInfo.ReParser);
 
         return new Token(CONSTS.NULL, kind, Current.Span);
     }
@@ -98,7 +98,6 @@ public class Parser
 
             case TokenKind.Identifier:
                 return new Name(Eat(), NodeKind.Name);
-
 
             case TokenKind.OpenParenthesis:
                 return Parenthesized();

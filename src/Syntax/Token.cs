@@ -37,3 +37,15 @@ public class Token : Node
 
     public string Full => $"{this} at {Span}";
 }
+
+public static class TokenExtension
+{
+    public static string ValueStrings(this Token[] tokens)
+    {
+        var str = string.Empty;
+        foreach (var tk in tokens)
+            str += tk == tokens.Last() ? tk.Value : $"{tk.Value}, ";
+
+        return str;
+    }
+}

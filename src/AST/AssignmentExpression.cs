@@ -4,7 +4,7 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-public class AssignmentExpression : Expression
+internal class AssignmentExpression : Expression
 {
     public Name Assignee;
     public Token Equal;

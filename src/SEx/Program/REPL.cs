@@ -117,6 +117,8 @@ internal class REPL
                 if (Diagnostics.Exceptions.RemoveAll((SyntaxException e) => e.Info.ReReadLine) > 0)
                     continue;
 
+                PrintDebugs();
+
                 foreach (var expr in parser.Tree!.Body)
                 {
                     var analyzer  = new Analyzer(expr, Diagnostics, Scope);
@@ -126,7 +128,6 @@ internal class REPL
                     Value         = evaluator.Evaluate();
                 } 
 
-                PrintDebugs();
                 Throw();
 
                 if (!(Value.Type == ValType.Void)) 
