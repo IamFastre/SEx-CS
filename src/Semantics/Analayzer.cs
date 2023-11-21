@@ -13,7 +13,7 @@ internal class Analyzer
     public Diagnostics         Diagnostics { get; }
     public Scope               Scope       { get; }
     public Expression          SimpleTree  { get; }
-    public SemanticExpression? Tree       { get; protected set; }
+    public SemanticExpression? Tree        { get; protected set; }
 
     public Analyzer(Expression expr, Diagnostics? diagnostics = null, Scope? scope = null)
     {
