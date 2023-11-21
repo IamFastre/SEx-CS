@@ -30,22 +30,8 @@ public class Parser
                 Tokens.Add(tk);
     }
 
-
     public Statement Parse()
-    {
-        List<Expression> expressions = new();
-
-        while (!EOF)
-        {
-            var expression = Expression() ?? Literal.Unknown(Tokens[^1].Span);
-            expressions.Add(expression);
-
-            if (!Eat().Kind.IsEOS())
-                Except($"Unexpected: {Current.Kind}", info:ExceptionInfo.Parser);
-        }
-
-        return Tree = new(expressions.ToArray());
-    }
+        => Tree = GetStatement() ?? ExpressionStatement.Empty(Tokens[^1].Span);
 
     private Token Eat()
     {
@@ -71,7 +57,7 @@ public class Parser
         return new Token(CONSTS.NULL, kind, Current.Span);
     }
 
-    private Expression? Primary()
+    private Expression? GetPrimary()
     {
         if (EOF)
             return null;
@@ -100,23 +86,19 @@ public class Parser
                 return new Name(Eat(), NodeKind.Name);
 
             case TokenKind.OpenParenthesis:
-                return Parenthesized();
-
-            case TokenKind.Semicolon:
-                Eat();
-                return null;
+                return GetParenthesized();
 
             default:
                 Except($"Invalid syntax '{Current.Value}'", info:ExceptionInfo.Parser);
                 Eat();
-                return Primary();
+                return GetPrimary();
         }
     }
 
-    private ParenExpression? Parenthesized()
+    private ParenExpression? GetParenthesized()
     {
         var openParen = Eat();
-        var expression = Current.Kind != TokenKind.CloseParenthesis ? Expression() : null;
+        var expression = Current.Kind != TokenKind.CloseParenthesis ? GetExpression() : null;
         var closeParen = Expect(TokenKind.CloseParenthesis, $"'(' was never closed");
 
         if (expression is null)
@@ -125,17 +107,17 @@ public class Parser
         return new ParenExpression(openParen, expression, closeParen);
     }
 
-    private Expression? Secondary(int parentPrecedence = 0)
+    private Expression? GetSecondary(int parentPrecedence = 0)
     {
         Expression? left;
         var unaryPrecedence = Current.Kind.UnaryPrecedence();
 
         if (unaryPrecedence == 0 || unaryPrecedence < parentPrecedence)
-            left = Primary();
+            left = GetPrimary();
         else
         {
             var uOp = Eat();
-            left = Secondary(unaryPrecedence);
+            left = GetSecondary(unaryPrecedence);
             if (left is null)
             {
                 Except($"Expected an expression after operator '{uOp.Value}'", ExceptionType.SyntaxError, uOp.Span);
@@ -151,7 +133,7 @@ public class Parser
                 break;
 
             var binOp = Eat();
-            var right = Secondary(binaryPrecedence);
+            var right = GetSecondary(binaryPrecedence);
 
             if (right is null)
             {
@@ -166,14 +148,14 @@ public class Parser
     }
 
 
-    private Expression? Assignment()
+    private Expression? GetAssignment()
     {
-        var left = Secondary();
+        var left = GetSecondary();
 
         if (Current.Kind.IsAssignment())
         {
             var eq   = Eat();
-            var expr = Expression();
+            var expr = GetExpression();
 
             if (left is not Name)
             {
@@ -196,8 +178,34 @@ public class Parser
         return left;
     }
 
-    private Expression? Expression()
+    private Expression? GetExpression()
+        => GetAssignment();
+
+    private ExpressionStatement GetExpressionStatement()
+        => new(GetExpression() ?? Literal.Unknown(Tokens[^1].Span));
+
+    private BlockStatement GetBlockStatement()
     {
-        return Assignment();
+        List<Statement> block = new();
+
+        var openBrace = Eat();
+
+        while (Current.Kind != TokenKind.CloseCurlyBracket && !EOF)
+            block.Add(GetStatement());
+
+        var closeBrace = Expect(TokenKind.CloseCurlyBracket, "'{' was never closed");
+
+        return new(openBrace, block.ToArray(), closeBrace);
+    }
+
+    private Statement GetStatement()
+    {
+        switch (Current.Kind)
+        {
+            case TokenKind.OpenCurlyBracket:
+                return GetBlockStatement();
+            default:
+                return GetExpressionStatement();
+        }
     }
 }

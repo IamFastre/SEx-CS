@@ -87,21 +87,5 @@ public abstract class Node
     }
 }
 
-public sealed class Statement : Node
-{
-    public Expression[] Body { get; private set; }
-
-    public Statement(Expression[] expressions)
-    {
-        Body = expressions;
-        Span = expressions.Length > 0
-             ? new(Body.First().Span, Body.Last().Span)
-             : new();
-        Kind = NodeKind.Statement;
-    }
-
-    public override string ToString() => $"<Statement[{Body.Length}]>";
-    public override IEnumerable<Node> GetChildren() => Body;
-}
-
+public abstract class Statement  : Node {}
 public abstract class Expression : Node {}

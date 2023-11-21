@@ -23,18 +23,7 @@ internal abstract class SemanticNode
     };
 }
 
-internal sealed class SemanticStatement : SemanticNode
-{
-    public SemanticExpression[]  Body { get; private set; }
-    public override Span         Span { get; }
-    public override SemanticKind Kind => SemanticKind.Statement;
-
-    public SemanticStatement(SemanticExpression[] expressions)
-    {
-        Body = expressions;
-        Span = new(Body.First().Span, Body.Last().Span);
-    }
-}
+internal abstract class SemanticStatement : SemanticNode {}
 
 internal abstract class SemanticExpression : SemanticNode
 {

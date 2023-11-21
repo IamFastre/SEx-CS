@@ -57,7 +57,7 @@ internal class REPL
     public string              Line         { get; protected set; }
     public Token[]?            Tokens       { get; protected set; }
     public Statement?          SimpleTree   { get; protected set; }
-    public SemanticExpression? SemanticTree { get; protected set; }
+    public SemanticStatement?  SemanticTree { get; protected set; }
     public LiteralValue        Value        { get; protected set; }
 
     private void ParseArguments()
@@ -122,14 +122,11 @@ internal class REPL
 
                 PrintDebugs();
 
-                foreach (var expr in parser.Tree!.Body)
-                {
-                    var analyzer  = new Analyzer(expr, Diagnostics, Scope);
-                    SemanticTree  = analyzer.Analyze();
+                var analyzer  = new Analyzer(parser.Tree!, Diagnostics, Scope);
+                SemanticTree  = analyzer.Analyze();
 
-                    var evaluator = new Evaluator(analyzer);
-                    Value         = evaluator.Evaluate();
-                } 
+                var evaluator = new Evaluator(analyzer);
+                Value         = evaluator.Evaluate();
 
                 Throw();
 

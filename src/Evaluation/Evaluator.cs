@@ -12,14 +12,13 @@ internal class Evaluator
 {
     public Scope              Scope        { get; }
     public Diagnostics        Diagnostics  { get; }
-    public SemanticExpression SemanticTree { get; }
+    public SemanticStatement  SemanticTree { get; }
     public LiteralValue       Value        { get; protected set; }
-
 
     public Evaluator(Analyzer analyzer)
     {
-        Diagnostics  = analyzer.Diagnostics;
         Scope        = analyzer.Scope;
+        Diagnostics  = analyzer.Diagnostics;
         SemanticTree = analyzer.Tree!;
         Value        = UnknownValue.Template;
     }
@@ -31,55 +30,81 @@ internal class Evaluator
         => Diagnostics.Add(type, message, span, info ?? ExceptionInfo.Evaluator);
 
     public LiteralValue Evaluate()
-        => Value = EvaluateExpression(SemanticTree);
+        => Value = EvaluateStatement(SemanticTree);
 
-    private LiteralValue EvaluateExpression(SemanticExpression node)
+    private LiteralValue EvaluateStatement(SemanticStatement stmt)
     {
-        switch (node.Kind)
+        switch (stmt.Kind)
+            {
+                case SemanticKind.ExpressionStatement:
+                    return EvaluateExpressionStatement((SemanticExpressionStatement) stmt);
+
+                case SemanticKind.BlockStatement:
+                    return EvaluateBlockStatement((SemanticBlockStatement) stmt);
+        }
+
+        throw new Exception($"Unexpected statement type {stmt?.Kind}");
+    }
+
+    private LiteralValue EvaluateBlockStatement(SemanticBlockStatement stmt)
+    {
+        foreach (var statement in stmt.Body)
+            EvaluateStatement(statement);
+
+        return VoidValue.Template;
+    }
+
+    private LiteralValue EvaluateExpressionStatement(SemanticExpressionStatement stmt)
+        => EvaluateExpression(stmt.Expression);
+
+    private LiteralValue EvaluateExpression(SemanticExpression expr)
+    {
+        switch (expr.Kind)
             {
                 case SemanticKind.Literal:
-                    if (node.Type == ValType.Unknown)
+                    if (expr.Type == ValType.Unknown)
                         return UnknownValue.Template;
 
-                    if (node.Type == ValType.Null)
-                        return ParseNull((SemanticLiteral) node);
+                    if (expr.Type == ValType.Null)
+                        return ParseNull((SemanticLiteral) expr);
 
-                    if (node.Type == ValType.Boolean)
-                        return ParseBool((SemanticLiteral) node);
+                    if (expr.Type == ValType.Boolean)
+                        return ParseBool((SemanticLiteral) expr);
 
-                    if (node.Type == ValType.Integer)
-                        return ParseInt((SemanticLiteral) node);
+                    if (expr.Type == ValType.Integer)
+                        return ParseInt((SemanticLiteral) expr);
 
-                    if (node.Type == ValType.Float)
-                        return ParseFloat((SemanticLiteral) node);
+                    if (expr.Type == ValType.Float)
+                        return ParseFloat((SemanticLiteral) expr);
 
-                    if (node.Type == ValType.Char)
-                        return ParseChar((SemanticLiteral) node);
+                    if (expr.Type == ValType.Char)
+                        return ParseChar((SemanticLiteral) expr);
 
-                    if (node.Type == ValType.String)
-                        return ParseString((SemanticLiteral) node);
+                    if (expr.Type == ValType.String)
+                        return ParseString((SemanticLiteral) expr);
 
                     break;
 
                 case SemanticKind.Name:
-                    return EvaluateName((SemanticName) node);
+                    return EvaluateName((SemanticName) expr);
 
                 case SemanticKind.ParenExpression:
-                    return EvaluateParenExpression((SemanticParenExpression) node);
+                    return EvaluateParenExpression((SemanticParenExpression) expr);
 
                 case SemanticKind.UnaryOperation:
-                    return EvaluateUnaryOperation((SemanticUnaryOperation) node);
+                    return EvaluateUnaryOperation((SemanticUnaryOperation) expr);
 
                 case SemanticKind.BinaryOperation:
-                    return EvaluateBinaryOperation((SemanticBinaryOperation) node);
+                    return EvaluateBinaryOperation((SemanticBinaryOperation) expr);
 
                 case SemanticKind.AssignExpression:
-                    return EvaluateAssignExpression((SemanticAssignment) node);
+                    return EvaluateAssignExpression((SemanticAssignment) expr);
 
                 case SemanticKind.FailedExpression:
-                    return EvaluateFailedExpression((SemanticFailedExpression) node);
+                    return EvaluateFailedExpression((SemanticFailedExpression) expr);
         }
-        throw new Exception($"Unexpected node type {node?.Kind}");
+
+        throw new Exception($"Unexpected expression type {expr?.Kind}");
     }
 
     private LiteralValue EvaluateParenExpression(SemanticParenExpression expr)

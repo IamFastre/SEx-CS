@@ -1,7 +1,5 @@
 using SEx.AST;
 using SEx.Diagnose;
-using SEx.Parse;
-using SEx.Generic;
 using SEx.Namespaces;
 using SEx.Evaluate.Values;
 using SEx.Generic.Text;
@@ -12,12 +10,12 @@ internal class Analyzer
 {
     public Diagnostics         Diagnostics { get; }
     public Scope               Scope       { get; }
-    public Expression          SimpleTree  { get; }
-    public SemanticExpression? Tree        { get; protected set; }
+    public Statement           SimpleTree  { get; }
+    public SemanticStatement?  Tree        { get; protected set; }
 
-    public Analyzer(Expression expr, Diagnostics? diagnostics = null, Scope? scope = null)
+    public Analyzer(Statement stmt, Diagnostics? diagnostics = null, Scope? scope = null)
     {
-        SimpleTree  = expr;
+        SimpleTree  = stmt;
         Diagnostics = diagnostics ?? new();
         Scope       = scope ?? new(Diagnostics);
     }
@@ -28,9 +26,40 @@ internal class Analyzer
                         ExceptionInfo? info = null)
         => Diagnostics.Add(type, message, span, info ?? ExceptionInfo.Analyzer);
 
-    public SemanticExpression Analyze()
+    public SemanticStatement Analyze()
     {
-        return Tree = BindExpression(SimpleTree);
+        return Tree = BindStatement(SimpleTree);
+    }
+
+    private SemanticStatement BindStatement(Statement stmt)
+    {
+        switch (stmt.Kind)
+        {
+            case NodeKind.ExpressionStatement:
+                return BindExpressionStatement((ExpressionStatement) stmt);
+
+            case NodeKind.BlockStatement:
+                return BindBlockStatement((BlockStatement) stmt);
+
+            default:
+                throw new Exception($"Unrecognized statement kind: {stmt.Kind}");
+        }
+    }
+
+    private SemanticBlockStatement BindBlockStatement(BlockStatement stmt)
+    {
+        List<SemanticStatement> statements = new();
+
+        foreach (var statement in stmt.Body)
+            statements.Add(BindStatement(statement));
+
+        return new(stmt.OpenBrace, statements.ToArray(), stmt.CloseBrace);
+    }
+
+    private SemanticExpressionStatement BindExpressionStatement(ExpressionStatement stmt)
+    {
+        var expr = BindExpression(stmt.Expression);
+        return new(expr);
     }
 
     private SemanticExpression BindExpression(Expression expr)
@@ -115,6 +144,7 @@ internal class Analyzer
     private SemanticAssignment BindAssignExpression(AssignmentExpression aexpr)
     {
         var expr = BindExpression(aexpr.Expression);
+        Scope.Types[aexpr.Assignee.Value] = expr.Type;
         return new(aexpr.Assignee, aexpr.Equal, expr);
     }
 

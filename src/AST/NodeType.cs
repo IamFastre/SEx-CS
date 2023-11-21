@@ -15,6 +15,9 @@ public enum NodeKind
     String,
     Name,
 
+    ExpressionStatement,
+    BlockStatement,
+
     AssignmentExpression,
     CompoundAssignmentExpression,
 

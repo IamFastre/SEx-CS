@@ -12,6 +12,7 @@ internal class Scope
     public Scope?       Parent      { get; }
     public List<string> Consts      { get; }
     public Dictionary<string, LiteralValue> Names { get; }
+    public Dictionary<string, ValType>      Types { get; }
 
     public LiteralValue this[string key, Span span] => Resolve(key, span);
     public LiteralValue this[Name name]             => Resolve(name);
@@ -21,8 +22,9 @@ internal class Scope
     {
         Diagnostics = diagnostics ?? new();
         Parent      = parent;
-        Names       = new();
         Consts      = new();
+        Names       = new();
+        Types       = new();
 
         DefineDefaults();
     }
@@ -39,6 +41,8 @@ internal class Scope
 
     public void Assign(Name name, LiteralValue value)
     {
+        Types.Remove(name.Value);
+
         if (Consts.Contains(name.Value))
             Except($"Can't reassign to constant '{name.Value}'", name.Span);
 
@@ -64,7 +68,11 @@ internal class Scope
     }
 
     public ValType ResolveType(Name name)
-        => Contains(name.Value) ? Names[name.Value].Type : ValType.Unknown;
+        => Contains(name.Value)
+         ? Names[name.Value].Type
+         : Types.ContainsKey(name.Value)
+         ? Types[name.Value]
+         : ValType.Unknown;
 
 
     public void DefineDefaults()
