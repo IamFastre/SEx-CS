@@ -6,17 +6,17 @@ namespace SEx.Lex;
 public static class Checker
 {
     // Some checks definitions
-    public static char[] Separators = {',','.',';',':','?'};
-    public static char[] Operators  = {'=','+','-','*','/','%','!','&','|','^'};
+    public static readonly char[] Separators = {',','.',';',':','?'};
+    public static readonly char[] Operators  = {'=','+','-','*','/','%','!','&','|','^'};
 
-    public static char[] OpnDQuotes   = {'"','«','“'}; // '„'
-    public static char[] ClsDQuotes   = {'"','»','”'}; // '“'
-    public static char[] OpnSQuotes   = {'\'','‹'};
-    public static char[] ClsSQuotes   = {'\'','›'};
+    public static readonly char[] OpnDQuotes = {'"','«','“'}; // '„'
+    public static readonly char[] ClsDQuotes = {'"','»','”'}; // '“'
+    public static readonly char[] OpnSQuotes = {'\'','‹'};
+    public static readonly char[] ClsSQuotes = {'\'','›'};
 
-    public static string[] Assignments = {"+=","-=","*=","/=","%=","&=","|=","^=","**=","&&=","||=","??="};
-    public static string[] Booleans    = { CONSTS.TRUE, CONSTS.FALSE };
-    public static string[] Keywords    = {
+    public static readonly string[] Booleans = { CONSTS.TRUE, CONSTS.FALSE };
+    public static readonly string[] Keywords =
+    {
         CONSTS.IF, CONSTS.ELSE ,CONSTS.WHILE ,CONSTS.WHILE ,CONSTS.IMPORT ,CONSTS.EXPORT
     };
 

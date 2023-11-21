@@ -6,8 +6,10 @@ public enum TokenKind
     // Special kinds
     EOF,
     Unknown,
-    WhiteSpace,
     Comment,
+    NewLine,
+    WhiteSpace,
+    BigWhiteSpace,
 
     // Literal kinds
     Boolean,
@@ -23,7 +25,6 @@ public enum TokenKind
     Null,
 
     // Operational kinds
-    Equal,
     Plus,
     Minus,
     Asterisk,
@@ -36,15 +37,30 @@ public enum TokenKind
     XOR,
     IsEqual,
     NotEqual,
-    AssignmentOperator,
     LogicalAND,
     LogicalOR,
-    LogicalXOR,
     NullishCoalescing,
     // Unary
     Increment,
     Decrement,
     ExclamationMark,
+
+    // Assignment kinds
+    __ASSIGNMENT_START__,
+    Equal,
+    PlusEqual,
+    MinusEqual,
+    AsteriskEqual,
+    ForwardSlashEqual,
+    PercentEqual,
+    ANDEqual,
+    OREqual,
+    XOREqual,
+    PowerEqual,
+    LogicalANDEqual,
+    LogicalOREqual,
+    NullishCoalescingEqual,
+    __ASSIGNMENT_END__,
 
     // Bracket kinds
     OpenParenthesis,
@@ -69,86 +85,54 @@ public enum TokenKind
 internal static class TokenKindExtension
 {
     // private static readonly TokenKind[]  = {  };
-    private static readonly TokenKind[] literals = {
-        TokenKind.Integer, TokenKind.Float, TokenKind.Char, TokenKind.String };
 
-    private static readonly TokenKind[] operators = {
-        TokenKind.Equal, TokenKind.Plus, TokenKind.Minus, TokenKind.Asterisk, TokenKind.ForwardSlash,
-        TokenKind.Percent, TokenKind.Power, TokenKind.AND, TokenKind.OR, TokenKind.XOR, TokenKind.IsEqual,
-        TokenKind.NotEqual, TokenKind.AssignmentOperator, TokenKind.LogicalAND, TokenKind.LogicalOR,
-        TokenKind.LogicalXOR, TokenKind.NullishCoalescing, TokenKind.Increment, TokenKind.Decrement,
-        TokenKind.ExclamationMark,
-        };
-
-    private static readonly TokenKind[] unaries = {
-        TokenKind.Plus, TokenKind.Minus, TokenKind.Increment, TokenKind.Decrement, TokenKind.ExclamationMark
-    };
-    private static readonly TokenKind[] binaries = {
-        TokenKind.Equal, TokenKind.Plus, TokenKind.Minus, TokenKind.Asterisk, TokenKind.ForwardSlash,
-        TokenKind.Percent, TokenKind.Power, TokenKind.AND, TokenKind.OR, TokenKind.XOR, TokenKind.IsEqual,
-        TokenKind.NotEqual, TokenKind.AssignmentOperator, TokenKind.LogicalAND, TokenKind.LogicalOR,
-        TokenKind.LogicalXOR, TokenKind.NullishCoalescing,
-    };
-
-    private static readonly TokenKind[] bitwise = { 
-        TokenKind.AND, TokenKind.OR, TokenKind.XOR
-     };
-
-    private static readonly TokenKind[] logicals = {
-        TokenKind.LogicalAND, TokenKind.LogicalOR, TokenKind.LogicalXOR,
-        };
-
-    private static readonly TokenKind[] additives = {
-        TokenKind.Plus, TokenKind.Minus
-        };
-
-    private static readonly TokenKind[] multiplicatives = { 
-        TokenKind.Asterisk, TokenKind.ForwardSlash, TokenKind.Percent, TokenKind.Power
-        };
-
-    private static readonly TokenKind[] assignmentOperators = {
-        TokenKind.Equal, TokenKind.AssignmentOperator
-        };
-
-    private static readonly TokenKind[] ignorables = {
-        TokenKind.WhiteSpace, TokenKind.Comment, TokenKind.Unknown
-        };
+    private static readonly TokenKind[] or = { TokenKind.OR, TokenKind.XOR, TokenKind.LogicalOR };
+    private static readonly TokenKind[] and = { TokenKind.AND, TokenKind.LogicalAND };
+    private static readonly TokenKind[] additives = { TokenKind.Plus, TokenKind.Minus };
+    private static readonly TokenKind[] multiplicatives = { TokenKind.Asterisk, TokenKind.ForwardSlash, TokenKind.Percent, TokenKind.Power };
+    private static readonly TokenKind[] comparatives = { TokenKind.IsEqual, TokenKind.NotEqual, TokenKind.InOperator };
+    private static readonly TokenKind[] ignorables = { TokenKind.WhiteSpace, TokenKind.BigWhiteSpace, TokenKind.Comment, TokenKind.Unknown };
+    private static readonly TokenKind[] eos = { TokenKind.Semicolon, TokenKind.EOF };
 
     // public static bool Is (this TokenKind kind) => .Contains(kind);
-    public static bool IsLiteral(this TokenKind kind)         => literals.Contains(kind);
-    public static bool IsUnaryOperator(this TokenKind kind)   => unaries.Contains(kind);
-    public static bool IsBinaryOperator(this TokenKind kind)  => binaries.Contains(kind);
-    public static bool IsOperator(this TokenKind kind)        => operators.Contains(kind);
-    public static bool IsBitwise(this TokenKind kind)         => bitwise.Contains(kind);
-    public static bool IsBoolOp(this TokenKind kind)         => logicals.Contains(kind);
+    public static bool IsOR(this TokenKind kind)              => or.Contains(kind);
+    public static bool IsAND(this TokenKind kind)             => and.Contains(kind);
     public static bool IsAdditive(this TokenKind kind)        => additives.Contains(kind);
     public static bool IsMultiplicative(this TokenKind kind)  => multiplicatives.Contains(kind);
-    public static bool IsAssignment(this TokenKind kind)      => assignmentOperators.Contains(kind);
+    public static bool IsComparative(this TokenKind kind)     => comparatives.Contains(kind);
+    public static bool IsAssignment(this TokenKind kind)      => TokenKind.__ASSIGNMENT_START__ < kind
+                                                              && TokenKind.__ASSIGNMENT_END__   > kind;
     public static bool IsParserIgnorable(this TokenKind kind) => ignorables.Contains(kind);
+    public static bool IsEOS(this TokenKind kind) => eos.Contains(kind);
 
     public static int UnaryPrecedence(this TokenKind kind)
     {
         return kind switch
         {
-            TokenKind.Plus or
-            TokenKind.Minus or
+            TokenKind.Plus      or
+            TokenKind.Minus     or
             TokenKind.Increment or
             TokenKind.Decrement or
-            TokenKind.ExclamationMark => 4,
+            TokenKind.ExclamationMark => 6,
 
             _ => 0,
-        };
+    };
     }
 
     public static int BinaryPrecedence(this TokenKind kind)
     {
-        if (kind.IsBoolOp() || kind.IsBitwise())
-            return 1;
-        if (kind.IsAdditive())
-            return 2;
         if (kind.IsMultiplicative())
+            return 6;
+        if (kind.IsAdditive())
+            return 5;
+        if (kind.IsComparative())
+            return 4;
+        if (kind.IsAND())
             return 3;
-
+        if (kind.IsOR())
+            return 2;
+        if (kind is TokenKind.NullishCoalescing)
+            return 1;
         return 0;
     }
 }

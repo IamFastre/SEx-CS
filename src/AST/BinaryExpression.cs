@@ -1,4 +1,5 @@
-using SEx.Generic;
+using SEx.Generic.Text;
+using SEx.Generic.Constants;
 using SEx.Lex;
 
 namespace SEx.AST;
@@ -15,11 +16,11 @@ public sealed class BinaryExpression : Expression
         Operator = binOperator;
         RHS = rightHandExpr;
 
-        Span = new Span(LHS.Span!.Start, RHS.Span!.End);
+        Span = new Span(LHS.Span.Start, RHS.Span.End);
         Kind = NodeKind.BinaryOperation;
     }
 
-    public override string ToString() => $"<Binary Operation: {LHS} {Operator.Value} {RHS}>";
+    public override string ToString() => $"<{C.BLUE2}BinaryOperation{C.END}: {LHS} {C.GREEN2}{Operator.Value}{C.END} {RHS}>";
     public override IEnumerable<Node> GetChildren()
     {
         yield return LHS;

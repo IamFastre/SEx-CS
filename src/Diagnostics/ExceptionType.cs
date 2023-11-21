@@ -7,4 +7,17 @@ public enum ExceptionType
     TypeError,
     StringParseError,
     OverflowError,
+    InternalError,
+    ParsingException,
+    SymbolError,
+}
+
+public enum Sender
+{
+    Unknown,
+    Lexer,
+    Parser,
+    Analyzer,
+    Scope,
+    Evaluator
 }

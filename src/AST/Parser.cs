@@ -1,53 +1,52 @@
-using SEx.Generic;
 using SEx.Lex;
 using SEx.AST;
 using SEx.Diagnose;
 using SEx.Generic.Constants;
+using SEx.Generic.Text;
 
 namespace SEx.Parse;
 
 public class Parser
 {
-    public List<Token> Tokens;
-    public SyntaxTree Tree;
-    public Diagnostics Diagnostics;
+    public List<Token> Tokens      { get; }
+    public Diagnostics Diagnostics { get; }
+    public Statement?  Tree        { get; protected set; }
+
     private int Index;
+    public readonly Source Source;
 
-    private Token Peek(int i = 1)
-        => Index + i < Tokens.Count ? Tokens[Index + i] : Tokens[^1];
-
-    private bool EOF => Current.Kind == TokenKind.EOF;
-    private Token Current => Peek(0);
-
-    public Parser(string source, Diagnostics? diagnostics = null)
-    {
-        // If no diagnostics object is passed, create a new one
-        Diagnostics = diagnostics ?? new Diagnostics();
-        var lexer = new Lexer(source, Diagnostics);
-
-        Tokens = new();
-        foreach (var tk in lexer.Tokens)
-            if (!tk.Kind.IsParserIgnorable())
-                Tokens.Add(tk);
-
-        Tree = Parse();
-    }
+    private Token Peek(int i = 1) => Index + i < Tokens.Count ? Tokens[Index + i] : Tokens[^1];
+    private Token Current         => Peek(0);
+    private bool  EOF             => Current.Kind == TokenKind.EOF;
 
     public Parser(Lexer lexer)
     {
+        Source      = lexer.Source;
         Diagnostics = lexer.Diagnostics;
+        Tokens      = new();
 
-        Tokens = new();
         foreach (var tk in lexer.Tokens)
             if (!tk.Kind.IsParserIgnorable())
                 Tokens.Add(tk);
-
-        Tree = Parse();
     }
 
-    /// <summary>
-    /// Return the current token and increments the index by one
-    /// </summary>
+
+    public Statement Parse()
+    {
+        List<Expression> expressions = new();
+
+        while (!EOF)
+        {
+            var expression = Expression() ?? Literal.Unknown(Tokens[^1].Span);
+            expressions.Add(expression);
+
+            if (!Eat().Kind.IsEOS())
+                Except($"Unexpected: {Current.Kind}", info:ExceptionInfo.Parser);
+        }
+
+        return Tree = new(expressions.ToArray());
+    }
+
     private Token Eat()
     {
         var current = Current;
@@ -55,29 +54,19 @@ public class Parser
         return current;
     }
 
-    private void Except(string message, ExceptionType type = ExceptionType.SyntaxError, Span? span = null)
-    {
-        span ??= Current.Span;
+    private void Except(string message,
+                        ExceptionType type = ExceptionType.SyntaxError,
+                        Span? span = null,
+                        ExceptionInfo? info = null)
+        => Diagnostics.Add(type, message, span ?? Current.Span, info ?? ExceptionInfo.ReParser);
 
-        Diagnostics.Add(
-            type,
-            message,
-            span
-        );
-    }
-
-    /// <summary>
-    /// The Expect function checks if the current token matches the expected token type and returns the
-    /// current token if it does, otherwise it fabricates a new token with the expected type copying the
-    /// current token span
-    /// </summary>
     private Token Expect(TokenKind kind, string? message = null)
     {
         if (Current.Kind == kind)
             return Eat();
 
-        message ??= EOF ? "Expression not expected to end yet" : $"Unexpected \"{Current.Kind}\"";
-        Except(message);
+        message ??= EOF ? "Expression not expected to end yet" : $"Unexpected \"{Current.Value}\"";
+        Except(message, info:EOF ? ExceptionInfo.Parser : ExceptionInfo.ReParser);
 
         return new Token(CONSTS.NULL, kind, Current.Span);
     }
@@ -89,30 +78,37 @@ public class Parser
 
         switch (Current.Kind)
         {
+            case TokenKind.Null:
+                return new Literal(Eat(), NodeKind.Null);
+
             case TokenKind.Boolean:
-                return new BooleanLiteral(Eat());
+                return new Literal(Eat(), NodeKind.Boolean);
 
             case TokenKind.Integer:
-                return new IntLiteral(Eat());
+                return new Literal(Eat(), NodeKind.Integer);
 
             case TokenKind.Float:
-                return new FloatLiteral(Eat());
+                return new Literal(Eat(), NodeKind.Float);
 
             case TokenKind.Char:
-                return new CharLiteral(Eat());
+                return new Literal(Eat(), NodeKind.Char);
 
             case TokenKind.String:
-                return new StringLiteral(Eat());
+                return new Literal(Eat(), NodeKind.String);
 
             case TokenKind.Identifier:
-                return new IdentifierLiteral(Eat());
+                return new Name(Eat(), NodeKind.Name);
 
 
             case TokenKind.OpenParenthesis:
                 return Parenthesized();
 
+            case TokenKind.Semicolon:
+                Eat();
+                return null;
+
             default:
-                Except($"Invalid syntax: {Current.Value}");
+                Except($"Invalid syntax '{Current.Value}'", info:ExceptionInfo.Parser);
                 Eat();
                 return Primary();
         }
@@ -130,7 +126,7 @@ public class Parser
         return new ParenExpression(openParen, expression, closeParen);
     }
 
-    private Expression? Expression(int parentPrecedence = 0)
+    private Expression? Secondary(int parentPrecedence = 0)
     {
         Expression? left;
         var unaryPrecedence = Current.Kind.UnaryPrecedence();
@@ -140,41 +136,69 @@ public class Parser
         else
         {
             var uOp = Eat();
-            left = Expression(unaryPrecedence);
+            left = Secondary(unaryPrecedence);
             if (left is null)
             {
-                Except($"Expected expression after operator {uOp.Value}", ExceptionType.SyntaxError, uOp.Span);
+                Except($"Expected an expression after operator '{uOp.Value}'", ExceptionType.SyntaxError, uOp.Span);
                 return null;
             }
             left = new UnaryExpression(uOp, left);
         }
 
-        while (!!!false)
+        while (true)
         {
             var binaryPrecedence = Current.Kind.BinaryPrecedence();
             if (binaryPrecedence == 0 || binaryPrecedence <= parentPrecedence)
                 break;
 
             var binOp = Eat();
-            var right = Expression(binaryPrecedence);
+            var right = Secondary(binaryPrecedence);
 
             if (right is null)
             {
-                Except($"Expected expression after operator {binOp.Value}", ExceptionType.SyntaxError, binOp.Span);
+                Except($"Expected an expression after operator '{binOp.Value}'", ExceptionType.SyntaxError, binOp.Span);
                 return null;
             }
 
-            left = new BinaryExpression(left!, binOp, right!);
+            left = new BinaryExpression(left!, binOp, right);
         }
 
         return left;
     }
 
-    public SyntaxTree Parse()
-    {
-        var program = Expression();
-        var eof = Expect(TokenKind.EOF);
 
-        return new SyntaxTree(program, Diagnostics, eof);
+    private Expression? Assignment()
+    {
+        var left = Secondary();
+
+        if (Current.Kind.IsAssignment())
+        {
+            var eq   = Eat();
+            var expr = Expression();
+
+            if (left is not Name)
+            {
+                Except($"Invalid left-hand side assignee", ExceptionType.SyntaxError, left!.Span, ExceptionInfo.Parser);
+                return left;
+            }
+
+            if (expr is null)
+            {
+                Except($"Expected an expression after equal", ExceptionType.SyntaxError, eq.Span);
+                return null;
+            }
+
+            if (eq.Kind == TokenKind.Equal)
+                return new AssignmentExpression((Name) left, eq, expr);
+
+            return new CompoundAssignmentExpression((Name) left, eq, expr);
+        }
+
+        return left;
+    }
+
+    private Expression? Expression()
+    {
+        return Assignment();
     }
 }

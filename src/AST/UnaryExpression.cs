@@ -1,4 +1,5 @@
-using SEx.Generic;
+using SEx.Generic.Text;
+using SEx.Generic.Constants;
 using SEx.Lex;
 
 namespace SEx.AST;
@@ -12,12 +13,12 @@ public sealed class UnaryExpression : Expression
     {
         Operator = @operator;
         Operand = operand;
-        Span = new Span(Operator.Span!.Start, Operand.Span!.End);
+        Span = new Span(Operator.Span!.Start, Operand.Span.End);
         Kind = NodeKind.UnaryOperation;
     }
 
 
-    public override string ToString() => $"<Unary Operation: {Operator.Value} {Operand}>";
+    public override string ToString() => $"<{C.BLUE2}UnaryOperation{C.END}: {C.GREEN2}{Operator.Value}{C.END} {Operand}>";
     public override IEnumerable<Node> GetChildren()
     {
         yield return Operator;

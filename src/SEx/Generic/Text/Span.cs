@@ -1,26 +1,30 @@
-namespace SEx.Generic;
+namespace SEx.Generic.Text;
 
 public class Span
 {
     public Position Start, End;
-    public int Length;
+    public int Length => End.Index - Start.Index + 1;
+
+    public Span()
+    {
+        Start = new Position();
+        End   = new Position();
+    }
 
     public Span(Position start, Position? end = null)
     {
-        Start = start;
-        End = end ?? start;
-        Length = End.Index - Start.Index + 1;
+        Start  = start ?? new Position();
+        End    = end   ?? Start;
     }
 
-    public static readonly Span Template = new(Position.Template);
+    public Span(Span start, Span end)
+    {
+        Start = start.Start;
+        End   = end.End;
+    }
 
     public override string ToString()
-    {
-        if (Start != End)
-            return $"{Start} => {End}";
-        else
-            return Start.ToString();
-    }
+        => Start.Index == End.Index ? $"{Start}" : $"{Start} => {End}";
 
     public bool Includes(Span other)
     {

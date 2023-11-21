@@ -1,4 +1,5 @@
-using SEx.Generic;
+using SEx.Generic.Text;
+using SEx.Generic.Constants;
 using SEx.Lex;
 
 namespace SEx.AST;
@@ -20,7 +21,7 @@ public sealed class ParenExpression : Expression
     }
 
 
-    public override string ToString() => $"({Expression})";
+    public override string ToString() => $"{C.RED}({C.END}{Expression}{C.RED}){C.END}";
     public override IEnumerable<Node> GetChildren()
     {
         yield return OpenParen;

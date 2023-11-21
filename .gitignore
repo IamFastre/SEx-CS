@@ -2,6 +2,8 @@
 playground/
 tests/
 test/
+*.old
+
 
 ### Csharp ###
 ## Ignore Visual Studio temporary files, build results, and

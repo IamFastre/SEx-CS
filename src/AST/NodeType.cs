@@ -5,14 +5,18 @@ public enum NodeKind
     Bad,
     Unknown,
 
+    Statement,
+
     Null,
     Boolean,
     Integer,
     Float,
     Char,
     String,
+    Name,
 
-    Identifier,
+    AssignmentExpression,
+    CompoundAssignmentExpression,
     ParenExpression,
     UnaryOperation,
     BinaryOperation,

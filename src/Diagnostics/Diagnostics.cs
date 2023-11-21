@@ -1,17 +1,14 @@
-using SEx.Generic;
+using SEx.Generic.Text;
 
 namespace SEx.Diagnose;
 
 public class Diagnostics
 {
-    private List<SyntaxException> _exceptions;
-    public List<SyntaxException> Exceptions => _exceptions;
+    public List<SyntaxException> Exceptions = new();
 
-    public Diagnostics()
-    {
-        _exceptions = new();
-    }
+    public void Flush()
+        => Exceptions.RemoveAll((SyntaxException e) => e is not null);
 
-    public void Add(ExceptionType type, string text, Span span) =>
-        _exceptions.Add(new SyntaxException(type, text, span));
+    public void Add(ExceptionType type, string text, Span span, ExceptionInfo? info = null)
+        => Exceptions.Add(new SyntaxException(type, text, span, info));
 }

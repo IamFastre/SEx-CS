@@ -1,4 +1,5 @@
-using SEx.Evaluator.Values;
+using SEx.Evaluate.Values;
+using SEx.Generic.Text;
 using SEx.Lex;
 
 namespace SEx.Semantics;
@@ -16,16 +17,23 @@ internal sealed class SemanticUnaryOperation : SemanticExpression
 {
     public override SemanticKind Kind => SemanticKind.UnaryOperation;
 
-    public UnaryOperationKind OperationKind { get; }
+    public Token              Operator      { get; }
     public SemanticExpression Operand       { get; }
 
+    public UnaryOperationKind OperationKind { get; }
+
+    public override Span Span { get; }
     // not final
     public override ValType Type => Operand.Type;
 
-    public SemanticUnaryOperation(UnaryOperationKind operationKind, SemanticExpression operand)
+    public SemanticUnaryOperation(Token @operator, SemanticExpression operand, UnaryOperationKind? kind = null)
     {
-        OperationKind = operationKind;
+        Operator      = @operator;
         Operand       = operand;
+
+        OperationKind = kind ?? GetOperationKind(@operator.Kind, operand.Type)!.Value;
+
+        Span = new Span(@operator.Span.Start, Operand.Span.End);
     }
 
     public static UnaryOperationKind? GetOperationKind(TokenKind kind, ValType operand)

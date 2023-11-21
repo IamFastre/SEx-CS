@@ -1,4 +1,4 @@
-namespace SEx.Generic;
+namespace SEx.Generic.Text;
 
 public class Position
 {
@@ -12,8 +12,6 @@ public class Position
         Column = column;
         Index  = index;
     }
-
-    public static readonly Position Template = new(0,0,0);
 
      public override string ToString()
      {

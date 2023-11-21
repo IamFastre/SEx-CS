@@ -3,17 +3,28 @@ namespace SEx.Generic.Constants;
 
 internal static class CONSTS
 {
-    public static readonly string NULL   = "null";
+    public const string NULL    = "null";
+    public const string UNKNOWN = "?";
 
-    public static readonly string TRUE   = "true";
-    public static readonly string FALSE  = "false";
+    public const string TRUE    = "true";
+    public const string FALSE   = "false";
 
-    public static readonly string IF     = "if";
-    public static readonly string ELSE   = "else";
-    public static readonly string WHILE  = "while";
+    public const string IF      = "if";
+    public const string ELSE    = "else";
+    public const string WHILE   = "while";
 
-    public static readonly string IMPORT = "import";
-    public static readonly string EXPORT = "export";
+    public const string IMPORT  = "import";
+    public const string EXPORT  = "export";
 
-    public static readonly string IN     = "in";
+    public const string IN      = "in";
+
+    public const string BOOLEAN = "bool";
+    public const string INTEGER = "int";
+    public const string FLOAT   = "float";
+    public const string CHAR    = "char";
+    public const string STRING  = "string";
+
+    public const string _VERSION_ = "0.0.1";
 }
+
+

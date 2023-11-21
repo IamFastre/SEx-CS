@@ -1,5 +1,5 @@
 using SEx.AST;
-using SEx.Generic;
+using SEx.Generic.Text;
 using SEx.Generic.Constants;
 
 namespace SEx.Lex;
@@ -12,6 +12,9 @@ public class Token : Node
     public new TokenKind Kind { get; }
     public new Span Span;
 
+    public Token(string value, TokenKind kind, Position pos)
+        : this(value, kind, new Span(pos)) {}
+
     public Token(string value, TokenKind kind, Span span)
     {
         Value = value;
@@ -19,7 +22,7 @@ public class Token : Node
         Span  = span;
     }
 
-    public static readonly Token Template = new(CONSTS.NULL, TokenKind.Null, Span.Template);
+    public static Token Unknown(Span? span = null) => new(CONSTS.UNKNOWN, TokenKind.Unknown, span ?? new Span());
 
      public override string ToString()
      {

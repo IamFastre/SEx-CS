@@ -1,36 +1,43 @@
 using SEx.AST;
 using SEx.Diagnose;
 using SEx.Parse;
-using SEx.Evaluator.Values;
 using SEx.Generic;
+using SEx.Namespaces;
+using SEx.Evaluate.Values;
+using SEx.Generic.Text;
 
 namespace SEx.Semantics;
 
 internal class Analyzer
 {
-    public Diagnostics Diagnostics { get; }
-    public SyntaxTree Tree { get; }
+    public Diagnostics        Diagnostics { get; }
+    public Scope              Scope       { get; }
+    public Expression         SimpleTree  { get; }
+    public SemanticExpression? Tree        { get; protected set; }
 
-    public Analyzer(Parser parser) : this(parser.Tree) {}
-    public Analyzer(SyntaxTree tree)
+    public Analyzer(Expression expr, Diagnostics? diagnostics = null, Scope? scope = null)
     {
-        Diagnostics = tree.Diagnostics;
-        Tree = tree;
+        SimpleTree  = expr;
+        Diagnostics = diagnostics ?? new();
+        Scope       = scope ?? new(Diagnostics);
     }
 
-    private void Except(string message, Span span, ExceptionType type = ExceptionType.TypeError)
+    private void Except(string message,
+                        Span span,
+                        ExceptionType type = ExceptionType.TypeError,
+                        ExceptionInfo? info = null)
+        => Diagnostics.Add(type, message, span, info ?? ExceptionInfo.Analyzer);
+
+    public SemanticExpression Analyze()
     {
-        Diagnostics.Add(
-            type,
-            message,
-            span
-        );
+        return Tree = BindExpression(SimpleTree);
     }
 
-    public SemanticExpression Analyze(Expression expr)
+    private SemanticExpression BindExpression(Expression expr)
     {
         switch (expr.Kind)
         {
+            case NodeKind.Unknown:
             case NodeKind.Null:
             case NodeKind.Boolean:
             case NodeKind.Integer:
@@ -39,98 +46,81 @@ internal class Analyzer
             case NodeKind.String:
                 return BindLiteral((Literal) expr);
 
+            case NodeKind.Name:
+                return BindName((Name) expr);
+
             case NodeKind.ParenExpression:
                 return BindParenExpression((ParenExpression) expr);
+
+            case NodeKind.UnaryOperation:
+                return BindUnaryExpression((UnaryExpression) expr);
 
             case NodeKind.BinaryOperation:
                 return BindBinaryExpression((BinaryExpression) expr);
 
-            case NodeKind.UnaryOperation:
-                return BindUnaryExpression((UnaryExpression) expr);
+            case NodeKind.AssignmentExpression:
+                return BindAssignExpression((AssignmentExpression) expr);
+
+            case NodeKind.CompoundAssignmentExpression:
+                return BindCompoundAssignExpression((CompoundAssignmentExpression) expr);
 
             default:
                 throw new Exception($"Unrecognized expression kind: {expr.Kind}");
         }
     }
 
-    private SemanticExpression BindLiteral(Literal literal)
+    private SemanticLiteral BindLiteral(Literal literal) => new(literal);
+
+    private SemanticName BindName(Name n)
     {
-        return new SemanticLiteral(literal);
+        return new(n, Scope.ResolveType(n));
     }
 
-    private SemanticExpression BindParenExpression(ParenExpression expr)
+    private SemanticParenExpression BindParenExpression(ParenExpression pe)
     {
-        throw new NotImplementedException();
+        var expr = pe.Expression is null ? null : BindExpression(pe.Expression);
+
+        return new(pe.OpenParen, expr, pe.CloseParen);
     }
 
     private SemanticExpression BindUnaryExpression(UnaryExpression uop)
     {
-        var operand = Analyze(uop.Operand);
+        var operand = BindExpression(uop.Operand);
         var opKind  = SemanticUnaryOperation.GetOperationKind(uop.Operator.Kind, operand.Type);
 
         if (opKind is null)
         {
-            Except($"Cannot perform unary operation '{uop.Operator.Value}' on type {operand.Type}", uop.Span!);
+            Except($"Cannot apply operator '{uop.Operator.Value}' on type '{operand.Type.str()}'", uop.Span);
             return operand;
         }
 
-        return new SemanticUnaryOperation(opKind.Value, operand);
+        return new SemanticUnaryOperation(uop.Operator, operand, opKind);
     }
 
     private SemanticExpression BindBinaryExpression(BinaryExpression biop)
     {
-        var left   = Analyze(biop.LHS);
-        var right  = Analyze(biop.RHS);
+        var left   = BindExpression(biop.LHS);
+        var right  = BindExpression(biop.RHS);
         var opKind = SemanticBinaryOperation.GetOperationKind(biop.Operator.Kind, left.Type, right.Type);
 
         if (opKind is null)
         {
-            Except($"Cannot perform unary operation '{biop.Operator.Value}' on types: {left.Type} and {right.Type}", biop.Span!);
-            return left;
+            Except($"Cannot apply operator '{biop.Operator.Value}' on types: '{left.Type.str()}' and '{right.Type.str()}'", biop.Span!);
+            return new SemanticFailedExpression(new[] { left, right });
         }
 
         return new SemanticBinaryOperation(left, opKind.Value, right);
     }
-}
 
-public enum SemanticKind
-{
-    Literal,
-    UnaryOperation,
-    BinaryOperation,
-}
-
-internal abstract class SemanticNode
-{
-    public abstract SemanticKind Kind { get; }
-
-    public static ValType ToValueKind(NodeKind kind) => kind switch
+    private SemanticAssignment BindAssignExpression(AssignmentExpression aexpr)
     {
-        NodeKind.Null    => ValType.Null,
-        NodeKind.Boolean => ValType.Boolean,
-        NodeKind.Integer => ValType.Integer,
-        NodeKind.Float   => ValType.Float,
-        NodeKind.Char    => ValType.Char,
-        NodeKind.String  => ValType.String,
+        var expr = BindExpression(aexpr.Expression);
+        return new(aexpr.Assignee, aexpr.Equal, expr);
+    }
 
-        _ => throw new Exception("Unknown literal kind"),
-    };
-}
-
-internal abstract class SemanticExpression : SemanticNode
-{
-    public abstract ValType Type { get; }
-}
-
-internal sealed class SemanticLiteral : SemanticExpression
-{
-    public override SemanticKind Kind => SemanticKind.Literal;
-    public object Value { get; }
-    public override ValType Type { get; }
-
-    public SemanticLiteral(Literal literal)
+    private SemanticAssignment BindCompoundAssignExpression(CompoundAssignmentExpression caexpr)
     {
-        Value = literal.Value;
-        Type  = ToValueKind(literal.Kind);
+        var expr = BindBinaryExpression(new BinaryExpression(caexpr.Assignee, caexpr.Operator, caexpr.Expression));
+        return new(caexpr.Assignee, caexpr.Operator, expr);
     }
 }
