@@ -72,4 +72,7 @@ internal class Scope
         Names["SEx"] = new StringValue("awesome!");
         Consts.Add("SEx");
     }
+
+    public void Flush()
+        => Names.Clear();
 }

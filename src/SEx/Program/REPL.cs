@@ -71,7 +71,10 @@ internal class REPL
 
     public static string[] commands =
     {
-        "DEBUG", "CLEAR", "TOKENS", "TREE", "TREELINE", "LOGTREE", "TYPE", "ESCAPED", "COLOR",
+        "DEBUG", "CLEAR",    "TOKENS",
+        "TREE",  "TREELINE", "LOGTREE",
+        "TYPE",  "ESCAPED",  "COLOR",
+        "EXIT",  "RESET",
     };
 
     public void Throw()
@@ -211,6 +214,13 @@ internal class REPL
 
             case "COLOR":
                 ToggleColor();
+                break;
+
+            case "RESET":
+                Scope.Flush();
+                Diagnostics.Flush();
+                Script.Clear();
+                Console.WriteLine("All flushed!");
                 break;
 
             case "EXIT":
