@@ -1,5 +1,0 @@
-{
-    "dotnet.defaultSolution": "SEx-C.sln",
-    "docwriter.style": "Auto-detect",
-    "python.analysis.typeCheckingMode": "off"
-}
