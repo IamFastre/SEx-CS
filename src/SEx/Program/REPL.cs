@@ -82,7 +82,8 @@ internal class REPL
         Diagnostics.Flush();
     }
 
-    public void PrintValue() => Console.WriteLine(TypeShown ? $"<{C.YELLOW2}{Value.Type.str()}{C.END}>: {ValueString}" : ValueString);
+    public void PrintValue()
+        => Console.WriteLine(TypeShown ? $"<{C.YELLOW2}{Value.Type.str()}{C.END}>: {ValueString}" : ValueString);
 
     public void Loop()
     {
@@ -127,7 +128,9 @@ internal class REPL
 
                 PrintDebugs();
                 Throw();
-                PrintValue();
+
+                if (!(Value.Type == ValType.Void)) 
+                    PrintValue();
 
                 Script.Clear();
             }
