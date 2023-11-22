@@ -31,7 +31,7 @@ internal sealed class UnknownValue : LiteralValue
     public override object Value => null!;
     public override ValType Type => ValType.Unknown;
 
-    public override string ToString() => C.GREEN2 + CONSTS.UNKNOWN + C.END;
+    public override string ToString() => C.RED2 + CONSTS.UNKNOWN + C.END;
 }
 
 internal sealed class NullValue : LiteralValue
@@ -39,7 +39,7 @@ internal sealed class NullValue : LiteralValue
     public override object Value => null!;
     public override ValType Type => ValType.Null;
 
-    public override string ToString() => C.GREEN2 + CONSTS.NULL + C.END;
+    public override string ToString() => C.RED2 + CONSTS.NULL + C.END;
 }
 
 internal sealed class BoolValue : LiteralValue
@@ -50,7 +50,7 @@ internal sealed class BoolValue : LiteralValue
 
     public BoolValue(bool value) => _value = value;
 
-    public override string ToString() => C.GREEN2 + (_value ? CONSTS.TRUE : CONSTS.FALSE) + C.END;
+    public override string ToString() => C.VIOLET + (_value ? CONSTS.TRUE : CONSTS.FALSE) + C.END;
 }
 
 internal sealed class IntegerValue : LiteralValue

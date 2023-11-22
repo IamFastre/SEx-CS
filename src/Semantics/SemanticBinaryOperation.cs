@@ -30,7 +30,7 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
         if (op is TokenKind.NullishCoalescing)
             return BinaryOperationKind.NullishCoalescence;
 
-        if ((left, right).Match(right, left))
+        if ((left, right).Match(right, left) || left is ValType.Null || right is ValType.Null)
         {
             if (op is TokenKind.IsEqual)
                 return BinaryOperationKind.Equality;

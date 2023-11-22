@@ -60,7 +60,9 @@ internal class SemanticBinaryOperator
     public static SemanticBinaryOperator? GetSemanticOperator(ValType left, BinaryOperationKind opKind, ValType right)
     {
         foreach (var op in operators)
-            if (op.LeftType.HasFlag(left) && op.Kind.HasFlag(opKind) && op.RightType.HasFlag(right))
+            if (op.LeftType.HasFlag(left)
+             && op.Kind.HasFlag(opKind)
+             && op.RightType.HasFlag(right))
                 return op;
 
         return null;

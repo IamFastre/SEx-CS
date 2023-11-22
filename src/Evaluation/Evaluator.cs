@@ -170,17 +170,12 @@ internal class Evaluator
 
             case BinaryOperationKind.Equality:
             case BinaryOperationKind.Inequality:
-                if (left.Value is null && right.Value is null)
-                    _bool = kind == BinaryOperationKind.Equality;
-                else
-                    _bool =
-                          kind == BinaryOperationKind.Equality
-                        ? left.Value!.Equals(right.Value)
-
-                        : kind == BinaryOperationKind.Inequality
-                        ? (!left.Value!.Equals(right.Value))
-
-                        : throw new Exception("This shouldn't occur");
+                _bool =
+                      kind == BinaryOperationKind.Equality
+                    ?  Equals(left.Value, right.Value)
+                    : kind == BinaryOperationKind.Inequality
+                    ? !Equals(left.Value, right.Value)
+                    : throw new Exception("This shouldn't occur");
 
                 return new BoolValue(_bool);
 
