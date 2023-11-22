@@ -3,17 +3,17 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-public sealed class Name : Expression
+internal sealed class Name : Expression
 {
     public Token  Token { get; }
     public string Value { get; }
 
-    public Name(Token token, NodeKind kind)
+    public Name(Token token)
     {
         Token = token;
         Value = token.Value;
         Span  = Token.Span;
-        Kind  = kind;
+        Kind  = NodeKind.Name;
     }
 
     public sealed override string ToString() => $"<{C.YELLOW2}{Kind}{C.END}: {C.GREEN2}{Value}{C.END}>";

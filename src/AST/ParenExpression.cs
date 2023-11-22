@@ -4,7 +4,7 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-public sealed class ParenExpression : Expression
+internal sealed class ParenExpression : Expression
 {
     public Token OpenParen;
     public Expression? Expression;

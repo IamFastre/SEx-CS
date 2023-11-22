@@ -4,7 +4,7 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-public sealed class Literal : Expression
+internal sealed class Literal : Expression
 {
     public Token  Token { get; }
     public string Value { get; }

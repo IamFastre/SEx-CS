@@ -39,6 +39,9 @@ internal class Evaluator
                 case SemanticKind.ExpressionStatement:
                     return EvaluateExpressionStatement((SemanticExpressionStatement) stmt);
 
+                case SemanticKind.DeclarationStatement:
+                    return EvaluateDeclarationStatement((SemanticDeclarationStatement) stmt);
+
                 case SemanticKind.BlockStatement:
                     return EvaluateBlockStatement((SemanticBlockStatement) stmt);
         }
@@ -51,6 +54,14 @@ internal class Evaluator
         foreach (var statement in stmt.Body)
             EvaluateStatement(statement);
 
+        return VoidValue.Template;
+    }
+
+    private LiteralValue EvaluateDeclarationStatement(SemanticDeclarationStatement stmt)
+    {
+        var value = stmt.Expression is null ? new NullValue() : EvaluateExpression(stmt.Expression);
+        if (stmt.Name.Value.Length > 0)
+            Scope.Declare(stmt, value);
         return VoidValue.Template;
     }
 
@@ -300,7 +311,7 @@ internal class Evaluator
         else
             Scope.Assign(node.Assignee, val);
 
-        return Scope.Resolve(node.Assignee);
+        return Scope.TryResolve(node.Assignee.Value);
     }
 
     private LiteralValue EvaluateFailedExpression(SemanticFailedExpression fe)

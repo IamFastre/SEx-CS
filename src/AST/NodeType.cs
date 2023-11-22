@@ -16,6 +16,7 @@ public enum NodeKind
     Name,
 
     ExpressionStatement,
+    DeclarationStatement,
     BlockStatement,
 
     AssignmentExpression,

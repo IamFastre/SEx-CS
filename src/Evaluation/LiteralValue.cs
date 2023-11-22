@@ -82,7 +82,9 @@ internal sealed class FloatValue : LiteralValue
     public override string ToString()
     {
         var str = _value.ToString().Replace('E', 'e');
-        return C.YELLOW2 + (str.Contains('.') ? str : str.Replace("e", ".0e")) + C.END;
+        if (!str.Contains('.')) str += ".0";
+
+        return C.YELLOW2 + str + "f" + C.END;
     }
 }
 

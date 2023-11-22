@@ -3,10 +3,11 @@ using SEx.AST;
 using SEx.Diagnose;
 using SEx.Generic.Constants;
 using SEx.Generic.Text;
+using System.Runtime.CompilerServices;
 
 namespace SEx.Parse;
 
-public class Parser
+internal class Parser
 {
     public List<Token> Tokens      { get; }
     public Diagnostics Diagnostics { get; }
@@ -54,7 +55,15 @@ public class Parser
         message ??= EOF ? "Expression not expected to end yet" : $"Unexpected \"{Current.Value}\"";
         Except(message, info: !EOF ? ExceptionInfo.Parser : ExceptionInfo.ReParser);
 
-        return new Token(CONSTS.NULL, kind, Current.Span);
+        return new Token(CONSTS.VOID, kind, Current.Span);
+    }
+
+    private Token? Optional(TokenKind kind)
+    {
+        if (Current.Kind == kind)
+            return Eat();
+        
+        return null;
     }
 
     private Expression? GetPrimary()
@@ -83,7 +92,7 @@ public class Parser
                 return new Literal(Eat(), NodeKind.String);
 
             case TokenKind.Identifier:
-                return new Name(Eat(), NodeKind.Name);
+                return new Name(Eat());
 
             case TokenKind.OpenParenthesis:
                 return GetParenthesized();
@@ -184,6 +193,18 @@ public class Parser
     private ExpressionStatement GetExpressionStatement()
         => new(GetExpression() ?? Literal.Unknown(Tokens[^1].Span));
 
+    private DeclarationStatement GetDeclarationStatement()
+    {
+        var hash = Eat();
+        var isConst = Current.Kind == TokenKind.Asterisk;
+        if (isConst) Eat();
+
+        var name = Expect(TokenKind.Identifier, "Expected a name to declare");
+        var expr = Optional(TokenKind.Equal) is not null ? GetExpression() : null;
+
+        return new(hash, new(name), expr, isConst);
+    }
+
     private BlockStatement GetBlockStatement()
     {
         List<Statement> block = new();
@@ -204,8 +225,11 @@ public class Parser
         {
             case TokenKind.OpenCurlyBracket:
                 return GetBlockStatement();
+            case TokenKind.Hash:
+                return GetDeclarationStatement();
             default:
                 return GetExpressionStatement();
         }
     }
+
 }

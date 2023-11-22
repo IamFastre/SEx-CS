@@ -5,6 +5,7 @@ internal static class CONSTS
 {
     public const string NULL    = "null";
     public const string UNKNOWN = "?";
+    public const string VOID    = "";
 
     public const string TRUE    = "true";
     public const string FALSE   = "false";

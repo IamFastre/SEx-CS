@@ -4,7 +4,7 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-public sealed class UnaryExpression : Expression
+internal sealed class UnaryExpression : Expression
 {
     public Token Operator;
     public Expression Operand;

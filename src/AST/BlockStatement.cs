@@ -3,7 +3,7 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-public sealed class BlockStatement : Statement
+internal sealed class BlockStatement : Statement
 {
     public Token OpenBrace   { get; }
     public Statement[] Body { get; }

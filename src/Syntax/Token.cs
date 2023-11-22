@@ -6,7 +6,7 @@ namespace SEx.Lex;
 
 // The Token class represents a token in a programming language,
 // storing its value, type, and position in the source code
-public class Token : Node
+internal class Token : Node
 {
     public string Value = "";
     public new TokenKind Kind { get; }
@@ -38,7 +38,7 @@ public class Token : Node
     public string Full => $"{this} at {Span}";
 }
 
-public static class TokenExtension
+internal static class TokenExtension
 {
     public static string ValueStrings(this Token[] tokens)
     {

@@ -18,6 +18,7 @@ internal enum ValType
     Number  = Integer | Float,
     Numable = Number  | Char,
     Any     = Null | Boolean | Integer | Float | Char | String,
+    Nones   = Void | Unknown | Null,
 }
 
 internal static class ValTypeExtension

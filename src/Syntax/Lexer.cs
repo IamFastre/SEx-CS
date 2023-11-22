@@ -1,10 +1,9 @@
 using SEx.Diagnose;
-using SEx.Generic;
 using SEx.Generic.Constants;
 using SEx.Generic.Text;
 
 namespace SEx.Lex;
-public class Lexer
+internal class Lexer
 {
     public List<Token> Tokens      { get; }
     public Diagnostics Diagnostics { get; }
@@ -167,6 +166,8 @@ public class Lexer
                 return FabricateToken(TokenKind.Semicolon);
             case '$':
                 return FabricateToken(TokenKind.DollarSign);
+            case '#':
+                return FabricateToken(TokenKind.Hash);
             case '?':
                 return FabricateToken(TokenKind.QuestionMark);
 

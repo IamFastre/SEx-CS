@@ -20,7 +20,7 @@ internal class AssignmentExpression : Expression
         Kind = NodeKind.AssignmentExpression;
     }
 
-    public override string ToString() => $"<Assignment: {Assignee} => {Expression}>";
+    public override string ToString() => $"<{C.BLUE2}Assignment: {C.GREEN2}{Assignee} {C.BLUE2}=>{C.END} {Expression}{C.END}>";
     public override IEnumerable<Node> GetChildren()
     {
         yield return Assignee;

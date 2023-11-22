@@ -3,7 +3,7 @@ using SEx.Generic.Constants;
 
 namespace SEx.AST;
 
-public sealed class ExpressionStatement : Statement
+internal sealed class ExpressionStatement : Statement
 {
     public Expression Expression { get; }
 

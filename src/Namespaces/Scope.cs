@@ -35,15 +35,18 @@ internal class Scope
                        ExceptionInfo? info = null)
         => Diagnostics.Add(type, message, span, info ?? ExceptionInfo.Scope);
 
-    public bool Contains(string value)      => Names.ContainsKey(value);
-    public bool Contains(Name name)         => Names.ContainsKey(name.Value);
-    public bool Contains(SemanticName name) => Names.ContainsKey(name.Value);
+    public bool Contains(string value)      => Names.ContainsKey(value) || Parent?.Contains(value) is not null or false;
+    public bool Contains(Name name)         => Names.ContainsKey(name.Value) || Parent?.Contains(name) is not null or false;
+    public bool Contains(SemanticName name) => Names.ContainsKey(name.Value) || Parent?.Contains(name) is not null or false;
 
     public void Assign(Name name, LiteralValue value)
     {
         Types.Remove(name.Value);
 
-        if (Consts.Contains(name.Value))
+        if (!Contains(name))
+            Except($"Name '{name.Value}' was not declared to assign to", name.Span);
+
+        else if (Consts.Contains(name.Value))
             Except($"Can't reassign to constant '{name.Value}'", name.Span);
 
         else if (Contains(name.Value) && Names[name.Value].Type != value.Type && Names[name.Value].Type != ValType.Null)
@@ -67,13 +70,37 @@ internal class Scope
         return UnknownValue.Template;
     }
 
-    public ValType ResolveType(Name name)
-        => Contains(name.Value)
-         ? Names[name.Value].Type
-         : Types.ContainsKey(name.Value)
-         ? Types[name.Value]
-         : ValType.Unknown;
+    public LiteralValue TryResolve(string value)
+    {
+        if (Contains(value))
+            return Names[value];
+        
+        if (Parent is not null)
+            return Parent.TryResolve(value);
 
+        return UnknownValue.Template;
+    }
+
+
+    public ValType ResolveType(Name name)
+    {
+        if (Contains(name))
+            return this[name].Type;
+
+        if (Types.ContainsKey(name.Value))
+            return Types[name.Value];
+
+        if (Parent is not null)
+        {
+            if (Parent.Contains(name))
+                return Parent[name].Type;
+            
+            if (Parent.Types.ContainsKey(name.Value))
+                return Parent.Types[name.Value];
+        }
+
+        return ValType.Unknown;
+    }
 
     public void DefineDefaults()
     {
@@ -83,4 +110,35 @@ internal class Scope
 
     public void Flush()
         => Names.Clear();
+
+    internal void Declare(SemanticDeclarationStatement dec, LiteralValue value)
+    {
+        Types.Remove(dec.Name.Value);
+
+        if (dec.IsConstant && dec.Expression is null)
+        {
+            if (Contains(dec.Name))
+            {
+                if (!Consts.Contains(dec.Name.Value))
+                    Consts.Add(dec.Name.Value);
+                return;
+            }
+            else
+            {
+                Except($"No value was given to constant '{dec.Name.Value}'", dec.Span);
+                return;
+            }
+        }
+
+        if (Contains(dec.Name))
+        {
+            Except($"Name '{dec.Name.Value}' is already declared", dec.Span);
+            return;
+        }
+
+        if (dec.IsConstant)
+            Consts.Add(dec.Name.Value);
+
+        Names[dec.Name.Value] = value;
+    }
 }

@@ -38,6 +38,9 @@ internal class Analyzer
             case NodeKind.ExpressionStatement:
                 return BindExpressionStatement((ExpressionStatement) stmt);
 
+            case NodeKind.DeclarationStatement:
+                return BindDeclarationStatement((DeclarationStatement) stmt);
+
             case NodeKind.BlockStatement:
                 return BindBlockStatement((BlockStatement) stmt);
 
@@ -54,6 +57,12 @@ internal class Analyzer
             statements.Add(BindStatement(statement));
 
         return new(stmt.OpenBrace, statements.ToArray(), stmt.CloseBrace);
+    }
+
+    private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement stmt)
+    {
+        var expr = stmt.Expression is not null ? BindExpression(stmt.Expression) : null;
+        return new(stmt, expr);
     }
 
     private SemanticExpressionStatement BindExpressionStatement(ExpressionStatement stmt)
