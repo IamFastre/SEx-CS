@@ -1,6 +1,6 @@
 using SEx.AST;
 using SEx.Diagnose;
-using SEx.Namespaces;
+using SEx.Scoping;
 using SEx.Evaluate.Values;
 using SEx.Generic.Text;
 

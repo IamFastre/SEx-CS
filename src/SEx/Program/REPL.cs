@@ -7,7 +7,7 @@ using SEx.Parse;
 using SEx.Generic.Logic;
 using SEx.Semantics;
 using SEx.Evaluate.Values;
-using SEx.Namespaces;
+using SEx.Scoping;
 using SEx.Generic.Constants;
 
 namespace SEx.Program;

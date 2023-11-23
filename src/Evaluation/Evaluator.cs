@@ -3,7 +3,7 @@ using SEx.Evaluate.Values;
 using SEx.Generic.Constants;
 using SEx.Generic.Logic;
 using SEx.Generic.Text;
-using SEx.Namespaces;
+using SEx.Scoping;
 using SEx.Semantics;
 
 namespace SEx.Evaluate;

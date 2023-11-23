@@ -4,7 +4,7 @@ using SEx.Evaluate.Values;
 using SEx.Generic.Text;
 using SEx.Semantics;
 
-namespace SEx.Namespaces;
+namespace SEx.Scoping;
 
 internal class Scope
 {
