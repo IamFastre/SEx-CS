@@ -111,7 +111,7 @@ internal class Parser
         var closeParen = Expect(TokenKind.CloseParenthesis, $"'(' was never closed");
 
         if (expression is null)
-            Except($"Expression expected before close parenthesis");
+            Except($"Expression expected before close parenthesis", info:ExceptionInfo.Parser);
 
         return new ParenExpression(openParen, expression, closeParen);
     }

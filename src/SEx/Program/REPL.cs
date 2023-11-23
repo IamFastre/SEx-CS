@@ -118,8 +118,11 @@ internal class REPL
                 var parser    = new Parser(lexer);
                 SimpleTree    = parser.Parse();
 
-                if (Diagnostics.Exceptions.RemoveAll((SyntaxException e) => e.Info.ReReadLine) > 0)
+                if (Diagnostics.Exceptions.Any((SyntaxException e) => e.Info.ReReadLine))
+                {
+                    Diagnostics.Flush();
                     continue;
+                }
 
                 PrintDebugs();
 

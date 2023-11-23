@@ -33,6 +33,12 @@ internal static class ValTypeExtension
         return left.HasFlag(Ns.L) && right.Value.HasFlag(Ns.R);
     }
 
+    public static bool Known(this (ValType L, ValType R) Ns)
+        => Ns.L.Known() && Ns.R.Known();
+
+    public static bool Known(this ValType type)
+        => type is not ValType.Unknown or ValType.Void; 
+
     public static string str(this ValType type) => type switch
     {
         ValType.Unknown => CONSTS.UNKNOWN,

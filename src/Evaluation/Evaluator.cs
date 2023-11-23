@@ -119,7 +119,7 @@ internal class Evaluator
     }
 
     private LiteralValue EvaluateParenExpression(SemanticParenExpression expr)
-        => expr.Expression is null ? new NullValue() : EvaluateExpression(expr.Expression);
+        => expr.Expression is null ? UnknownValue.Template : EvaluateExpression(expr.Expression);
 
     private LiteralValue EvaluateName(SemanticName name)
         => Scope[name];
