@@ -247,7 +247,7 @@ internal class Evaluator
             
                     : throw new Exception("This shouldn't occur");
 
-                if (double.IsInteger(_double))
+                if (double.IsInteger(_double) || double.IsInfinity(_double) || double.IsNaN(_double))
                     return new IntegerValue(_double);
                 else
                     return new FloatValue(_double);

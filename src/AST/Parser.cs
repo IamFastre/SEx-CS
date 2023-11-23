@@ -62,7 +62,7 @@ internal class Parser
     {
         if (Current.Kind == kind)
             return Eat();
-        
+
         return null;
     }
 
@@ -129,7 +129,7 @@ internal class Parser
             left = GetSecondary(unaryPrecedence);
             if (left is null)
             {
-                Except($"Expected an expression after operator '{uOp.Value}'", ExceptionType.SyntaxError, uOp.Span);
+                Except($"Expected an expression after operator '{uOp.Value}'", span:uOp.Span);
                 return null;
             }
             left = new UnaryExpression(uOp, left);
@@ -146,7 +146,7 @@ internal class Parser
 
             if (right is null)
             {
-                Except($"Expected an expression after operator '{binOp.Value}'", ExceptionType.SyntaxError, binOp.Span);
+                Except($"Expected an expression after operator '{binOp.Value}'", span:binOp.Span);
                 return null;
             }
 
@@ -168,13 +168,13 @@ internal class Parser
 
             if (left is not Name)
             {
-                Except($"Invalid left-hand side assignee", ExceptionType.SyntaxError, left!.Span, ExceptionInfo.Parser);
+                Except($"Invalid left-hand side assignee", span:left!.Span, info:ExceptionInfo.Parser);
                 return left;
             }
 
             if (expr is null)
             {
-                Except($"Expected an expression after equal", ExceptionType.SyntaxError, eq.Span);
+                Except($"Expected an expression after equal", span:eq.Span);
                 return null;
             }
 
@@ -195,12 +195,18 @@ internal class Parser
 
     private DeclarationStatement GetDeclarationStatement()
     {
+        Expression? expr = null;
         var hash = Eat();
         var isConst = Current.Kind == TokenKind.Asterisk;
         if (isConst) Eat();
 
         var name = Expect(TokenKind.Identifier, "Expected a name to declare");
-        var expr = Optional(TokenKind.Equal) is not null ? GetExpression() : null;
+        if (Optional(TokenKind.Equal)?.Kind == TokenKind.Equal)
+        {
+            expr = GetExpression();
+            if (expr is null)
+                Except($"Expected an expression after equal", span:new(hash.Span, Current.Span));
+        }
 
         return new(hash, new(name), expr, isConst);
     }

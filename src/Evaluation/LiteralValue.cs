@@ -62,7 +62,7 @@ internal sealed class IntegerValue : LiteralValue
 
     public IntegerValue(double value)
     {
-        if (!double.IsInteger(value))
+        if (!(double.IsInteger(value) || double.IsInfinity(value)|| double.IsNaN(value)))
             throw new Exception("Value given is not int");
         _value = value;
     }

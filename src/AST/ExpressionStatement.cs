@@ -16,7 +16,7 @@ internal sealed class ExpressionStatement : Statement
 
     public static ExpressionStatement Empty(Span span) => new(Literal.Unknown(span));
 
-    public override string ToString() => $"<{C.BLUE2}ExpressionStatement{C.GREEN2}[{Expression}]{C.END}>";
+    public override string ToString() => $"<{C.BLUE2}ExpressionStatement{C.GREEN2}[{C.END}{Expression}{C.GREEN2}]{C.END}>";
     public override IEnumerable<Node> GetChildren()
     {
         yield return Expression;

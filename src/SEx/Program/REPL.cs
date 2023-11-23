@@ -26,11 +26,12 @@ internal class REPL
     private string ValueString => UnescapedShown ? Value.ToString().Unescape() : Value.ToString();
     private string Text        => Script.ToString();
 
-    public readonly string   Name      = "<stdin>";
-    public readonly string   PInputChv = $"{C.GREEN2}<+> {C.END}";
-    public readonly string   SInputChv = $"{C.BLUE2 }... {C.END}";
+    public static string Name      => "<stdin>";
+    public static string PInputChv => $"{C.GREEN2}<+> {C.END}";
+    public static string SInputChv => $"{C.BLUE2 }... {C.END}";
     public readonly string[] Args;
 
+    public const char Prefix = '.';
 
     public REPL(string[] args)
     {
@@ -169,7 +170,10 @@ internal class REPL
         }
     }
 
-    private bool IsCommand() => Line.Trim().Length > 1 && commands.Contains(Line.Trim()[1..].Trim());
+    private bool IsCommand()
+        => Line.Trim().Length > 1
+        && Line.Trim()[0] == Prefix
+        && commands.Contains(Line.Trim()[1..]);
 
     private void ParseCommand()
     {
@@ -277,10 +281,10 @@ internal class REPL
     private void ToggleColor()
     {
         IsMonochrome = !IsMonochrome;
-        Console.WriteLine($"Show colors set to: {!IsMonochrome}");
         if (IsMonochrome)
             C.ToMono();
         else
             C.ToPoly();
+        Console.WriteLine($"Show {C.RED2}c{C.YELLOW}o{C.YELLOW2}l{C.GREEN}o{C.BLUE}r{C.VIOLET}s{C.END} set to: {!IsMonochrome}");
     }
 }
