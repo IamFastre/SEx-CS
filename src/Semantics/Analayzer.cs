@@ -8,12 +8,12 @@ namespace SEx.Semantics;
 
 internal class Analyzer
 {
-    public Diagnostics         Diagnostics { get; }
-    public Scope               Scope       { get; }
-    public Statement           SimpleTree  { get; }
-    public SemanticStatement?  Tree        { get; protected set; }
+    public Diagnostics                Diagnostics { get; }
+    public Scope                      Scope       { get; }
+    public ProgramStatement           SimpleTree  { get; }
+    public SemanticProgramStatement?  Tree        { get; protected set; }
 
-    public Analyzer(Statement stmt, Diagnostics? diagnostics = null, Scope? scope = null)
+    public Analyzer(ProgramStatement stmt, Diagnostics? diagnostics = null, Scope? scope = null)
     {
         SimpleTree  = stmt;
         Diagnostics = diagnostics ?? new();
@@ -28,7 +28,17 @@ internal class Analyzer
 
     public SemanticStatement Analyze()
     {
-        return Tree = BindStatement(SimpleTree);
+        return Tree = BindProgram(SimpleTree);
+    }
+
+    private SemanticProgramStatement BindProgram(ProgramStatement stmt)
+    {
+        List<SemanticStatement> statements = new();
+
+        foreach (var statement in stmt.Body)
+            statements.Add(BindStatement(statement));
+
+        return new(statements.ToArray());
     }
 
     private SemanticStatement BindStatement(Statement stmt)

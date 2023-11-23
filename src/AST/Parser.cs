@@ -3,15 +3,14 @@ using SEx.AST;
 using SEx.Diagnose;
 using SEx.Generic.Constants;
 using SEx.Generic.Text;
-using System.Runtime.CompilerServices;
 
 namespace SEx.Parse;
 
 internal class Parser
 {
-    public List<Token> Tokens      { get; }
-    public Diagnostics Diagnostics { get; }
-    public Statement?  Tree        { get; protected set; }
+    public List<Token>       Tokens      { get; }
+    public Diagnostics       Diagnostics { get; }
+    public ProgramStatement? Tree        { get; protected set; }
 
     private int Index;
     public readonly Source Source;
@@ -31,8 +30,14 @@ internal class Parser
                 Tokens.Add(tk);
     }
 
-    public Statement Parse()
-        => Tree = GetStatement() ?? ExpressionStatement.Empty(Tokens[^1].Span);
+    public ProgramStatement Parse()
+    {
+        var stmts = new List<Statement>();
+        while (!EOF)
+            stmts.Add(GetStatement() ?? ExpressionStatement.Empty(Tokens[^1].Span));
+
+        return Tree = new(stmts.ToArray());
+    }
 
     private Token Eat()
     {

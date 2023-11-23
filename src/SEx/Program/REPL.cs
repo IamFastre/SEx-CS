@@ -10,7 +10,7 @@ using SEx.Evaluate.Values;
 using SEx.Scoping;
 using SEx.Generic.Constants;
 
-namespace SEx.Program;
+namespace SEx.Main;
 
 internal class REPL
 {

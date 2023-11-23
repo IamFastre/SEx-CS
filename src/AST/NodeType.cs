@@ -15,6 +15,7 @@ public enum NodeKind
     String,
     Name,
 
+    ProgramStatement,
     ExpressionStatement,
     DeclarationStatement,
     BlockStatement,

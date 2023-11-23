@@ -3,6 +3,7 @@ namespace SEx.Semantics;
 public enum SemanticKind
 {
     Statement,
+    ProgramStatement,
     BlockStatement,
     DeclarationStatement,
     ExpressionStatement,

@@ -10,10 +10,10 @@ namespace SEx.Evaluate;
 
 internal class Evaluator
 {
-    public Scope              Scope        { get; }
-    public Diagnostics        Diagnostics  { get; }
-    public SemanticStatement  SemanticTree { get; }
-    public LiteralValue       Value        { get; protected set; }
+    public Scope                    Scope        { get; }
+    public Diagnostics              Diagnostics  { get; }
+    public SemanticProgramStatement SemanticTree { get; }
+    public LiteralValue             Value        { get; protected set; }
 
     public Evaluator(Analyzer analyzer)
     {
@@ -30,7 +30,16 @@ internal class Evaluator
         => Diagnostics.Add(type, message, span, info ?? ExceptionInfo.Evaluator);
 
     public LiteralValue Evaluate()
-        => Value = EvaluateStatement(SemanticTree);
+        => Value = EvaluateProgram(SemanticTree);
+
+    private LiteralValue EvaluateProgram(SemanticProgramStatement stmt)
+    {
+        LiteralValue lastValue = VoidValue.Template;
+        foreach (var statement in stmt.Body)
+            lastValue = EvaluateStatement(statement);
+
+        return lastValue;
+    }
 
     private LiteralValue EvaluateStatement(SemanticStatement stmt)
     {
