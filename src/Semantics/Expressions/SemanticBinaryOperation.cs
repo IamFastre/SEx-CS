@@ -32,7 +32,7 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
 
         if ((left, right).Known())
         {
-            if (op is TokenKind.IsEqual)
+            if (op is TokenKind.EqualEqual)
                 return BinaryOperationKind.Equality;
             if (op is TokenKind.NotEqual)
                 return BinaryOperationKind.Inequality;

@@ -118,7 +118,7 @@ internal class Lexer
                 return FabricateToken(TokenKind.NullishCoalescingEqual);
 
             case char when IsUpcoming("=="):
-                return FabricateToken(TokenKind.IsEqual);
+                return FabricateToken(TokenKind.EqualEqual);
             case char when IsUpcoming("!="):
                 return FabricateToken(TokenKind.NotEqual);
             case char when IsUpcoming(">="):

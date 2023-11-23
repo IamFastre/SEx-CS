@@ -37,7 +37,7 @@ public enum TokenKind
     XOR,
 
     __COMPARATIVE_START__,
-    IsEqual,
+    EqualEqual,
     NotEqual,
     Greater,
     Less,

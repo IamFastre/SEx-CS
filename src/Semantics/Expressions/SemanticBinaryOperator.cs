@@ -76,7 +76,7 @@ internal class SemanticBinaryOperator
     {
         new(TokenKind.NullishCoalescing, BinaryOperationKind.NullishCoalescence, ValType.Any),
 
-        new(TokenKind.IsEqual, BinaryOperationKind.Equality, ValType.Any, ValType.Boolean),
+        new(TokenKind.EqualEqual, BinaryOperationKind.Equality, ValType.Any, ValType.Boolean),
         new(TokenKind.NotEqual, BinaryOperationKind.Inequality, ValType.Any, ValType.Boolean),
 
 
