@@ -39,6 +39,8 @@ internal static class ValTypeExtension
     public static bool Known(this ValType type)
         => type is not ValType.Unknown or ValType.Void; 
 
+    public static string ToString(this ValType type) => type.str();
+
     public static string str(this ValType type) => type switch
     {
         ValType.Unknown => CONSTS.UNKNOWN,

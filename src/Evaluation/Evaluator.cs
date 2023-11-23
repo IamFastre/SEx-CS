@@ -68,7 +68,7 @@ internal class Evaluator
 
     private LiteralValue EvaluateDeclarationStatement(SemanticDeclarationStatement stmt)
     {
-        var value = stmt.Expression is null ? new NullValue() : EvaluateExpression(stmt.Expression);
+        var value = stmt.Expression is null ? UndefinedValue.New(stmt.NameType) : EvaluateExpression(stmt.Expression);
         if (stmt.Name.Value.Length > 0)
             Scope.Declare(stmt, value);
         return VoidValue.Template;
@@ -171,6 +171,29 @@ internal class Evaluator
 
         if (left.Type is ValType.Unknown || right.Type is ValType.Unknown)
             return UnknownValue.Template;
+
+        if (kind is not (BinaryOperationKind.Equality or BinaryOperationKind.Inequality or BinaryOperationKind.NullishCoalescence)
+        && (left is UndefinedValue || right is UndefinedValue))
+        {
+            string val = "";
+            ValType type = expr.Type;
+            Span span = expr.Span;
+            if (expr.Left is SemanticName L)
+            {
+                    val  = L.Value;
+                    type = L.Type;
+                    span = L.Span;
+            }
+            if (expr.Right is SemanticName R)
+            {
+                    val  = R.Value;
+                    type = R.Type;
+                    span = R.Span;
+            }
+
+            Except($"Name '{val}' (of type '{type.str()}') not assigned to yet", span);
+            return UnknownValue.Template;
+        }
 
         switch (kind)
         {

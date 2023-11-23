@@ -34,12 +34,20 @@ internal sealed class UnknownValue : LiteralValue
     public override string ToString() => C.RED2 + CONSTS.UNKNOWN + C.END;
 }
 
-internal sealed class NullValue : LiteralValue
+internal class NullValue : LiteralValue
 {
     public override object Value => null!;
     public override ValType Type => ValType.Null;
 
     public override string ToString() => C.RED2 + CONSTS.NULL + C.END;
+}
+
+internal sealed class UndefinedValue : NullValue
+{
+    private ValType _type;
+    public static UndefinedValue New(ValType type = ValType.Null) => new() {_type = type};
+
+    public override ValType Type => _type;
 }
 
 internal sealed class BoolValue : LiteralValue

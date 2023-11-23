@@ -21,6 +21,7 @@ public enum TokenKind
     // Identifier kinds
     Identifier,
     Keyword,
+    Type,
     InOperator,
     Null,
 

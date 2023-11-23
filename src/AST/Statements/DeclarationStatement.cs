@@ -5,19 +5,21 @@ namespace SEx.AST;
 
 internal sealed class DeclarationStatement : Statement
 {
-    public DeclarationStatement(Token hash, Name name, Expression? expression = null, bool isConst = false)
+    public DeclarationStatement(Token hash, Name name, Token? type = null, Expression? expression = null, bool isConst = false)
     {
         Hash       = hash;
         Name       = name;
+        Type       = type;
         Expression = expression;
         IsConstant = isConst;
 
         Kind = NodeKind.DeclarationStatement;
-        Span = new(hash.Span, expression?.Span ?? name.Span);
+        Span = new(hash.Span, expression?.Span ?? type?.Span ?? name.Span);
     }
 
     public Token       Hash       { get; }
     public Name        Name       { get; }
+    public Token?      Type       { get; }
     public Expression? Expression { get; }
     public bool        IsConstant { get; }
 

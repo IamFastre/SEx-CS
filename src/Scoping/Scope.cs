@@ -35,39 +35,17 @@ internal class Scope
                        ExceptionInfo? info = null)
         => Diagnostics.Add(type, message, span, info ?? ExceptionInfo.Scope);
 
-    public bool Contains(string value)      => Names.ContainsKey(value) || Parent?.Contains(value) is not null or false;
-    public bool Contains(Name name)         => Names.ContainsKey(name.Value) || Parent?.Contains(name) is not null or false;
-    public bool Contains(SemanticName name) => Names.ContainsKey(name.Value) || Parent?.Contains(name) is not null or false;
+    public bool Contains(string value)      => Names.ContainsKey(value)      || Parent?.Contains(value) is not null or false;
+    public bool Contains(Name name)         => Names.ContainsKey(name.Value) || Parent?.Contains(name)  is not null or false;
+    public bool Contains(SemanticName name) => Names.ContainsKey(name.Value) || Parent?.Contains(name)  is not null or false;
 
-    public void Assign(Name name, LiteralValue value)
+    public void Flush()
+        => Names.Clear();
+
+    public void DefineDefaults()
     {
-        Types.Remove(name.Value);
-
-        if (!Contains(name))
-            Except($"Name '{name.Value}' was not declared to assign to", name.Span);
-
-        else if (Consts.Contains(name.Value))
-            Except($"Can't reassign to constant '{name.Value}'", name.Span);
-
-        else if (Contains(name.Value) && Names[name.Value].Type != value.Type && Names[name.Value].Type != ValType.Null)
-            Except($"Can't assign type '{Names[name.Value].Type.str()}' to '{value.Type.str()}'", name.Span);
-
-        else
-            Names[name.Value] = value;
-    }
-
-    public LiteralValue Resolve(Name name)         => Resolve(name.Value, name.Span);
-    public LiteralValue Resolve(SemanticName name) => Resolve(name.Value, name.Span);
-    public LiteralValue Resolve(string value, Span span)
-    {
-        if (Contains(value))
-            return Names[value];
-        
-        if (Parent is not null)
-            return Parent.Resolve(value, span);
-
-        Except($"Name '{value}' is not defined", span);
-        return UnknownValue.Template;
+        Names["SEx"] = new StringValue("awesome!");
+        Consts.Add("SEx");
     }
 
     public LiteralValue TryResolve(string value)
@@ -80,7 +58,6 @@ internal class Scope
 
         return UnknownValue.Template;
     }
-
 
     public ValType ResolveType(Name name)
     {
@@ -102,14 +79,19 @@ internal class Scope
         return ValType.Unknown;
     }
 
-    public void DefineDefaults()
+    public LiteralValue Resolve(Name name)         => Resolve(name.Value, name.Span);
+    public LiteralValue Resolve(SemanticName name) => Resolve(name.Value, name.Span);
+    public LiteralValue Resolve(string value, Span span)
     {
-        Names["SEx"] = new StringValue("awesome!");
-        Consts.Add("SEx");
-    }
+        if (Contains(value))
+            return Names[value];
+        
+        if (Parent is not null)
+            return Parent.Resolve(value, span);
 
-    public void Flush()
-        => Names.Clear();
+        Except($"Name '{value}' is not defined", span);
+        return UnknownValue.Template;
+    }
 
     internal void Declare(SemanticDeclarationStatement dec, LiteralValue value)
     {
@@ -119,26 +101,41 @@ internal class Scope
         {
             if (Contains(dec.Name))
             {
+                if (dec.Type is not null)
+                        Except($"No need for added type '{dec.Type.Value}' in constant construction",
+                               dec.Type.Span,ExceptionType.SyntaxError);
+
                 if (!Consts.Contains(dec.Name.Value))
                     Consts.Add(dec.Name.Value);
-                return;
             }
             else
-            {
                 Except($"No value was given to constant '{dec.Name.Value}'", dec.Span);
-                return;
-            }
         }
-
-        if (Contains(dec.Name))
-        {
+        else if (Contains(dec.Name))
             Except($"Name '{dec.Name.Value}' is already declared", dec.Span);
-            return;
+        else
+        {
+            if (dec.IsConstant)
+                Consts.Add(dec.Name.Value);
+
+            Names[dec.Name.Value] = value;
         }
+    }
 
-        if (dec.IsConstant)
-            Consts.Add(dec.Name.Value);
+    public void Assign(Name name, LiteralValue value)
+    {
+        Types.Remove(name.Value);
 
-        Names[dec.Name.Value] = value;
+        if (!Contains(name))
+            Except($"Name '{name.Value}' was not declared to assign to", name.Span);
+
+        else if (Consts.Contains(name.Value))
+            Except($"Can't reassign to constant '{name.Value}'", name.Span);
+
+        else if (Contains(name.Value) && Names[name.Value].Type != value.Type && Names[name.Value].Type != ValType.Null)
+            Except($"Can't assign type '{Names[name.Value].Type.str()}' to '{value.Type.str()}'", name.Span);
+
+        else
+            Names[name.Value] = value;
     }
 }

@@ -52,7 +52,7 @@ internal class Parser
                         ExceptionInfo? info = null)
         => Diagnostics.Add(type, message, span ?? Current.Span, info ?? ExceptionInfo.ReParser);
 
-    private Token Expect(TokenKind kind, string? message = null)
+    private Token Expect(TokenKind kind, string? message = null, bool eatAnyway = false)
     {
         if (Current.Kind == kind)
             return Eat();
@@ -60,8 +60,14 @@ internal class Parser
         message ??= EOF ? "Expression not expected to end yet" : $"Unexpected \"{Current.Value}\"";
         Except(message, info: !EOF ? ExceptionInfo.Parser : ExceptionInfo.ReParser);
 
+        if (eatAnyway && !EOF)
+            Eat();
+
         return new Token(CONSTS.VOID, kind, Current.Span);
     }
+
+    private bool IsNextKind(TokenKind kind)
+        => Optional(kind)?.Kind == kind;
 
     private Token? Optional(TokenKind kind)
     {
@@ -201,19 +207,24 @@ internal class Parser
     private DeclarationStatement GetDeclarationStatement()
     {
         Expression? expr = null;
+        Token? type = null;
         var hash = Eat();
         var isConst = Current.Kind == TokenKind.Asterisk;
         if (isConst) Eat();
 
         var name = Expect(TokenKind.Identifier, "Expected a name to declare");
-        if (Optional(TokenKind.Equal)?.Kind == TokenKind.Equal)
+
+        if (IsNextKind(TokenKind.Colon))
+            type = Expect(TokenKind.Type, "Expected a type after colon", true);
+
+        if (IsNextKind(TokenKind.Equal))
         {
             expr = GetExpression();
             if (expr is null)
                 Except($"Expected an expression after equal", span:new(hash.Span, Current.Span));
         }
 
-        return new(hash, new(name), expr, isConst);
+        return new(hash, new(name), type, expr, isConst);
     }
 
     private BlockStatement GetBlockStatement()

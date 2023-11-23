@@ -15,6 +15,10 @@ public static class Checker
     public static readonly char[] ClsSQuotes = {'\'','›'};
 
     public static readonly string[] Booleans = { CONSTS.TRUE, CONSTS.FALSE };
+    public static readonly string[] Types    =
+    {
+        CONSTS.BOOLEAN, CONSTS.INTEGER, CONSTS.FLOAT, CONSTS.CHAR, CONSTS.STRING
+    };
     public static readonly string[] Keywords =
     {
         CONSTS.IF, CONSTS.ELSE ,CONSTS.WHILE ,CONSTS.WHILE ,CONSTS.IMPORT ,CONSTS.EXPORT

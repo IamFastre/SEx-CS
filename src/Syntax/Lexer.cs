@@ -221,6 +221,9 @@ internal class Lexer
             if (Checker.Booleans.Contains(value))
                 return FabricateToken(TokenKind.Boolean);
 
+            if (Checker.Types.Contains(value))
+                return FabricateToken(TokenKind.Type);
+
             if (Checker.Keywords.Contains(value))
                 return FabricateToken(TokenKind.Keyword);
 

@@ -72,7 +72,7 @@ internal class Analyzer
     private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement stmt)
     {
         var expr = stmt.Expression is not null ? BindExpression(stmt.Expression) : null;
-        return new(stmt, expr);
+        return new(stmt, stmt.Type, expr);
     }
 
     private SemanticExpressionStatement BindExpressionStatement(ExpressionStatement stmt)
@@ -117,17 +117,15 @@ internal class Analyzer
         }
     }
 
-    private SemanticLiteral BindLiteral(Literal literal) => new(literal);
+    private SemanticLiteral BindLiteral(Literal literal)
+        => new(literal);
 
     private SemanticName BindName(Name n)
-    {
-        return new(n, Scope.ResolveType(n));
-    }
+        => new(n, Scope.ResolveType(n));
 
     private SemanticParenExpression BindParenExpression(ParenExpression pe)
     {
         var expr = pe.Expression is null ? null : BindExpression(pe.Expression);
-
         return new(pe.OpenParen, expr, pe.CloseParen);
     }
 
