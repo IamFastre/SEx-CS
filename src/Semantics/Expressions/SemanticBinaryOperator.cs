@@ -30,6 +30,10 @@ internal enum BinaryOperationKind
     StringConcatenation,
     StringMultiplication,
     Inclusion,
+    Greater,
+    Less,
+    GreaterEqual,
+    LessEqual,
 }
 
 internal class SemanticBinaryOperator
@@ -82,6 +86,11 @@ internal class SemanticBinaryOperator
         new(TokenKind.AND, BinaryOperationKind.AND, ValType.Boolean),
         new(TokenKind.OR, BinaryOperationKind.OR, ValType.Boolean),
 
+
+        new(TokenKind.Greater, BinaryOperationKind.Greater, ValType.Number, ValType.Boolean),
+        new(TokenKind.Less, BinaryOperationKind.Less, ValType.Number, ValType.Boolean),
+        new(TokenKind.GreaterEqual, BinaryOperationKind.GreaterEqual, ValType.Number, ValType.Boolean),
+        new(TokenKind.LessEqual, BinaryOperationKind.LessEqual, ValType.Number, ValType.Boolean),
 
         new(TokenKind.AND, BinaryOperationKind.AND, ValType.Integer),
         new(TokenKind.OR, BinaryOperationKind.OR, ValType.Integer),

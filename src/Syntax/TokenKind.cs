@@ -22,7 +22,6 @@ public enum TokenKind
     Identifier,
     Keyword,
     Type,
-    InOperator,
     Null,
 
     // Operational kinds
@@ -36,8 +35,17 @@ public enum TokenKind
     AND,
     OR,
     XOR,
+
+    __COMPARATIVE_START__,
     IsEqual,
     NotEqual,
+    Greater,
+    Less,
+    GreaterEqual,
+    LessEqual,
+    InOperator,
+    __COMPARATIVE_END__,
+
     LogicalAND,
     LogicalOR,
     NullishCoalescing,
@@ -94,7 +102,6 @@ internal static class TokenKindExtension
     private static readonly TokenKind[] and = { TokenKind.AND, TokenKind.LogicalAND };
     private static readonly TokenKind[] additives = { TokenKind.Plus, TokenKind.Minus };
     private static readonly TokenKind[] multiplicatives = { TokenKind.Asterisk, TokenKind.ForwardSlash, TokenKind.Percent, TokenKind.Power };
-    private static readonly TokenKind[] comparatives = { TokenKind.IsEqual, TokenKind.NotEqual, TokenKind.InOperator };
     private static readonly TokenKind[] ignorables = { TokenKind.WhiteSpace, TokenKind.BigWhiteSpace, TokenKind.Comment, TokenKind.Unknown };
     private static readonly TokenKind[] eos = { TokenKind.Semicolon, TokenKind.EOF };
 
@@ -103,9 +110,13 @@ internal static class TokenKindExtension
     public static bool IsAND(this TokenKind kind)             => and.Contains(kind);
     public static bool IsAdditive(this TokenKind kind)        => additives.Contains(kind);
     public static bool IsMultiplicative(this TokenKind kind)  => multiplicatives.Contains(kind);
-    public static bool IsComparative(this TokenKind kind)     => comparatives.Contains(kind);
+
+    public static bool IsComparative(this TokenKind kind)     => TokenKind.__COMPARATIVE_START__ < kind
+                                                              && TokenKind.__COMPARATIVE_END__   > kind;
+
     public static bool IsAssignment(this TokenKind kind)      => TokenKind.__ASSIGNMENT_START__ < kind
                                                               && TokenKind.__ASSIGNMENT_END__   > kind;
+
     public static bool IsParserIgnorable(this TokenKind kind) => ignorables.Contains(kind);
     public static bool IsEOS(this TokenKind kind) => eos.Contains(kind);
 

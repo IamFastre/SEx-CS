@@ -121,6 +121,11 @@ internal class Lexer
                 return FabricateToken(TokenKind.IsEqual);
             case char when IsUpcoming("!="):
                 return FabricateToken(TokenKind.NotEqual);
+            case char when IsUpcoming(">="):
+                return FabricateToken(TokenKind.GreaterEqual);
+            case char when IsUpcoming("<="):
+                return FabricateToken(TokenKind.LessEqual);
+
             case char when IsUpcoming("**"):
                 return FabricateToken(TokenKind.Power);
             case char when IsUpcoming("++"):
@@ -156,6 +161,11 @@ internal class Lexer
             case '^':
                 return FabricateToken(TokenKind.XOR);
 
+            case '>':
+                return FabricateToken(TokenKind.Greater);
+            case '<':
+                return FabricateToken(TokenKind.Less);
+
             case '.' when !char.IsDigit(Peek()):
                 return FabricateToken(TokenKind.Dot);
             case ',':
@@ -185,13 +195,13 @@ internal class Lexer
                 return FabricateToken(TokenKind.CloseCurlyBracket);
         }
 
-        if (char.IsDigit(Current) || (Current == '.' && char.IsDigit(Peek())))
+        if (char.IsAsciiDigit(Current) || (Current == '.' && char.IsAsciiDigit(Peek())))
         {
             int dots() => value.Count(s => s == '.');
 
-            while (char.IsDigit(Peek()) || Peek() == '.' && !(dots() > 0))
+            while (char.IsAsciiDigit(Peek()) || Peek() == '.' && !(dots() > 0))
             {
-                if (Peek() == '.' && !char.IsDigit(Peek(2)))
+                if (Peek() == '.' && !char.IsAsciiDigit(Peek(2)))
                     break;
                 AddValue(-1);
             }

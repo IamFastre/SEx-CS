@@ -112,11 +112,11 @@ internal class REPL
             {
                 Script.Append(Line);
 
-                var lexer     = new Lexer(new(Text), Diagnostics);
-                Tokens        = lexer.Lex();
+                var lexer  = new Lexer(new(Text), Diagnostics);
+                Tokens     = lexer.Lex();
 
-                var parser    = new Parser(lexer);
-                SimpleTree    = parser.Parse();
+                var parser = new Parser(lexer);
+                SimpleTree = parser.Parse();
 
                 if (Diagnostics.Exceptions.Any((SyntaxException e) => e.Info.ReReadLine))
                 {

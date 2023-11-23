@@ -70,6 +70,15 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
                 return BinaryOperationKind.Modulo;
             if (op is TokenKind.Power)
                 return BinaryOperationKind.Power;
+
+            if (op is TokenKind.Greater)
+                return BinaryOperationKind.Greater;
+            if (op is TokenKind.Less)
+                return BinaryOperationKind.Less;
+            if (op is TokenKind.GreaterEqual)
+                return BinaryOperationKind.GreaterEqual;
+            if (op is TokenKind.LessEqual)
+                return BinaryOperationKind.LessEqual;
         }
 
 
