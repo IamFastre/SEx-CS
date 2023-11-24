@@ -239,12 +239,21 @@ internal class Evaluator
 
                 return new IntegerValue(_double);
 
+            case BinaryOperationKind.LAND:
+            case BinaryOperationKind.LOR:
             case BinaryOperationKind.Greater:
             case BinaryOperationKind.GreaterEqual:
             case BinaryOperationKind.Less:
             case BinaryOperationKind.LessEqual:
                 _bool =
-                      kind == BinaryOperationKind.Greater
+                      kind == BinaryOperationKind.LAND
+                    ? (bool) left.Value && (bool) right.Value
+
+                    : kind == BinaryOperationKind.LOR
+                    ? (bool) left.Value || (bool) right.Value
+
+
+                    :  kind == BinaryOperationKind.Greater
                     ? (double) left.Value > (double) right.Value
 
                     : kind == BinaryOperationKind.GreaterEqual
@@ -255,20 +264,6 @@ internal class Evaluator
 
                     : kind == BinaryOperationKind.LessEqual
                     ? (double) left.Value <= (double) right.Value
-
-                    : throw new Exception("This shouldn't occur");
-
-                return new BoolValue(_bool);
-
-            case BinaryOperationKind.LAND:
-            case BinaryOperationKind.LOR:
-                _bool =
-                      kind == BinaryOperationKind.LAND
-                    ? (bool) left.Value && (bool) right.Value
-
-                    : kind == BinaryOperationKind.LOR
-                    ? (bool) left.Value || (bool) right.Value
-
                     : throw new Exception("This shouldn't occur");
 
                 return new BoolValue(_bool);
