@@ -56,9 +56,13 @@ internal class Evaluator
 
                 case SemanticKind.IfStatement:
                     return EvaluateIfStatement((SemanticIfStatement) stmt);
-        }
 
-        throw new Exception($"Unexpected statement type {stmt?.Kind}");
+                case SemanticKind.WhileStatement:
+                    return EvaluateWhileStatement((SemanticWhileStatement) stmt);
+
+                default:
+                    throw new Exception($"Unexpected statement type {stmt?.Kind}");
+        }
     }
 
     private LiteralValue EvaluateIfStatement(SemanticIfStatement stmt)
@@ -76,7 +80,24 @@ internal class Evaluator
         }
 
         return value;
+    }
 
+    private LiteralValue EvaluateWhileStatement(SemanticWhileStatement stmt)
+    {
+        LiteralValue value = VoidValue.Template;
+        var conditionVal = EvaluateExpression(stmt.Condition);
+
+        if (conditionVal.Type == ValType.Boolean)
+        {
+            if ((bool) conditionVal.Value)
+                while ((bool) EvaluateExpression(stmt.Condition).Value)
+                    value = EvaluateStatement(stmt.Body);
+            else
+                if (stmt.ElseClause is not null)
+                    value = EvaluateStatement(stmt.ElseClause.Body);
+        }
+
+        return value;
     }
 
     private LiteralValue EvaluateBlockStatement(SemanticBlockStatement stmt)

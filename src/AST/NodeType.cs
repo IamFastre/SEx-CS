@@ -16,12 +16,14 @@ public enum NodeKind
     String,
     Name,
 
-    // Statements
+    // Statements & Their clauses
     ProgramStatement,
     ExpressionStatement,
     DeclarationStatement,
     BlockStatement,
+    // Conditional
     IfStatement,
+    WhileStatement,
     ElseClause,
 
     // Expressions

@@ -271,8 +271,8 @@ internal class Parser
     {
         var elseKeyword = Eat();
 
-        if (Current.Kind != TokenKind.If)
-            Expect(TokenKind.Colon, $"Expected a colon after if condition");
+        if (Current.Kind is not (TokenKind.If or TokenKind.While))
+            Expect(TokenKind.Colon, $"Expected a colon after 'else'");
 
         var statement   = GetStatement();
 
@@ -281,6 +281,28 @@ internal class Parser
                 Except("Expected an else statement");
 
         return new(elseKeyword, statement);
+    }
+
+    private WhileStatement GetWhileStatement()
+    {
+        ElseClause? elseClause = null;
+        var whileKeyword = Eat();
+        var condition    = GetExpression() ?? Literal.Unknown(Current.Span);
+
+        if (condition.Kind is NodeKind.Unknown)
+                Except($"Expected an expression after while keyword", span:whileKeyword.Span);
+
+        Expect(TokenKind.Colon, $"Expected a colon after while condition", span:whileKeyword.Span);
+        var statement = GetStatement();
+
+        if (statement is ExpressionStatement exprStmt)
+            if (exprStmt.Expression.Kind is NodeKind.Unknown)
+                Except("Expected a statement", span:whileKeyword.Span);
+
+        if (Current.Kind == TokenKind.Else)
+            elseClause = GetElseClause();
+
+        return new(whileKeyword, condition, statement, elseClause);
     }
 
     private IfStatement GetIfStatement()
@@ -315,6 +337,8 @@ internal class Parser
                 return GetBlockStatement();
             case TokenKind.If:
                 return GetIfStatement();
+            case TokenKind.While:
+                return GetWhileStatement();
             default:
                 return GetExpressionStatement();
         }

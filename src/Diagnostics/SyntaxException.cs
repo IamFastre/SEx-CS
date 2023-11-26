@@ -29,7 +29,6 @@ public class SyntaxException
     {
         if (line is not null)
         {
-            line = line.TrimEnd();
             if (C.UNDERLINE.Length > 0)
                 AutoUnderline();
             else

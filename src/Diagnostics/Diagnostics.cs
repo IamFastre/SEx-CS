@@ -14,7 +14,7 @@ public class Diagnostics
 
     public void Throw(Source source)
     {
-        foreach (var er in Exceptions)
-            er.Print(source.Name, source.Text);
+        foreach (var error in Exceptions)
+            error.Print(source.Name, source.Lines[error.Span.Start.Line - 1]);
     }
 }

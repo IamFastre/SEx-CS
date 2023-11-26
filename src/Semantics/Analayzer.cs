@@ -58,6 +58,9 @@ internal class Analyzer
             case NodeKind.IfStatement:
                 return BindIfStatement((IfStatement) stmt);
 
+            case NodeKind.WhileStatement:
+                return BindWhileStatement((WhileStatement) stmt);
+
             default:
                 throw new Exception($"Unrecognized statement kind: {stmt.Kind}");
         }
@@ -78,6 +81,23 @@ internal class Analyzer
             elseClause = BindElseClause(stmt.ElseClause);
 
         return new(stmt.If, condition, thenStmt, elseClause);
+    }
+
+    private SemanticWhileStatement BindWhileStatement(WhileStatement stmt)
+    {
+        SemanticElseClause? elseClause = null;
+
+        var condition = BindExpression(stmt.Condition);
+
+        if (condition.Type is not (ValType.Boolean or ValType.Unknown))
+            Except($"Condition is not of type '{CONSTS.BOOLEAN}'", condition.Span);
+
+        var thenStmt  = BindStatement(stmt.Body);
+
+        if (stmt.ElseClause is not null)
+            elseClause = BindElseClause(stmt.ElseClause);
+
+        return new(stmt.While, condition, thenStmt, elseClause);
     }
 
     private SemanticElseClause BindElseClause(ElseClause cls)
