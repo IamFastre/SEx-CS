@@ -1,4 +1,6 @@
 
+using SEx.Lex;
+
 namespace SEx.Generic.Constants;
 
 internal static class CONSTS
@@ -13,6 +15,7 @@ internal static class CONSTS
     public const string IF      = "if";
     public const string ELSE    = "else";
     public const string WHILE   = "while";
+    public const string FOR     = "for";
 
     public const string IMPORT  = "import";
     public const string EXPORT  = "export";

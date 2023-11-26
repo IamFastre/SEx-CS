@@ -6,17 +6,11 @@ namespace SEx.AST;
 
 internal abstract class Node
 {
-    public Span     Span { get; protected set; }
-    public NodeKind Kind { get; protected set; }
+    public abstract Span     Span { get; }
+    public abstract NodeKind Kind { get; }
 
     public abstract override string ToString();
     public abstract IEnumerable<Node> GetChildren();
-
-    public Node()
-    {
-        Kind = NodeKind.Bad;
-        Span = new();
-    }
 
     public void LogTree(string source = "")
     {
@@ -73,9 +67,9 @@ internal abstract class Node
                 writer.Write(indent + middle);
 
 
-            if (child is Token TK)
+            if (child is TokenNode TN)
             {
-                writer.WriteLine(leaf(TK.Kind.ToString(), TK.Value ?? ""));
+                writer.WriteLine(leaf(TN.Token.Kind.ToString(), TN.Value ?? ""));
                 continue;
             }
 
@@ -88,4 +82,5 @@ internal abstract class Node
 }
 
 internal abstract class Statement  : Node {}
+internal abstract class Clause     : Node {}
 internal abstract class Expression : Node {}

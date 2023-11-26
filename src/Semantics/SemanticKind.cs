@@ -2,11 +2,12 @@ namespace SEx.Semantics;
 
 public enum SemanticKind
 {
-    Statement,
     ProgramStatement,
     BlockStatement,
     DeclarationStatement,
     ExpressionStatement,
+    IfStatement,
+    ElseClause,
 
     Literal,
     Name,

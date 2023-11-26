@@ -15,16 +15,14 @@ internal enum UnaryOperationKind
 
 internal sealed class SemanticUnaryOperation : SemanticExpression
 {
-    public override SemanticKind Kind => SemanticKind.UnaryOperation;
-
     public Token              Operator      { get; }
     public SemanticExpression Operand       { get; }
 
     public UnaryOperationKind OperationKind { get; }
 
     public override Span Span { get; }
-    // not final
-    public override ValType Type => Operand.Type;
+    public override ValType Type      => Operand.Type;
+    public override SemanticKind Kind => SemanticKind.UnaryOperation;
 
     public SemanticUnaryOperation(Token @operator, SemanticExpression operand, UnaryOperationKind? kind = null)
     {

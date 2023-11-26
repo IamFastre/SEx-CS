@@ -110,7 +110,7 @@ internal class REPL
 
             else
             {
-                Script.Append(Line);
+                Script.Append(Line + ' ');
 
                 var lexer  = new Lexer(new(Text), Diagnostics);
                 Tokens     = lexer.Lex();

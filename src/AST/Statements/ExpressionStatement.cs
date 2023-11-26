@@ -5,13 +5,15 @@ namespace SEx.AST;
 
 internal sealed class ExpressionStatement : Statement
 {
-    public Expression Expression { get; }
+    public Expression Expression  { get; }
+
+    public override Span     Span { get; }
+    public override NodeKind Kind => NodeKind.ExpressionStatement;
 
     public ExpressionStatement(Expression expression)
     {
         Expression = expression;
         Span       = expression.Span;
-        Kind       = NodeKind.ExpressionStatement;
     }
 
     public static ExpressionStatement Empty(Span span) => new(Literal.Unknown(span));

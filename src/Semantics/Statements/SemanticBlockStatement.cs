@@ -18,6 +18,6 @@ internal sealed class SemanticBlockStatement : SemanticStatement
         Body       = statements;
         CloseBrace = closeBrace;
 
-        Span = Body.Length > 0 ? new(Body.First().Span, Body.Last().Span) : new();
+        Span =new(openBrace.Span, closeBrace.Span);
     }
 }

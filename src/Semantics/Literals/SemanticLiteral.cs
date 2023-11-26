@@ -6,10 +6,10 @@ namespace SEx.Semantics;
 
 internal sealed class SemanticLiteral : SemanticExpression
 {
-    public override SemanticKind Kind => SemanticKind.Literal;
-    public override ValType Type  { get; }
+    public string Value           { get; }
     public override Span    Span  { get; }
-    public string Value { get; }
+    public override ValType Type  { get; }
+    public override SemanticKind Kind => SemanticKind.Literal;
 
     public SemanticLiteral(Literal literal)
     {

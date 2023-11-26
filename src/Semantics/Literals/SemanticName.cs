@@ -6,10 +6,10 @@ namespace SEx.Semantics;
 
 internal class SemanticName : SemanticExpression
 {
-    public override SemanticKind Kind => SemanticKind.Name;
-    public override ValType Type  { get; }
+    public string Value           { get; }
     public override Span    Span  { get; }
-    public string Value { get; }
+    public override ValType Type  { get; }
+    public override SemanticKind Kind => SemanticKind.Name;
 
     public SemanticName(Name literal, ValType type)
     {

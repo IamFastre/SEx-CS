@@ -241,17 +241,55 @@ internal class Parser
         return new(openBrace, block.ToArray(), closeBrace);
     }
 
+    private ElseClause GetElseClause()
+    {
+        var elseKeyword = Eat();
+
+        Expect(TokenKind.Colon, $"Expected a colon after if condition");
+        var statement   = GetStatement();
+
+        if (statement is ExpressionStatement exprStmt)
+            if (exprStmt.Expression.Kind is NodeKind.Unknown)
+                Except("Expected an else statement");
+
+        return new(elseKeyword, statement);
+    }
+
+    private IfStatement GetIfStatement()
+    {
+        ElseClause? elseClause = null;
+        var ifKeyword = Eat();
+        var condition = GetExpression() ?? Literal.Unknown(Current.Span);
+
+        if (condition.Kind is NodeKind.Unknown)
+                Except($"Expected an expression after if keyword", span:ifKeyword.Span);
+
+        Expect(TokenKind.Colon, $"Expected a colon after if condition");
+        var statement = GetStatement();
+
+        if (statement is ExpressionStatement exprStmt)
+            if (exprStmt.Expression.Kind is NodeKind.Unknown)
+                Except("Expected an if statement");
+
+
+        if (Current.Kind == TokenKind.Else)
+            elseClause = GetElseClause();
+
+        return new(ifKeyword, condition, statement, elseClause);
+    }
+
     private Statement GetStatement()
     {
         switch (Current.Kind)
         {
-            case TokenKind.OpenCurlyBracket:
-                return GetBlockStatement();
             case TokenKind.Hash:
                 return GetDeclarationStatement();
+            case TokenKind.OpenCurlyBracket:
+                return GetBlockStatement();
+            case TokenKind.If:
+                return GetIfStatement();
             default:
                 return GetExpressionStatement();
         }
     }
-
 }

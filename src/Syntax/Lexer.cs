@@ -209,7 +209,6 @@ internal class Lexer
             if ("fF".Contains(Peek()))
                 AddValue(-1);
 
-
             var type =  dots() == 1 || "fF".Contains(value[^1]) ? TokenKind.Float : TokenKind.Integer;
             return FabricateToken(type);
         }
@@ -219,25 +218,7 @@ internal class Lexer
             while (char.IsLetterOrDigit(Peek()) || Peek() == '_')
                 AddValue(-1);
 
-            if (value == CONSTS.IN)
-                return FabricateToken(TokenKind.InOperator);
-
-            if (value == CONSTS.DELETE)
-                return FabricateToken(TokenKind.Delete);
-
-            if (value == CONSTS.NULL)
-                return FabricateToken(TokenKind.Null);
-
-            if (Checker.Booleans.Contains(value))
-                return FabricateToken(TokenKind.Boolean);
-
-            if (Checker.Types.Contains(value))
-                return FabricateToken(TokenKind.Type);
-
-            if (Checker.Keywords.Contains(value))
-                return FabricateToken(TokenKind.Keyword);
-
-            return FabricateToken(TokenKind.Identifier);
+            return FabricateToken(Checker.GetIdentifierKind(value));
         }
 
         if (Checker.OpnDQuotes.Contains(Current))

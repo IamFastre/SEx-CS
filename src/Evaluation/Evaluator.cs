@@ -53,9 +53,27 @@ internal class Evaluator
 
                 case SemanticKind.BlockStatement:
                     return EvaluateBlockStatement((SemanticBlockStatement) stmt);
+
+                case SemanticKind.IfStatement:
+                    return EvaluateIfStatement((SemanticIfStatement) stmt);
         }
 
         throw new Exception($"Unexpected statement type {stmt?.Kind}");
+    }
+
+    private LiteralValue EvaluateIfStatement(SemanticIfStatement stmt)
+    {
+        LiteralValue value = VoidValue.Template;
+        var conditionVal = EvaluateExpression(stmt.Condition);
+
+        if ((bool) conditionVal.Value)
+            value = EvaluateStatement(stmt.Then);
+        else
+            if (stmt.ElseClause is not null)
+                value = EvaluateStatement(stmt.ElseClause.Body);
+
+        return value;
+
     }
 
     private LiteralValue EvaluateBlockStatement(SemanticBlockStatement stmt)
@@ -77,8 +95,11 @@ internal class Evaluator
     private LiteralValue EvaluateExpressionStatement(SemanticExpressionStatement stmt)
         => EvaluateExpression(stmt.Expression);
 
-    private LiteralValue EvaluateExpression(SemanticExpression expr)
+    private LiteralValue EvaluateExpression(SemanticExpression? expr)
     {
+        if (expr is null)
+            return UnknownValue.Template;
+
         switch (expr.Kind)
             {
                 case SemanticKind.Literal:
@@ -128,7 +149,7 @@ internal class Evaluator
     }
 
     private LiteralValue EvaluateParenExpression(SemanticParenExpression expr)
-        => expr.Expression is null ? UnknownValue.Template : EvaluateExpression(expr.Expression);
+        => EvaluateExpression(expr.Expression);
 
     private LiteralValue EvaluateName(SemanticName name)
         => Scope[name];

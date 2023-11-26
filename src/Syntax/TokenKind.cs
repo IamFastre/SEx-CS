@@ -12,17 +12,21 @@ public enum TokenKind
     BigWhiteSpace,
 
     // Literal kinds
+    Null,
     Boolean,
     Integer,
     Float,
     Char,
     String,
-
-    // Identifier kinds
     Identifier,
+
+    // Keyword kinds
     Keyword,
     Type,
-    Null,
+    If,
+    Else,
+    While,
+    For,
 
     // Operational kinds
     Plus,

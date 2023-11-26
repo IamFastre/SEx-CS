@@ -6,8 +6,11 @@ namespace SEx.AST;
 
 internal sealed class Literal : Expression
 {
-    public Token  Token { get; }
-    public string Value { get; }
+    public override Span     Span { get; }
+    public override NodeKind Kind { get; }
+
+    public Token  Token           { get; }
+    public string Value           { get; }
 
     public Literal(Token token, NodeKind kind)
     {
@@ -22,6 +25,6 @@ internal sealed class Literal : Expression
 
     public sealed override IEnumerable<Node> GetChildren()
     {
-        yield return Token;
+        yield return Token.Node;
     }
 }

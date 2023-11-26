@@ -21,7 +21,7 @@ public static class Checker
     };
     public static readonly string[] Keywords =
     {
-        CONSTS.IF, CONSTS.ELSE ,CONSTS.WHILE ,CONSTS.WHILE ,CONSTS.IMPORT ,CONSTS.EXPORT
+        CONSTS.IMPORT ,CONSTS.EXPORT
     };
 
 
@@ -42,4 +42,22 @@ public static class Checker
 
         throw new Exception($"Char \"{C}\" seems to not having a pair.");
     }
+
+    public static TokenKind GetIdentifierKind(string value)
+    => value switch
+    {
+        CONSTS.IN     => TokenKind.InOperator,
+        CONSTS.DELETE => TokenKind.Delete,
+        CONSTS.NULL   => TokenKind.Null,
+        CONSTS.IF     => TokenKind.If,
+        CONSTS.ELSE   => TokenKind.Else,
+        CONSTS.WHILE  => TokenKind.While,
+        CONSTS.FOR    => TokenKind.For,
+
+        string when Booleans.Contains(value) => TokenKind.Boolean,
+        string when Types.Contains(value)    => TokenKind.Type,
+        string when Keywords.Contains(value) => TokenKind.Keyword,
+
+        _ => TokenKind.Identifier,
+    };
 }

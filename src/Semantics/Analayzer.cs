@@ -3,6 +3,7 @@ using SEx.Diagnose;
 using SEx.Scoping;
 using SEx.Evaluate.Values;
 using SEx.Generic.Text;
+using SEx.Generic.Constants;
 
 namespace SEx.Semantics;
 
@@ -54,9 +55,35 @@ internal class Analyzer
             case NodeKind.BlockStatement:
                 return BindBlockStatement((BlockStatement) stmt);
 
+            case NodeKind.IfStatement:
+                return BindIfStatement((IfStatement) stmt);
+
             default:
                 throw new Exception($"Unrecognized statement kind: {stmt.Kind}");
         }
+    }
+
+    private SemanticIfStatement BindIfStatement(IfStatement stmt)
+    {
+        SemanticElseClause? elseClause = null;
+
+        var condition = BindExpression(stmt.Condition);
+
+        if (condition.Type != ValType.Boolean)
+            Except($"Condition is not of type {CONSTS.BOOLEAN}", condition.Span);
+
+        var thenStmt  = BindStatement(stmt.Then);
+
+        if (stmt.ElseClause is not null)
+            elseClause = BindElseClause(stmt.ElseClause);
+
+        return new(stmt.If, condition, thenStmt, elseClause);
+    }
+
+    private SemanticElseClause BindElseClause(ElseClause cls)
+    {
+        var elseStmt = BindStatement(cls.Body);
+        return new(cls.Else, elseStmt);
     }
 
     private SemanticBlockStatement BindBlockStatement(BlockStatement stmt)

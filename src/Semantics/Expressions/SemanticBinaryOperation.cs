@@ -6,14 +6,13 @@ namespace SEx.Semantics;
 
 internal sealed class SemanticBinaryOperation : SemanticExpression
 {
-    public override SemanticKind Kind => SemanticKind.BinaryOperation;
-
     public SemanticExpression     Left     { get; }
     public SemanticBinaryOperator Operator { get; }
     public SemanticExpression     Right    { get; }
 
     public override ValType Type { get; }
     public override Span    Span { get; }
+    public override SemanticKind Kind => SemanticKind.BinaryOperation;
 
     public SemanticBinaryOperation(SemanticExpression left, BinaryOperationKind kind, SemanticExpression right)
     {

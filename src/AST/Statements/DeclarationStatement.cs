@@ -1,10 +1,20 @@
 using SEx.Generic.Constants;
+using SEx.Generic.Text;
 using SEx.Lex;
 
 namespace SEx.AST;
 
 internal sealed class DeclarationStatement : Statement
 {
+    public Token       Hash       { get; }
+    public Name        Name       { get; }
+    public Token?      Type       { get; }
+    public Expression? Expression { get; }
+    public bool        IsConstant { get; }
+
+    public override Span     Span { get; }
+    public override NodeKind Kind => NodeKind.DeclarationStatement;
+
     public DeclarationStatement(Token hash, Name name, Token? type = null, Expression? expression = null, bool isConst = false)
     {
         Hash       = hash;
@@ -13,20 +23,13 @@ internal sealed class DeclarationStatement : Statement
         Expression = expression;
         IsConstant = isConst;
 
-        Kind = NodeKind.DeclarationStatement;
-        Span = new(hash.Span, expression?.Span ?? type?.Span ?? name.Span);
+        Span       = new(hash.Span, expression?.Span ?? type?.Span ?? name.Span);
     }
-
-    public Token       Hash       { get; }
-    public Name        Name       { get; }
-    public Token?      Type       { get; }
-    public Expression? Expression { get; }
-    public bool        IsConstant { get; }
 
 
     public override IEnumerable<Node> GetChildren()
     {
-        yield return Hash;
+        yield return Hash.Node;
         yield return Name;
         if (Expression != null)
             yield return Expression;

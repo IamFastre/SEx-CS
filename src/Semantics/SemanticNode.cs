@@ -23,8 +23,8 @@ internal abstract class SemanticNode
     };
 }
 
-internal abstract class SemanticStatement : SemanticNode {}
-
+internal abstract class SemanticStatement  : SemanticNode {}
+internal abstract class SemanticClause     : SemanticNode {}
 internal abstract class SemanticExpression : SemanticNode
 {
     public abstract ValType Type { get; }
