@@ -132,6 +132,7 @@ internal class Parser
         Expression? left;
         var unaryPrecedence = Current.Kind.UnaryPrecedence();
 
+        // Get Unary
         if (unaryPrecedence == 0 || unaryPrecedence < parentPrecedence)
             left = GetPrimary();
         else
@@ -143,9 +144,10 @@ internal class Parser
                 Except($"Expected an expression after operator '{uOp.Value}'", span:uOp.Span);
                 return null;
             }
-            left = new UnaryExpression(uOp, left);
+            left = new UnaryOperation(uOp, left);
         }
 
+        // Get Binary
         while (true)
         {
             var binaryPrecedence = Current.Kind.BinaryPrecedence();
@@ -161,7 +163,31 @@ internal class Parser
                 return null;
             }
 
-            left = new BinaryExpression(left!, binOp, right);
+            left = new BinaryOperation(left!, binOp, right);
+        }
+
+        // Get Ternary
+        if (Current.Kind == TokenKind.QuestionMark && parentPrecedence == 0)
+        {
+            var mark      = Eat();
+
+            var trueExpr  = GetExpression();
+            if (trueExpr is null)
+            {
+                Except($"Expected an expression after '{mark.Value}'", span:mark.Span);
+                return null;
+            }
+
+            var colon     = Expect(TokenKind.Colon, $"Expected a colon after if true expression");
+
+            var falseExpr = GetExpression();
+            if (falseExpr is null)
+            {
+                Except($"Expected an expression after '{colon.Value}'", span:colon.Span);
+                return trueExpr;
+            }
+
+            return new TernaryOperation(left!, trueExpr, falseExpr);
         }
 
         return left;

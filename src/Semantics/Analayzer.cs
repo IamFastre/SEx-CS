@@ -128,10 +128,13 @@ internal class Analyzer
                 return BindParenExpression((ParenExpression) expr);
 
             case NodeKind.UnaryOperation:
-                return BindUnaryExpression((UnaryExpression) expr);
+                return BindUnaryOperation((UnaryOperation) expr);
 
             case NodeKind.BinaryOperation:
-                return BindBinaryExpression((BinaryExpression) expr);
+                return BindBinaryOperation((BinaryOperation) expr);
+
+            case NodeKind.TernaryOperation:
+                return BindTernaryOperation((TernaryOperation) expr);
 
             case NodeKind.AssignmentExpression:
                 return BindAssignExpression((AssignmentExpression) expr);
@@ -156,7 +159,7 @@ internal class Analyzer
         return new(pe.OpenParen, expr, pe.CloseParen);
     }
 
-    private SemanticExpression BindUnaryExpression(UnaryExpression uop)
+    private SemanticExpression BindUnaryOperation(UnaryOperation uop)
     {
         var operand = BindExpression(uop.Operand);
         var opKind  = SemanticUnaryOperation.GetOperationKind(uop.Operator.Kind, operand.Type);
@@ -170,7 +173,7 @@ internal class Analyzer
         return new SemanticUnaryOperation(uop.Operator, operand, opKind);
     }
 
-    private SemanticExpression BindBinaryExpression(BinaryExpression biop)
+    private SemanticExpression BindBinaryOperation(BinaryOperation biop)
     {
         var left   = BindExpression(biop.LHS);
         var right  = BindExpression(biop.RHS);
@@ -178,11 +181,26 @@ internal class Analyzer
 
         if (opKind is null)
         {
-            Except($"Cannot apply operator '{biop.Operator.Value}' on types: '{left.Type.str()}' and '{right.Type.str()}'", biop.Span!);
+            Except($"Cannot apply operator '{biop.Operator.Value}' on types: '{left.Type.str()}' and '{right.Type.str()}'", biop.Span);
             return new SemanticFailedExpression(new[] { left, right });
         }
 
         return new SemanticBinaryOperation(left, opKind.Value, right);
+    }
+
+    private SemanticTernaryOperation BindTernaryOperation(TernaryOperation terop)
+    {
+        var condition = BindExpression(terop.Condition);
+        var trueExpr  = BindExpression(terop.TrueExpression);
+        var falseExpr = BindExpression(terop.FalseExpression);
+
+        if (condition.Type is not ValType.Boolean)
+            Except($"Condition is not of type '{CONSTS.BOOLEAN}'", terop.Condition.Span);
+
+        if (trueExpr.Type != falseExpr.Type)
+            Except($"Types '{trueExpr.Type.str()}' and '{falseExpr.Type.str()}' don't match in ternary operation", terop.Span);
+
+        return new SemanticTernaryOperation(condition, trueExpr, falseExpr);
     }
 
     private SemanticAssignment BindAssignExpression(AssignmentExpression aexpr)
@@ -194,7 +212,7 @@ internal class Analyzer
 
     private SemanticAssignment BindCompoundAssignExpression(CompoundAssignmentExpression caexpr)
     {
-        var expr = BindBinaryExpression(new(caexpr.Assignee, caexpr.Operator, caexpr.Expression));
+        var expr = BindBinaryOperation(new(caexpr.Assignee, caexpr.Operator, caexpr.Expression));
         return new(caexpr.Assignee, caexpr.Operator, expr);
     }
 }

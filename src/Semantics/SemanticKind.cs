@@ -13,9 +13,10 @@ public enum SemanticKind
     Name,
 
     AssignExpression,
+    ParenExpression,
     UnaryOperation,
     BinaryOperation,
-    ParenExpression,
+    TernaryOperation,
 
     FailedExpression,
 }

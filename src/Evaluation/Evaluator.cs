@@ -138,6 +138,9 @@ internal class Evaluator
                 case SemanticKind.BinaryOperation:
                     return EvaluateBinaryOperation((SemanticBinaryOperation) expr);
 
+                case SemanticKind.TernaryOperation:
+                    return EvaluateTernaryOperation((SemanticTernaryOperation) expr);
+
                 case SemanticKind.AssignExpression:
                     return EvaluateAssignExpression((SemanticAssignment) expr);
 
@@ -180,11 +183,11 @@ internal class Evaluator
         throw new Exception($"Unrecognized unary operation kind: {expr.OperationKind}");
     }
 
-    private LiteralValue EvaluateBinaryOperation(SemanticBinaryOperation expr)
+    private LiteralValue EvaluateBinaryOperation(SemanticBinaryOperation biop)
     {
-        var left   = EvaluateExpression(expr.Left);
-        var kind   = expr.Operator.Kind;
-        var right  = EvaluateExpression(expr.Right);
+        var left   = EvaluateExpression(biop.Left);
+        var kind   = biop.Operator.Kind;
+        var right  = EvaluateExpression(biop.Right);
 
         bool   _bool;
         double _double;
@@ -197,15 +200,15 @@ internal class Evaluator
         && (left is UndefinedValue || right is UndefinedValue))
         {
             string val = "";
-            ValType type = expr.Type;
-            Span span = expr.Span;
-            if (expr.Left is SemanticName L)
+            ValType type = biop.Type;
+            Span span = biop.Span;
+            if (biop.Left is SemanticName L)
             {
                     val  = L.Value;
                     type = L.Type;
                     span = L.Span;
             }
-            if (expr.Right is SemanticName R)
+            if (biop.Right is SemanticName R)
             {
                     val  = R.Value;
                     type = R.Type;
@@ -242,7 +245,7 @@ internal class Evaluator
                 }
                 catch
                 {
-                    Except($"Integer too big for bitwise {kind}", expr.Span, ExceptionType.OverflowError);
+                    Except($"Integer too big for bitwise {kind}", biop.Span, ExceptionType.OverflowError);
                     return UnknownValue.Template;
                 }
 
@@ -360,22 +363,34 @@ internal class Evaluator
                 return new BoolValue(_bool);
         }        
 
-        throw new Exception($"Unrecognized binary operation kind: {expr.Operator}");
+        throw new Exception($"Unrecognized binary operation kind: {biop.Operator}");
     }
 
-    private LiteralValue EvaluateAssignExpression(SemanticAssignment node)
+    private LiteralValue EvaluateTernaryOperation(SemanticTernaryOperation terop)
     {
-        var val = EvaluateExpression(node.Expression);
+        var conditionVal = EvaluateExpression(terop.Condition);
+        var trueExprVal  = EvaluateExpression(terop.TrueExpression);
+        var falseExprVal = EvaluateExpression(terop.FalseExpression);
+
+        if (conditionVal.Type == ValType.Boolean)
+            return (bool) conditionVal.Value ? trueExprVal : falseExprVal;
+
+        return UnknownValue.Template;
+    }
+
+    private LiteralValue EvaluateAssignExpression(SemanticAssignment aseprx)
+    {
+        var val = EvaluateExpression(aseprx.Expression);
 
         if (val.Type is ValType.Unknown)
         {
-            if (!Scope.Contains(node.Assignee))
+            if (!Scope.Contains(aseprx.Assignee))
                 return val;
         }
         else
-            Scope.Assign(node.Assignee, val);
+            Scope.Assign(aseprx.Assignee, val);
 
-        return Scope.TryResolve(node.Assignee.Value);
+        return Scope.TryResolve(aseprx.Assignee.Value);
     }
 
     private LiteralValue EvaluateFailedExpression(SemanticFailedExpression fe)

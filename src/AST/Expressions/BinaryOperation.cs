@@ -4,7 +4,7 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class BinaryExpression : Expression
+internal sealed class BinaryOperation : Expression
 {
     public Expression LHS         { get; }
     public Token      Operator    { get; }
@@ -13,7 +13,7 @@ internal sealed class BinaryExpression : Expression
     public override Span     Span { get; }
     public override NodeKind Kind => NodeKind.BinaryOperation;
 
-    public BinaryExpression(Expression leftHandExpr, Token binOperator, Expression rightHandExpr)
+    public BinaryOperation(Expression leftHandExpr, Token binOperator, Expression rightHandExpr)
     {
         LHS      = leftHandExpr;
         Operator = binOperator;

@@ -4,7 +4,7 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class UnaryExpression : Expression
+internal sealed class UnaryOperation : Expression
 {
     public Token      Operator { get; }
     public Expression Operand  { get; }
@@ -12,7 +12,7 @@ internal sealed class UnaryExpression : Expression
     public override Span     Span { get; }
     public override NodeKind Kind => NodeKind.UnaryOperation;
 
-    public UnaryExpression(Token @operator, Expression operand)
+    public UnaryOperation(Token @operator, Expression operand)
     {
         Operator = @operator;
         Operand  = operand;

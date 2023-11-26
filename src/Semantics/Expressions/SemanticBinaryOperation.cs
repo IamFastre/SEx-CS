@@ -20,8 +20,8 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
         Operator = SemanticBinaryOperator.GetSemanticOperator(left.Type, kind, right.Type)!;
         Right    = right;
 
-        Span = new Span(left.Span.Start, right.Span.End);
         Type = Operator.ResultType;
+        Span = new Span(left.Span.Start, right.Span.End);
     }
 
     public static BinaryOperationKind? GetOperationKind(TokenKind op, ValType left, ValType right)

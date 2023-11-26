@@ -30,4 +30,5 @@ public enum NodeKind
     ParenExpression,
     UnaryOperation,
     BinaryOperation,
+    TernaryOperation,
 }
