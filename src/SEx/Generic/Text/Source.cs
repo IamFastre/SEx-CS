@@ -3,17 +3,19 @@ namespace SEx.Generic.Text;
 
 public class Source
 {
+    public string   Name   { get; protected set; }
     public string   Text   { get; protected set; }
 
     public string[] Lines     => Text.Split('\n');
     public int      Length    => Text.Length;
     public int      LineCount => Lines.Length;
 
-    public Source(string[] lines)
-        : this(string.Join(Environment.NewLine, lines)) { }
+    public Source(string name, string[] lines)
+        : this(name, string.Join(Environment.NewLine, lines)) { }
 
-    public Source(string text)
+    public Source(string name, string text)
     {
+        Name = name;
         Text  = text.Replace("\r", "");
     }
 

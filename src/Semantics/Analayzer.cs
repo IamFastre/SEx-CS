@@ -69,8 +69,8 @@ internal class Analyzer
 
         var condition = BindExpression(stmt.Condition);
 
-        if (condition.Type != ValType.Boolean)
-            Except($"Condition is not of type {CONSTS.BOOLEAN}", condition.Span);
+        if (condition.Type is not (ValType.Boolean or ValType.Unknown))
+            Except($"Condition is not of type '{CONSTS.BOOLEAN}'", condition.Span);
 
         var thenStmt  = BindStatement(stmt.Then);
 

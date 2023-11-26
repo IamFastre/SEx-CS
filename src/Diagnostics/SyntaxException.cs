@@ -28,31 +28,42 @@ public class SyntaxException
     public void Print(string name = "<unknown>", string? line = null)
     {
         if (line is not null)
+        {
+            line = line.TrimEnd();
             if (C.UNDERLINE.Length > 0)
                 AutoUnderline();
             else
                 ManualUnderline();
+        }
 
-        Console.WriteLine($"{C.RED}{Type}{C.END}: {C.RED2}{Text}{C.END}");
+        Console.WriteLine($"• {C.RED}{Type}{C.END}: {C.RED2}{Text}{C.END}");
 
         if (line is not null)
-            Console.WriteLine($"  {C.RED}×> {C.RED2}{C.DIM}{C.ITALIC}{line}{C.END}");
-        Console.WriteLine($"  {C.YELLOW2}at {C.YELLOW}{name}{C.YELLOW2}, <{Span}>{C.END}");
+            Console.WriteLine($"    {C.RED}×> {C.RED2}{C.DIM}{C.ITALIC}{line}{C.END}");
+        Console.WriteLine($"    {C.YELLOW2}at {C.YELLOW}{name}{C.YELLOW2}, <{Span}>{C.END}");
 
         void AutoUnderline()
         {
-            line = line.Insert(Span.Start.Column - 1, C.UNDERLINE)
-                       .Insert(Span.End.Column + C.UNDERLINE.Length, C.ENDULINE);
+            try
+            {
+                line = line.Insert(Span.Start.Column - 1, C.UNDERLINE)
+                           .Insert(Span.End.Column + C.UNDERLINE.Length, C.ENDULINE);
+            }
+            catch {}
         }
 
         void ManualUnderline()
         {
-            char[] _ = " ".Repeat(line.Length).ToArray();
+            try
+            {
+                char[] _ = " ".Repeat(line.Length).ToArray();
 
-            for (int i = Span.Start.Column - 1; i < Span.End.Column; i++)
-                _[i] = '^';
-            
-            line = line + "\n" + " ".Repeat(5) + new string(_);
+                for (int i = Span.Start.Column - 1; i < Span.End.Column; i++)
+                    _[i] = '^';
+
+                line = line + "\n" + " ".Repeat(5) + new string(_);
+            }
+            catch {}
         }
     }
 }

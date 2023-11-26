@@ -11,4 +11,10 @@ public class Diagnostics
 
     public void Add(ExceptionType type, string text, Span span, ExceptionInfo? info = null)
         => Exceptions.Add(new SyntaxException(type, text, span, info));
+
+    public void Throw(Source source)
+    {
+        foreach (var er in Exceptions)
+            er.Print(source.Name, source.Text);
+    }
 }

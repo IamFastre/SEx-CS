@@ -52,13 +52,13 @@ internal class Parser
                         ExceptionInfo? info = null)
         => Diagnostics.Add(type, message, span ?? Current.Span, info ?? ExceptionInfo.ReParser);
 
-    private Token Expect(TokenKind kind, string? message = null, bool eatAnyway = false)
+    private Token Expect(TokenKind kind, string? message = null, bool eatAnyway = false, bool reread = true, Span? span = null)
     {
         if (Current.Kind == kind)
             return Eat();
 
         message ??= EOF ? "Expression not expected to end yet" : $"Unexpected \"{Current.Value}\"";
-        Except(message, info: !EOF ? ExceptionInfo.Parser : ExceptionInfo.ReParser);
+        Except(message, span:span, info: !EOF || !reread ? ExceptionInfo.Parser : ExceptionInfo.ReParser);
 
         if (eatAnyway && !EOF)
             Eat();
@@ -271,7 +271,9 @@ internal class Parser
     {
         var elseKeyword = Eat();
 
-        Expect(TokenKind.Colon, $"Expected a colon after if condition");
+        if (Current.Kind != TokenKind.If)
+            Expect(TokenKind.Colon, $"Expected a colon after if condition");
+
         var statement   = GetStatement();
 
         if (statement is ExpressionStatement exprStmt)
@@ -290,13 +292,12 @@ internal class Parser
         if (condition.Kind is NodeKind.Unknown)
                 Except($"Expected an expression after if keyword", span:ifKeyword.Span);
 
-        Expect(TokenKind.Colon, $"Expected a colon after if condition");
+        Expect(TokenKind.Colon, $"Expected a colon after if condition", span:ifKeyword.Span);
         var statement = GetStatement();
 
         if (statement is ExpressionStatement exprStmt)
             if (exprStmt.Expression.Kind is NodeKind.Unknown)
-                Except("Expected an if statement");
-
+                Except("Expected a statement", span:ifKeyword.Span);
 
         if (Current.Kind == TokenKind.Else)
             elseClause = GetElseClause();

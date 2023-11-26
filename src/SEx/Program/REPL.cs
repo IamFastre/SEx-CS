@@ -9,6 +9,7 @@ using SEx.Semantics;
 using SEx.Evaluate.Values;
 using SEx.Scoping;
 using SEx.Generic.Constants;
+using SEx.Generic.Text;
 
 namespace SEx.Main;
 
@@ -25,6 +26,7 @@ internal class REPL
 
     private string ValueString => UnescapedShown ? Value.ToString().Unescape() : Value.ToString();
     private string Text        => Script.ToString();
+    private Source Source      => new(Name, Text);
 
     public static string Name      => "<stdin>";
     public static string PInputChv => $"{C.GREEN2}<+> {C.END}";
@@ -80,9 +82,7 @@ internal class REPL
 
     public void Throw()
     {
-        foreach (var er in Diagnostics.Exceptions)
-            er.Print(Name, Text);
-
+        Diagnostics.Throw(Source);
         Diagnostics.Flush();
     }
 
@@ -94,15 +94,16 @@ internal class REPL
         Console.WriteLine($"{C.BLUE2}SEx-{CONSTS._VERSION_} ({C.YELLOW2}{Environment.UserName} {C.BLUE2}on {C.RED2}{Environment.OSVersion.Platform}{C.BLUE2}){C.END}");
         Console.WriteLine($"{C.BLUE2}{C.DIM}{C.ITALIC}Type: {C.GREEN2}'help' {C.BLUE2}for more info.{C.END}");
 
+        bool NewInput() => Script.Length == 0;
         while (true)
         {
-            Console.Write(Script.Length == 0 ? PInputChv : SInputChv);
+            Console.Write(NewInput() ? PInputChv : SInputChv);
             Line = Console.ReadLine() ?? "";
 
             if (Line == "\u0018")
                 Environment.Exit(0);
 
-            else if (string.IsNullOrWhiteSpace(Line))
+            else if (NewInput() && string.IsNullOrWhiteSpace(Line))
                 continue;
 
             else if (IsCommand())
@@ -110,15 +111,16 @@ internal class REPL
 
             else
             {
-                Script.Append(Line + ' ');
+                Script.Append(Line + '\n');
 
-                var lexer  = new Lexer(new(Text), Diagnostics);
+                var lexer  = new Lexer(Source, Diagnostics);
                 Tokens     = lexer.Lex();
 
                 var parser = new Parser(lexer);
                 SimpleTree = parser.Parse();
 
-                if (Diagnostics.Exceptions.Any((SyntaxException e) => e.Info.ReReadLine))
+                if (Diagnostics.Exceptions.Any((SyntaxException e) => e.Info.ReReadLine)
+                &&  !string.IsNullOrWhiteSpace(Line))
                 {
                     Diagnostics.Flush();
                     continue;

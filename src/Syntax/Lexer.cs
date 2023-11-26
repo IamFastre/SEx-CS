@@ -19,7 +19,7 @@ internal class Lexer
     public Lexer(Source source, Diagnostics? diagnostics = null)
     {
         Source      = source;
-        Diagnostics = diagnostics ?? new Diagnostics();
+        Diagnostics = diagnostics ?? new();
         Tokens      = new();
     }
 

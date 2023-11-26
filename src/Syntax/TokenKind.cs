@@ -5,11 +5,13 @@ public enum TokenKind
 {
     // Special kinds
     EOF,
+    __IGNORABLE_START__,
     Unknown,
     Comment,
     NewLine,
     WhiteSpace,
     BigWhiteSpace,
+    __IGNORABLE_END__,
 
     // Literal kinds
     Null,
@@ -102,12 +104,11 @@ internal static class TokenKindExtension
 {
     // private static readonly TokenKind[]  = {  };
 
-    private static readonly TokenKind[] or = { TokenKind.OR, TokenKind.XOR, TokenKind.LogicalOR };
-    private static readonly TokenKind[] and = { TokenKind.AND, TokenKind.LogicalAND };
-    private static readonly TokenKind[] additives = { TokenKind.Plus, TokenKind.Minus };
+    private static readonly TokenKind[] or              = { TokenKind.OR, TokenKind.XOR, TokenKind.LogicalOR };
+    private static readonly TokenKind[] and             = { TokenKind.AND, TokenKind.LogicalAND };
+    private static readonly TokenKind[] additives       = { TokenKind.Plus, TokenKind.Minus };
     private static readonly TokenKind[] multiplicatives = { TokenKind.Asterisk, TokenKind.ForwardSlash, TokenKind.Percent, TokenKind.Power };
-    private static readonly TokenKind[] ignorables = { TokenKind.WhiteSpace, TokenKind.BigWhiteSpace, TokenKind.Comment, TokenKind.Unknown };
-    private static readonly TokenKind[] eos = { TokenKind.Semicolon, TokenKind.EOF };
+    private static readonly TokenKind[] eos             = { TokenKind.Semicolon, TokenKind.EOF };
 
     // public static bool Is (this TokenKind kind) => .Contains(kind);
     public static bool IsOR(this TokenKind kind)              => or.Contains(kind);
@@ -121,7 +122,9 @@ internal static class TokenKindExtension
     public static bool IsAssignment(this TokenKind kind)      => TokenKind.__ASSIGNMENT_START__ < kind
                                                               && TokenKind.__ASSIGNMENT_END__   > kind;
 
-    public static bool IsParserIgnorable(this TokenKind kind) => ignorables.Contains(kind);
+    public static bool IsParserIgnorable(this TokenKind kind) => TokenKind.__IGNORABLE_START__ < kind
+                                                              && TokenKind.__IGNORABLE_END__   > kind;
+
     public static bool IsEOS(this TokenKind kind) => eos.Contains(kind);
 
     public static int UnaryPrecedence(this TokenKind kind)

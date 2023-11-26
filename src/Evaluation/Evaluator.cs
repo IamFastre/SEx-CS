@@ -66,11 +66,14 @@ internal class Evaluator
         LiteralValue value = VoidValue.Template;
         var conditionVal = EvaluateExpression(stmt.Condition);
 
-        if ((bool) conditionVal.Value)
-            value = EvaluateStatement(stmt.Then);
-        else
-            if (stmt.ElseClause is not null)
-                value = EvaluateStatement(stmt.ElseClause.Body);
+        if (conditionVal.Type == ValType.Boolean)
+        {
+            if ((bool) conditionVal.Value)
+                value = EvaluateStatement(stmt.Then);
+            else
+                if (stmt.ElseClause is not null)
+                    value = EvaluateStatement(stmt.ElseClause.Body);
+        }
 
         return value;
 
@@ -78,10 +81,11 @@ internal class Evaluator
 
     private LiteralValue EvaluateBlockStatement(SemanticBlockStatement stmt)
     {
+        LiteralValue lastValue = VoidValue.Template;
         foreach (var statement in stmt.Body)
-            EvaluateStatement(statement);
+            lastValue = EvaluateStatement(statement);
 
-        return VoidValue.Template;
+        return lastValue;
     }
 
     private LiteralValue EvaluateDeclarationStatement(SemanticDeclarationStatement stmt)
