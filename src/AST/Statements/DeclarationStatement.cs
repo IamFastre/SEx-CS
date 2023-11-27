@@ -7,7 +7,7 @@ namespace SEx.AST;
 internal sealed class DeclarationStatement : Statement
 {
     public Token       Hash       { get; }
-    public Name        Name       { get; }
+    public NameLiteral        Name       { get; }
     public Token?      Type       { get; }
     public Expression? Expression { get; }
     public bool        IsConstant { get; }
@@ -15,7 +15,7 @@ internal sealed class DeclarationStatement : Statement
     public override Span     Span { get; }
     public override NodeKind Kind => NodeKind.DeclarationStatement;
 
-    public DeclarationStatement(Token hash, Name name, Token? type = null, Expression? expression = null, bool isConst = false)
+    public DeclarationStatement(Token hash, NameLiteral name, Token? type = null, Expression? expression = null, bool isConst = false)
     {
         Hash       = hash;
         Name       = name;

@@ -8,7 +8,7 @@ namespace SEx.Semantics;
 
 internal sealed class SemanticDeclarationStatement : SemanticStatement
 {
-    public Name                Name       { get; }
+    public NameLiteral                Name       { get; }
     public Token?              Type       { get; }
     public ValType             NameType   { get; }
     public bool                IsConstant { get; }
@@ -34,6 +34,7 @@ internal sealed class SemanticDeclarationStatement : SemanticStatement
         CONSTS.FLOAT   => ValType.Float,
         CONSTS.CHAR    => ValType.Char,
         CONSTS.STRING  => ValType.String,
+        CONSTS.RANGE   => ValType.Range,
 
         _ => ValType.Null,
     };

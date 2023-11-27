@@ -4,7 +4,7 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class Name : Expression
+internal sealed class NameLiteral : Expression
 {
     public Token  Token           { get; }
     public string Value           { get; }
@@ -12,7 +12,7 @@ internal sealed class Name : Expression
     public override Span     Span { get; }
     public override NodeKind Kind => NodeKind.Name;
 
-    public Name(Token token)
+    public NameLiteral(Token token)
     {
         Token = token;
         Value = token.Value;

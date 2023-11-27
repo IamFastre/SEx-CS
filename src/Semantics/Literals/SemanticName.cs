@@ -11,7 +11,7 @@ internal class SemanticName : SemanticExpression
     public override ValType Type  { get; }
     public override SemanticKind Kind => SemanticKind.Name;
 
-    public SemanticName(Name literal, ValType type)
+    public SemanticName(NameLiteral literal, ValType type)
     {
         Type  = type;
         Span  = literal.Span;

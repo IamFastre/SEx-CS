@@ -120,38 +120,21 @@ internal sealed class StringValue : LiteralValue
     public override string ToString() => $"{C.BLUE2}\"{_value.Escape()}\"{C.END}";
 }
 
-internal static class Converter
+internal sealed class RangeValue : LiteralValue
 {
-    public static IntegerValue ToInt(this LiteralValue val)
+    public override object Value => null!;
+    public override ValType Type => ValType.Range;
+
+    public IntegerValue Start { get; }
+    public IntegerValue End   { get; }
+    public IntegerValue Step  { get; }
+
+    public RangeValue(IntegerValue start, IntegerValue end, IntegerValue step)
     {
-        var value = val.Value;
-
-        return value switch
-        {
-            null       => new IntegerValue(0D),
-            bool   bol => new IntegerValue(bol ? 1D : 0D),
-            char   chr => new IntegerValue(chr),
-            double dbl => new IntegerValue(dbl),
-            string str => new IntegerValue(str.Length),
-
-            _ => throw new Exception("Unknown type to turn into int"),
-        };
+        Start = start;
+        End   = end;
+        Step  = step;
     }
 
-    public static FloatValue ToFloat(this LiteralValue val)
-    {
-        var value = val.Value;
-
-        return value switch
-        {
-            null       => new FloatValue(0D),
-            bool   bol => new FloatValue(bol ? 1D : 0D),
-            char   chr => new FloatValue(chr),
-            double dbl => new FloatValue(dbl),
-            string str => new FloatValue(str.Length),
-
-            _ => throw new Exception("Unknown type to turn into int"),
-        };
-    }
-
+    public override string ToString() => $"{Start}:{End}:{Step}";
 }

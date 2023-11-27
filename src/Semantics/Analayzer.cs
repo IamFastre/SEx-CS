@@ -70,11 +70,7 @@ internal class Analyzer
     {
         SemanticElseClause? elseClause = null;
 
-        var condition = BindExpression(stmt.Condition);
-
-        if (condition.Type is not (ValType.Boolean or ValType.Unknown))
-            Except($"Condition is not of type '{CONSTS.BOOLEAN}'", condition.Span);
-
+        var condition = BindExpression(stmt.Condition, ValType.Boolean | ValType.Unknown);
         var thenStmt  = BindStatement(stmt.Then);
 
         if (stmt.ElseClause is not null)
@@ -87,11 +83,7 @@ internal class Analyzer
     {
         SemanticElseClause? elseClause = null;
 
-        var condition = BindExpression(stmt.Condition);
-
-        if (condition.Type is not (ValType.Boolean or ValType.Unknown))
-            Except($"Condition is not of type '{CONSTS.BOOLEAN}'", condition.Span);
-
+        var condition = BindExpression(stmt.Condition, ValType.Boolean | ValType.Unknown);
         var thenStmt  = BindStatement(stmt.Body);
 
         if (stmt.ElseClause is not null)
@@ -128,6 +120,19 @@ internal class Analyzer
         return new(expr);
     }
 
+    private SemanticExpression BindExpression(Expression expr, ValType expected)
+    {
+        var val = BindExpression(expr);
+        if (!expected.HasFlag(val.Type))
+        {
+            if (expected.HasFlag(ValType.Unknown) && expected != ValType.Unknown)
+                expected -= ValType.Unknown;
+            Except($"Expected an expression of type '{expected.str()}'", expr.Span);
+        }
+        
+        return val;
+    }
+
     private SemanticExpression BindExpression(Expression expr)
     {
         switch (expr.Kind)
@@ -141,8 +146,11 @@ internal class Analyzer
             case NodeKind.String:
                 return BindLiteral((Literal) expr);
 
+            case NodeKind.Range:
+                return BindRange((RangeLiteral) expr);
+
             case NodeKind.Name:
-                return BindName((Name) expr);
+                return BindName((NameLiteral) expr);
 
             case NodeKind.ParenExpression:
                 return BindParenExpression((ParenExpression) expr);
@@ -170,7 +178,16 @@ internal class Analyzer
     private SemanticLiteral BindLiteral(Literal literal)
         => new(literal);
 
-    private SemanticName BindName(Name n)
+    private SemanticRange BindRange(RangeLiteral r)
+    {
+        var start = BindExpression(r.Start, ValType.Integer);
+        var end   = BindExpression(r.End, ValType.Integer);
+        var step  = r.Step is null ? null : BindExpression(r.Step, ValType.Integer);
+
+        return new(start, end, step);
+    }
+
+    private SemanticName BindName(NameLiteral n)
         => new(n, Scope.ResolveType(n));
 
     private SemanticParenExpression BindParenExpression(ParenExpression pe)
@@ -210,12 +227,9 @@ internal class Analyzer
 
     private SemanticTernaryOperation BindTernaryOperation(TernaryOperation terop)
     {
-        var condition = BindExpression(terop.Condition);
+        var condition = BindExpression(terop.Condition, ValType.Boolean);
         var trueExpr  = BindExpression(terop.TrueExpression);
         var falseExpr = BindExpression(terop.FalseExpression);
-
-        if (condition.Type is not ValType.Boolean)
-            Except($"Condition is not of type '{CONSTS.BOOLEAN}'", terop.Condition.Span);
 
         if (trueExpr.Type != falseExpr.Type)
             Except($"Types '{trueExpr.Type.str()}' and '{falseExpr.Type.str()}' don't match in ternary operation", terop.Span);

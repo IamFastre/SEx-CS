@@ -103,7 +103,7 @@ internal class Parser
                 return new Literal(Eat(), NodeKind.String);
 
             case TokenKind.Identifier:
-                return new Name(Eat());
+                return new NameLiteral(Eat());
 
             case TokenKind.OpenParenthesis:
                 return GetParenthesized();
@@ -142,7 +142,7 @@ internal class Parser
             if (left is null)
             {
                 Except($"Expected an expression after operator '{uOp.Value}'", span:uOp.Span);
-                return null;
+                return Literal.Unknown(uOp.Span);
             }
             left = new UnaryOperation(uOp, left);
         }
@@ -160,7 +160,7 @@ internal class Parser
             if (right is null)
             {
                 Except($"Expected an expression after operator '{binOp.Value}'", span:binOp.Span);
-                return null;
+                return Literal.Unknown(new(left!.Span, binOp.Span));
             }
 
             left = new BinaryOperation(left!, binOp, right);
@@ -175,7 +175,7 @@ internal class Parser
             if (trueExpr is null)
             {
                 Except($"Expected an expression after '{mark.Value}'", span:mark.Span);
-                return null;
+                return Literal.Unknown(left!.Span);
             }
 
             var colon     = Expect(TokenKind.Colon, $"Expected a colon after if true expression");
@@ -193,17 +193,41 @@ internal class Parser
         return left;
     }
 
+    private Expression? GetRange()
+    {
+        var start = GetSecondary();
+
+        if (Current.Kind == TokenKind.Colon && start is not null)
+        {
+            Expression? end, step = null;
+            var colon1 = Eat();
+            end = GetSecondary();
+
+            if (end is null)
+            {
+                Except("An end expression expected for range", span:colon1.Span);
+                return Literal.Unknown(new(start.Span, colon1.Span));
+            }
+
+            if (IsNextKind(TokenKind.Colon))
+                step = GetSecondary();
+            
+            start = new RangeLiteral(start, end, step);
+        }
+
+        return start;
+    }
 
     private Expression? GetAssignment()
     {
-        var left = GetSecondary();
+        var left = GetRange();
 
         if (Current.Kind.IsAssignment())
         {
             var eq   = Eat();
             var expr = GetExpression();
 
-            if (left is not Name)
+            if (left is not NameLiteral)
             {
                 Except($"Invalid left-hand side assignee", span:left!.Span, info:ExceptionInfo.Parser);
                 return left;
@@ -212,13 +236,13 @@ internal class Parser
             if (expr is null)
             {
                 Except($"Expected an expression after equal", span:eq.Span);
-                return null;
+                return Literal.Unknown(new(left!.Span, eq.Span));
             }
 
             if (eq.Kind == TokenKind.Equal)
-                return new AssignmentExpression((Name) left, eq, expr);
+                return new AssignmentExpression((NameLiteral) left, eq, expr);
 
-            return new CompoundAssignmentExpression((Name) left, eq, expr);
+            return new CompoundAssignmentExpression((NameLiteral) left, eq, expr);
         }
 
         return left;
@@ -243,11 +267,12 @@ internal class Parser
         if (IsNextKind(TokenKind.Colon))
             type = Expect(TokenKind.Type, "Expected a type after colon", true);
 
-        if (IsNextKind(TokenKind.Equal))
+        if (Current.Kind == TokenKind.Equal)
         {
+            var eq = Eat();
             expr = GetExpression();
             if (expr is null)
-                Except($"Expected an expression after equal", span:new(hash.Span, Current.Span));
+                Except($"Expected an expression after equal", span:eq.Span);
         }
 
         return new(hash, new(name), type, expr, isConst);

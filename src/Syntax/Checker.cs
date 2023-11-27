@@ -17,7 +17,7 @@ public static class Checker
     public static readonly string[] Booleans = { CONSTS.TRUE, CONSTS.FALSE };
     public static readonly string[] Types    =
     {
-        CONSTS.BOOLEAN, CONSTS.INTEGER, CONSTS.FLOAT, CONSTS.CHAR, CONSTS.STRING
+        CONSTS.BOOLEAN, CONSTS.INTEGER, CONSTS.FLOAT, CONSTS.CHAR, CONSTS.STRING, CONSTS.RANGE
     };
     public static readonly string[] Keywords =
     {

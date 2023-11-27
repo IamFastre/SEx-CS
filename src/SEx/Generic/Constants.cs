@@ -28,6 +28,7 @@ internal static class CONSTS
     public const string FLOAT   = "float";
     public const string CHAR    = "char";
     public const string STRING  = "string";
+    public const string RANGE   = "range";
 
     public const string _VERSION_ = "0.0.1";
 }

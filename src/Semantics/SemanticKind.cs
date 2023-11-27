@@ -14,6 +14,7 @@ public enum SemanticKind
 
     // Literals
     Literal,
+    Range,
     Name,
 
     // Expressions

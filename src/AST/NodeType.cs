@@ -14,6 +14,7 @@ public enum NodeKind
     Float,
     Char,
     String,
+    Range,
     Name,
 
     // Statements & Their clauses

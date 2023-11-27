@@ -5,20 +5,22 @@ namespace SEx.Evaluate.Values;
 [Flags]
 internal enum ValType
 {
-    Void    = 0,
-    Unknown = 1,
-    Null    = 2,
-    Boolean = 4,
-    Integer = 8,
-    Float   = 16,
-    Char    = 32,
-    String  = 64,
+    Void    = 1 << 0,
+    Unknown = 1 << 1,
+    Null    = 1 << 2,
+    Boolean = 1 << 3,
+    Integer = 1 << 4,
+    Float   = 1 << 5,
+    Char    = 1 << 6,
+    String  = 1 << 7,
+    Range   = 1 << 8,
 
     Whole   = Integer | Char,
     Number  = Integer | Float,
     Numable = Number  | Char,
-    Any     = Null | Boolean | Integer | Float | Char | String,
+    Any     = Null | Boolean | Integer | Float | Char | String | Range,
     Nones   = Void | Unknown | Null,
+    UAVT    = Void | Unknown, // Un-assignable value types
 }
 
 internal static class ValTypeExtension
@@ -43,6 +45,7 @@ internal static class ValTypeExtension
 
     public static string str(this ValType type) => type switch
     {
+        ValType.Void    => CONSTS.VOID,
         ValType.Unknown => CONSTS.UNKNOWN,
         ValType.Null    => CONSTS.NULL,
         ValType.Boolean => CONSTS.BOOLEAN,
@@ -50,6 +53,7 @@ internal static class ValTypeExtension
         ValType.Float   => CONSTS.FLOAT,
         ValType.Char    => CONSTS.CHAR,
         ValType.String  => CONSTS.STRING,
+        ValType.Range   => CONSTS.RANGE,
 
         _ => type.ToString()
     };

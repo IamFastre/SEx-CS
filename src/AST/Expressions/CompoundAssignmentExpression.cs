@@ -6,14 +6,14 @@ namespace SEx.AST;
 
 internal sealed class CompoundAssignmentExpression : Expression
 {
-    public Name       Assignee    { get; }
+    public NameLiteral       Assignee    { get; }
     public Token      Operator    { get; }
     public Expression Expression  { get; }
 
     public override Span     Span { get; }
     public override NodeKind Kind => NodeKind.CompoundAssignmentExpression;
 
-    public CompoundAssignmentExpression(Name name, Token equal, Expression expr)
+    public CompoundAssignmentExpression(NameLiteral name, Token equal, Expression expr)
     {
         Assignee   = name;
         Operator   = new(equal.Value, GetOperationKind(equal.Kind), equal.Span);

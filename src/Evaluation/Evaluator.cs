@@ -151,6 +151,9 @@ internal class Evaluator
 
                     break;
 
+                case SemanticKind.Range:
+                    return EvaluateRange((SemanticRange) expr);
+
                 case SemanticKind.Name:
                     return EvaluateName((SemanticName) expr);
 
@@ -178,6 +181,22 @@ internal class Evaluator
 
     private LiteralValue EvaluateParenExpression(SemanticParenExpression expr)
         => EvaluateExpression(expr.Expression);
+
+    private LiteralValue EvaluateRange(SemanticRange expr)
+    {
+        var start = EvaluateExpression(expr.Start);
+        var end   = EvaluateExpression(expr.End);
+        var step  = EvaluateExpression(expr.Step);
+
+        if ((start.Type is ValType.Integer)
+        &&  (end.Type   is ValType.Integer)
+        &&  (step.Type  is ValType.Integer))
+        {
+            return new RangeValue((IntegerValue) start, (IntegerValue) end, (IntegerValue) step);
+        }
+
+        return UnknownValue.Template;
+    }
 
     private LiteralValue EvaluateName(SemanticName name)
         => Scope[name];
