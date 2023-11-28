@@ -6,9 +6,9 @@ namespace SEx.AST;
 
 internal sealed class CompoundAssignmentExpression : Expression
 {
-    public NameLiteral       Assignee    { get; }
-    public Token      Operator    { get; }
-    public Expression Expression  { get; }
+    public NameLiteral Assignee    { get; }
+    public Token       Operator    { get; }
+    public Expression  Expression  { get; }
 
     public override Span     Span { get; }
     public override NodeKind Kind => NodeKind.CompoundAssignmentExpression;

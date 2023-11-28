@@ -117,14 +117,41 @@ internal class Parser
 
     private ParenExpression? GetParenthesized()
     {
-        var openParen = Eat();
-        var expression = Current.Kind != TokenKind.CloseParenthesis ? GetExpression() : null;
+        var openParen  = Eat();
+        var expression = Current.Kind != TokenKind.CloseParenthesis ? GetRange() : null;
         var closeParen = Expect(TokenKind.CloseParenthesis, $"'(' was never closed");
 
         if (expression is null)
-            Except($"Expression expected before close parenthesis", info:ExceptionInfo.Parser);
+            Except($"Expression expected before close parenthesis",
+                   span:new(openParen.Span, closeParen.Span),
+                   info:ExceptionInfo.Parser);
 
         return new ParenExpression(openParen, expression, closeParen);
+    }
+
+    private Expression? GetRange()
+    {
+        var start = GetExpression();
+
+        if (Current.Kind == TokenKind.Colon && start is not null)
+        {
+            Expression? end, step = null;
+            var colon1 = Eat();
+            end = GetExpression();
+
+            if (end is null)
+            {
+                Except("An end expression expected for range", span:colon1.Span);
+                return Literal.Unknown(new(start.Span, colon1.Span));
+            }
+
+            if (IsNextKind(TokenKind.Colon))
+                step = GetExpression();
+
+            start = new RangeLiteral(start, end, step);
+        }
+
+        return start;
     }
 
     private Expression? GetSecondary(int parentPrecedence = 0)
@@ -171,7 +198,7 @@ internal class Parser
         {
             var mark      = Eat();
 
-            var trueExpr  = GetExpression();
+            var trueExpr  = GetSecondary();
             if (trueExpr is null)
             {
                 Except($"Expected an expression after '{mark.Value}'", span:mark.Span);
@@ -180,7 +207,7 @@ internal class Parser
 
             var colon     = Expect(TokenKind.Colon, $"Expected a colon after if true expression");
 
-            var falseExpr = GetExpression();
+            var falseExpr = GetSecondary();
             if (falseExpr is null)
             {
                 Except($"Expected an expression after '{colon.Value}'", span:colon.Span);
@@ -193,34 +220,9 @@ internal class Parser
         return left;
     }
 
-    private Expression? GetRange()
-    {
-        var start = GetSecondary();
-
-        if (Current.Kind == TokenKind.Colon && start is not null)
-        {
-            Expression? end, step = null;
-            var colon1 = Eat();
-            end = GetSecondary();
-
-            if (end is null)
-            {
-                Except("An end expression expected for range", span:colon1.Span);
-                return Literal.Unknown(new(start.Span, colon1.Span));
-            }
-
-            if (IsNextKind(TokenKind.Colon))
-                step = GetSecondary();
-            
-            start = new RangeLiteral(start, end, step);
-        }
-
-        return start;
-    }
-
     private Expression? GetAssignment()
     {
-        var left = GetRange();
+        var left = GetSecondary();
 
         if (Current.Kind.IsAssignment())
         {

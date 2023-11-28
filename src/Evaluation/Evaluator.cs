@@ -111,7 +111,7 @@ internal class Evaluator
 
     private LiteralValue EvaluateDeclarationStatement(SemanticDeclarationStatement stmt)
     {
-        var value = stmt.Expression is null ? UndefinedValue.New(stmt.NameType) : EvaluateExpression(stmt.Expression);
+        var value = stmt.Expression is null ? UndefinedValue.New(stmt.TypeHint) : EvaluateExpression(stmt.Expression);
         if (stmt.Name.Value.Length > 0)
             Scope.Declare(stmt, value);
         return VoidValue.Template;
@@ -186,13 +186,15 @@ internal class Evaluator
     {
         var start = EvaluateExpression(expr.Start);
         var end   = EvaluateExpression(expr.End);
-        var step  = EvaluateExpression(expr.Step);
+        var step  = expr.Step is null
+                  ? new IntegerValue(1D)
+                  : EvaluateExpression(expr.Step);
 
-        if ((start.Type is ValType.Integer)
-        &&  (end.Type   is ValType.Integer)
-        &&  (step.Type  is ValType.Integer))
+        if (ValType.Number.HasFlag(start.Type)
+        &&  ValType.Number.HasFlag(end.Type)
+        &&  ValType.Number.HasFlag(step.Type))
         {
-            return new RangeValue((IntegerValue) start, (IntegerValue) end, (IntegerValue) step);
+            return new RangeValue((NumberValue) start, (NumberValue) end, (NumberValue) step);
         }
 
         return UnknownValue.Template;
@@ -370,6 +372,12 @@ internal class Evaluator
 
             //=====================================================================//
 
+            case BinaryOperationKind.RangeInclusion:
+                _bool = ((RangeValue) right).Contains(left);
+                return new BoolValue(_bool);
+
+            //=====================================================================//
+
             case BinaryOperationKind.CharAddition:
             case BinaryOperationKind.CharSubtraction:
                 var aos = (double) (left.Type == ValType.Integer ? left.Value : right.Value);
@@ -402,8 +410,8 @@ internal class Evaluator
 
                 return new StringValue(_string);
 
-            case BinaryOperationKind.Inclusion:
-                _bool = right.Value.ToString()!.Contains(left.Value.ToString()!);
+            case BinaryOperationKind.StringInclusion:
+                _bool = ((StringValue) right).Contains(left);
                 return new BoolValue(_bool);
         }        
 

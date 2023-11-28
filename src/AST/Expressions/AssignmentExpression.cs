@@ -6,9 +6,9 @@ namespace SEx.AST;
 
 internal class AssignmentExpression : Expression
 {
-    public NameLiteral       Assignee    { get; }
-    public Token      Equal       { get; }
-    public Expression Expression  { get; }
+    public NameLiteral Assignee    { get; }
+    public Token       Equal       { get; }
+    public Expression  Expression  { get; }
 
     public override Span     Span { get; }
     public override NodeKind Kind => NodeKind.AssignmentExpression;

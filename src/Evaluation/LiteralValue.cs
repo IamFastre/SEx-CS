@@ -14,6 +14,19 @@ internal abstract class LiteralValue
     public abstract override string ToString();
 }
 
+internal interface IIterableValue
+{
+    public ValType GetIterType(ValType type);
+}
+
+internal interface IIterableValue<Input, Output> : IIterableValue
+    where Input  : LiteralValue
+    where Output : LiteralValue
+{
+    public Output? Iterate(Input index);
+    public bool    Contains(LiteralValue value);
+}
+
 internal sealed class VoidValue : LiteralValue
 {
     public static readonly VoidValue Template = new();
@@ -61,7 +74,13 @@ internal sealed class BoolValue : LiteralValue
     public override string ToString() => C.VIOLET + (_value ? CONSTS.TRUE : CONSTS.FALSE) + C.END;
 }
 
-internal sealed class IntegerValue : LiteralValue
+internal abstract class NumberValue : LiteralValue
+{
+    public override ValType Type => ValType.Number;
+    public abstract string SimpleString();
+}
+
+internal sealed class IntegerValue : NumberValue
 {
 
     private readonly double _value;
@@ -75,10 +94,14 @@ internal sealed class IntegerValue : LiteralValue
         _value = value;
     }
 
-    public override string ToString() => C.YELLOW2 + _value.ToString().Replace('E', 'e') + C.END;
+    public override string ToString()
+        => C.YELLOW2 + _value.ToString().Replace('E', 'e') + C.END;
+
+    public override string SimpleString()
+        => ToString();
 }
 
-internal sealed class FloatValue : LiteralValue
+internal sealed class FloatValue : NumberValue
 {
 
     private readonly double _value;
@@ -94,6 +117,9 @@ internal sealed class FloatValue : LiteralValue
 
         return C.YELLOW2 + str + "f" + C.END;
     }
+
+    public override string SimpleString()
+        => ToString().Replace("f", "");
 }
 
 internal sealed class CharValue : LiteralValue
@@ -108,9 +134,8 @@ internal sealed class CharValue : LiteralValue
     public override string ToString() => $"{C.BLUE2}'{_value.ToString().Escape()}'{C.END}";
 }
 
-internal sealed class StringValue : LiteralValue
+internal sealed class StringValue : LiteralValue, IIterableValue<IntegerValue, CharValue>
 {
-
     private readonly string _value;
     public override object Value => _value;
     public override ValType Type => ValType.String;
@@ -118,23 +143,58 @@ internal sealed class StringValue : LiteralValue
     public StringValue(string value) => _value = value;
 
     public override string ToString() => $"{C.BLUE2}\"{_value.Escape()}\"{C.END}";
+    public ValType GetIterType(ValType type) => ValType.Char;
+
+    public CharValue? Iterate(IntegerValue index)
+        =>  (double) index.Value >= 0
+         && _value.Length > (double) index.Value
+         && int.TryParse(index.Value.ToString(), out _)
+         ?  new(_value[(int)(double) index.Value])
+         :  null;
+
+    public bool Contains(LiteralValue value)
+        => _value.Contains(value.Value.ToString()!);
 }
 
-internal sealed class RangeValue : LiteralValue
+internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, IntegerValue>
 {
     public override object Value => null!;
     public override ValType Type => ValType.Range;
 
-    public IntegerValue Start { get; }
-    public IntegerValue End   { get; }
-    public IntegerValue Step  { get; }
+    public NumberValue Start { get; }
+    public NumberValue End   { get; }
+    public NumberValue Step  { get; }
 
-    public RangeValue(IntegerValue start, IntegerValue end, IntegerValue step)
+    public IntegerValue? Length
+    {
+        get
+        {
+            var len = new IntegerValue(
+                Math.Floor(((double) End.Value - (double) Start.Value) / (double) Step.Value) + 1D
+            );
+            return double.IsPositive((double) len.Value) ? len : null;
+        }
+    }
+
+    public RangeValue(NumberValue start, NumberValue end, NumberValue step)
     {
         Start = start;
         End   = end;
         Step  = step;
     }
 
-    public override string ToString() => $"{Start}:{End}:{Step}";
+    public override string ToString() => $"{Start.SimpleString()}:{End.SimpleString()}:{Step.SimpleString()}";
+    public ValType GetIterType(ValType type) => ValType.Integer;
+
+    public IntegerValue? Iterate(IntegerValue index)
+    {
+        var val = new IntegerValue((double) index.Value * (double) Step.Value + (double) Start.Value);
+        return ((double) Start.Value) <= ((double) val.Value) &&
+               ((double) val.Value)   <= ((double) End.Value)
+               ? val : null;
+    }
+
+    public bool Contains(LiteralValue value)
+        => ((double) Start.Value) <= ((double) value.Value) &&
+           ((double) value.Value) <= ((double) End.Value);
 }

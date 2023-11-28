@@ -15,10 +15,6 @@ public static class Checker
     public static readonly char[] ClsSQuotes = {'\'','›'};
 
     public static readonly string[] Booleans = { CONSTS.TRUE, CONSTS.FALSE };
-    public static readonly string[] Types    =
-    {
-        CONSTS.BOOLEAN, CONSTS.INTEGER, CONSTS.FLOAT, CONSTS.CHAR, CONSTS.STRING, CONSTS.RANGE
-    };
     public static readonly string[] Keywords =
     {
         CONSTS.IMPORT ,CONSTS.EXPORT
@@ -55,7 +51,7 @@ public static class Checker
         CONSTS.FOR    => TokenKind.For,
 
         string when Booleans.Contains(value) => TokenKind.Boolean,
-        string when Types.Contains(value)    => TokenKind.Type,
+        string when CONSTS.TYPES.Contains(value)    => TokenKind.Type,
         string when Keywords.Contains(value) => TokenKind.Keyword,
 
         _ => TokenKind.Identifier,

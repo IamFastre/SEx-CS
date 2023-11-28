@@ -15,7 +15,7 @@ internal class Scope
     public Dictionary<string, ValType>      Types { get; }
 
     public LiteralValue this[string key, Span span] => Resolve(key, span);
-    public LiteralValue this[NameLiteral name]             => Resolve(name);
+    public LiteralValue this[NameLiteral name]      => Resolve(name);
     public LiteralValue this[SemanticName name]     => Resolve(name);
 
     public Scope(Diagnostics? diagnostics = null, Scope? parent = null)
@@ -34,11 +34,16 @@ internal class Scope
         => Diagnostics.Add(type, message, span, info ?? ExceptionInfo.Scope);
 
     public bool Contains(string value)      => Names.ContainsKey(value)      || Parent?.Contains(value) is not null or false;
-    public bool Contains(NameLiteral name)         => Names.ContainsKey(name.Value) || Parent?.Contains(name)  is not null or false;
+    public bool Contains(NameLiteral name)  => Names.ContainsKey(name.Value) || Parent?.Contains(name)  is not null or false;
     public bool Contains(SemanticName name) => Names.ContainsKey(name.Value) || Parent?.Contains(name)  is not null or false;
 
     public void Flush()
         => Names.Clear();
+
+    public static bool IsAssignable(ValType hint, ValType value)
+        => hint.HasFlag(value)
+        || ValType.Nones.HasFlag(value)
+        || ValType.Nones.HasFlag(hint);
 
     public LiteralValue TryResolve(string value)
     {
@@ -71,7 +76,7 @@ internal class Scope
         return ValType.Unknown;
     }
 
-    public LiteralValue Resolve(NameLiteral name)         => Resolve(name.Value, name.Span);
+    public LiteralValue Resolve(NameLiteral name)  => Resolve(name.Value, name.Span);
     public LiteralValue Resolve(SemanticName name) => Resolve(name.Value, name.Span);
     public LiteralValue Resolve(string value, Span span)
     {
@@ -107,9 +112,9 @@ internal class Scope
             Except($"Name '{dec.Name.Value}' is already declared", dec.Span);
         else if (!ValType.UAVT.HasFlag(value.Type))
         {
-            if (dec.NameType != value.Type)
+            if (!IsAssignable(dec.TypeHint, value.Type))
             {
-                Except($"Can't assign type '{value.Type.str()}' to '{dec.NameType.str()}'", dec.Expression!.Span);
+                Except($"Can't assign type '{value.Type.str()}' to '{dec.TypeHint.str()}'", dec.Expression!.Span);
                 return;
             }
 
@@ -130,8 +135,9 @@ internal class Scope
         else if (Consts.Contains(name.Value))
             Except($"Can't reassign to constant '{name.Value}'", name.Span);
 
-        else if (Contains(name.Value) && Names[name.Value].Type != value.Type && !ValType.Nones.HasFlag(Names[name.Value].Type))
-            Except($"Can't assign type '{Names[name.Value].Type.str()}' to '{value.Type.str()}'", name.Span);
+        else if (Contains(name.Value)
+             && !IsAssignable(Names[name.Value].Type, value.Type))
+            Except($"Can't assign type '{value.Type.str()}' to '{Names[name.Value].Type.str()}'", name.Span);
 
         else
             Names[name.Value] = value;

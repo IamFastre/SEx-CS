@@ -180,9 +180,9 @@ internal class Analyzer
 
     private SemanticRange BindRange(RangeLiteral r)
     {
-        var start = BindExpression(r.Start, ValType.Integer);
-        var end   = BindExpression(r.End, ValType.Integer);
-        var step  = r.Step is null ? null : BindExpression(r.Step, ValType.Integer);
+        var start = BindExpression(r.Start, ValType.Number);
+        var end   = BindExpression(r.End, ValType.Number);
+        var step  = r.Step is null ? null : BindExpression(r.Step, ValType.Number);
 
         return new(start, end, step);
     }

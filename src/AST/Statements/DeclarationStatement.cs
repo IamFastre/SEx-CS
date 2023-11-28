@@ -7,7 +7,7 @@ namespace SEx.AST;
 internal sealed class DeclarationStatement : Statement
 {
     public Token       Hash       { get; }
-    public NameLiteral        Name       { get; }
+    public NameLiteral Name       { get; }
     public Token?      Type       { get; }
     public Expression? Expression { get; }
     public bool        IsConstant { get; }

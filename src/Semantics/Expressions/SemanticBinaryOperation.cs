@@ -81,6 +81,11 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
         }
 
 
+        if ((left, right).Match(ValType.Number, ValType.Range))
+            if (op is TokenKind.InOperator)
+                return BinaryOperationKind.RangeInclusion;
+
+
         if ((left, right).Match(ValType.Char, ValType.Integer, true))
         {
             if (op is TokenKind.Plus)
@@ -103,7 +108,7 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
 
         if ((left, right).Match(ValType.String) || (left is ValType.Char && right is ValType.String))
             if (op is TokenKind.InOperator)
-                return BinaryOperationKind.Inclusion;
+                return BinaryOperationKind.StringInclusion;
 
         return null;
     }

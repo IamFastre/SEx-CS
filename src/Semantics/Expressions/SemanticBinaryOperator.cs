@@ -24,12 +24,14 @@ internal enum BinaryOperationKind
     Power,
     Modulo,
 
+    RangeInclusion,
+
     CharAddition,
     CharSubtraction,
 
     StringConcatenation,
     StringMultiplication,
-    Inclusion,
+    StringInclusion,
     Greater,
     Less,
     GreaterEqual,
@@ -121,6 +123,9 @@ internal class SemanticBinaryOperator
         new(TokenKind.Percent, BinaryOperationKind.Modulo, ValType.Number, ValType.Float),
 
 
+        new(TokenKind.InOperator, BinaryOperationKind.RangeInclusion, ValType.Number, ValType.Range, ValType.Boolean),
+
+
         new(TokenKind.Plus, BinaryOperationKind.CharAddition, ValType.Char, ValType.Integer, ValType.Char),
         new(TokenKind.Plus, BinaryOperationKind.CharAddition, ValType.Integer, ValType.Char, ValType.Char),
 
@@ -137,7 +142,7 @@ internal class SemanticBinaryOperator
         new(TokenKind.Plus, BinaryOperationKind.StringMultiplication, ValType.String, ValType.Integer, ValType.String),
 
 
-        new(TokenKind.InOperator, BinaryOperationKind.Inclusion, ValType.String, ValType.String, ValType.Boolean),
-        new(TokenKind.InOperator, BinaryOperationKind.Inclusion, ValType.Char, ValType.String, ValType.Boolean),
+        new(TokenKind.InOperator, BinaryOperationKind.StringInclusion, ValType.String, ValType.String, ValType.Boolean),
+        new(TokenKind.InOperator, BinaryOperationKind.StringInclusion, ValType.Char, ValType.String, ValType.Boolean),
     };
 }

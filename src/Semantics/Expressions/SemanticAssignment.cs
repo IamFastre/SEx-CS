@@ -7,7 +7,7 @@ namespace SEx.Semantics;
 
 internal sealed class SemanticAssignment : SemanticExpression
 {
-    public NameLiteral               Assignee   { get; }
+    public NameLiteral        Assignee   { get; }
     public Token              Equal      { get; }
     public SemanticExpression Expression { get; }
 

@@ -55,6 +55,9 @@ internal static class ValTypeExtension
         ValType.String  => CONSTS.STRING,
         ValType.Range   => CONSTS.RANGE,
 
+        ValType.Number  => $"{CONSTS.INTEGER} or {CONSTS.FLOAT}",
+        ValType.Any     => CONSTS.ANY,
+
         _ => type.ToString()
     };
 }
