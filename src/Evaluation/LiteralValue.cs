@@ -16,14 +16,34 @@ internal abstract class LiteralValue
 
 internal interface IIterableValue
 {
-    public ValType GetIterType(ValType type);
+    public abstract static ValType GetIndexReturn(ValType index);
+
+    public static LiteralValue? GetElement(LiteralValue iterator, LiteralValue index)
+    {
+        switch (iterator)
+        {
+            case StringValue str:
+                if (index is IntegerValue intv1)
+                    return str.GetElement(intv1);
+                if (index is RangeValue rngv)
+                    return str.GetElement(rngv);
+                break;
+            
+            case RangeValue str:
+                if (index is IntegerValue intv2)
+                    return str.GetElement(intv2);
+                break;
+        }
+
+        return null;
+    }
 }
 
 internal interface IIterableValue<Input, Output> : IIterableValue
     where Input  : LiteralValue
     where Output : LiteralValue
 {
-    public Output? Iterate(Input index);
+    public Output? GetElement(Input index);
     public bool    Contains(LiteralValue value);
 }
 
@@ -78,6 +98,9 @@ internal abstract class NumberValue : LiteralValue
 {
     public override ValType Type => ValType.Number;
     public abstract string SimpleString();
+
+    public static NumberValue Get(double value)
+        => IntegerValue.IsEligible(value) ? new IntegerValue(value) : new FloatValue(value);
 }
 
 internal sealed class IntegerValue : NumberValue
@@ -89,10 +112,13 @@ internal sealed class IntegerValue : NumberValue
 
     public IntegerValue(double value)
     {
-        if (!(double.IsInteger(value) || double.IsInfinity(value)|| double.IsNaN(value)))
+        if (!IsEligible(value))
             throw new Exception("Value given is not int");
         _value = value;
     }
+
+    public static bool IsEligible(double value)
+        => double.IsInteger(value) || double.IsInfinity(value)|| double.IsNaN(value);
 
     public override string ToString()
         => C.YELLOW2 + _value.ToString().Replace('E', 'e') + C.END;
@@ -134,7 +160,7 @@ internal sealed class CharValue : LiteralValue
     public override string ToString() => $"{C.BLUE2}'{_value.ToString().Escape()}'{C.END}";
 }
 
-internal sealed class StringValue : LiteralValue, IIterableValue<IntegerValue, CharValue>
+internal sealed class StringValue : LiteralValue, IIterableValue<IntegerValue, CharValue>, IIterableValue<RangeValue, StringValue>
 {
     private readonly string _value;
     public override object Value => _value;
@@ -142,21 +168,46 @@ internal sealed class StringValue : LiteralValue, IIterableValue<IntegerValue, C
 
     public StringValue(string value) => _value = value;
 
-    public override string ToString() => $"{C.BLUE2}\"{_value.Escape()}\"{C.END}";
-    public ValType GetIterType(ValType type) => ValType.Char;
+    public override string ToString()
+        => $"{C.BLUE2}\"{_value.Escape()}\"{C.END}";
 
-    public CharValue? Iterate(IntegerValue index)
-        =>  (double) index.Value >= 0
-         && _value.Length > (double) index.Value
-         && int.TryParse(index.Value.ToString(), out _)
-         ?  new(_value[(int)(double) index.Value])
-         :  null;
+
+    public CharValue? GetElement(IntegerValue index)
+    {
+        var i = double.IsNegative((double) index.Value)
+                ? (_value.Length + ((double) index.Value))
+                : ((double) index.Value);
+
+        return i >= 0
+            && _value.Length > i
+            && int.TryParse(index.Value.ToString(), out _)
+            ?  new (_value[(int)i])
+            :  null;
+    }
 
     public bool Contains(LiteralValue value)
         => _value.Contains(value.Value.ToString()!);
+
+    public static ValType GetIndexReturn(ValType index) => index switch
+    {
+        ValType.Integer => ValType.Char,
+        ValType.Range   => ValType.String,
+        _ => ValType.Unknown,
+    };
+
+    public StringValue? GetElement(RangeValue index)
+    {
+            Range range;
+            if (index.Direction == 1)
+                range = (int)(double) index.Start.Value..(((int)(double) index.End.Value) + 1);
+            else
+                range = (int)(double) index.End.Value..(((int)(double) index.Start.Value) + 1);
+            
+            return new(_value[range]);
+    }
 }
 
-internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, IntegerValue>
+internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, NumberValue>
 {
     public override object Value => null!;
     public override ValType Type => ValType.Range;
@@ -164,6 +215,8 @@ internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, In
     public NumberValue Start { get; }
     public NumberValue End   { get; }
     public NumberValue Step  { get; }
+
+    public int Direction => double.IsPositive((double) Step.Value) ? 1 : -1;
 
     public IntegerValue? Length
     {
@@ -183,18 +236,32 @@ internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, In
         Step  = step;
     }
 
-    public override string ToString() => $"{Start.SimpleString()}:{End.SimpleString()}:{Step.SimpleString()}";
-    public ValType GetIterType(ValType type) => ValType.Integer;
+    public override string ToString()
+        => $"{Start.SimpleString()}:{End.SimpleString()}:{Step.SimpleString()}";
 
-    public IntegerValue? Iterate(IntegerValue index)
+    public NumberValue? GetElement(IntegerValue index)
     {
-        var val = new IntegerValue((double) index.Value * (double) Step.Value + (double) Start.Value);
-        return ((double) Start.Value) <= ((double) val.Value) &&
-               ((double) val.Value)   <= ((double) End.Value)
-               ? val : null;
+        var val = NumberValue.Get((double) index.Value * (double) Step.Value + (double) Start.Value);
+        return Contains(index) ? val : null;
     }
 
     public bool Contains(LiteralValue value)
-        => ((double) Start.Value) <= ((double) value.Value) &&
-           ((double) value.Value) <= ((double) End.Value);
+    {
+        var bigger  = ((double) Start.Value) > ((double) End.Value)
+                    ? ((double) Start.Value)
+                    : ((double) End.Value);
+
+        var smaller = ((double) Start.Value) < ((double) End.Value)
+                    ? ((double) Start.Value)
+                    : ((double) End.Value);
+
+        return smaller <= ((double) value.Value) &&
+               bigger  >= ((double) value.Value);
+    }
+
+    public static ValType GetIndexReturn(ValType index) => index switch
+    {
+        ValType.Integer => ValType.Number,
+        _ => ValType.Unknown,
+    };
 }

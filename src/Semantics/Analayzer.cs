@@ -152,8 +152,11 @@ internal class Analyzer
             case NodeKind.Name:
                 return BindName((NameLiteral) expr);
 
-            case NodeKind.ParenExpression:
-                return BindParenExpression((ParenExpression) expr);
+            case NodeKind.ParenthesizedExpression:
+                return BindParenExpression((ParenthesizedExpression) expr);
+
+            case NodeKind.IndexingExpression:
+                return BindIndexingExpression((IndexingExpression) expr);
 
             case NodeKind.UnaryOperation:
                 return BindUnaryOperation((UnaryOperation) expr);
@@ -190,10 +193,19 @@ internal class Analyzer
     private SemanticName BindName(NameLiteral n)
         => new(n, Scope.ResolveType(n));
 
-    private SemanticParenExpression BindParenExpression(ParenExpression pe)
+    private SemanticParenExpression BindParenExpression(ParenthesizedExpression pe)
     {
         var expr = pe.Expression is null ? null : BindExpression(pe.Expression);
         return new(pe.OpenParen, expr, pe.CloseParen);
+    }
+
+    private SemanticIndexingExpression BindIndexingExpression(IndexingExpression ie)
+    {
+        var iterable    = BindExpression(ie.Iterable);
+        var index       = BindExpression(ie.Index);
+        var elementType = SemanticIndexingExpression.GetElementType(iterable.Type, index.Type);
+
+        return new(iterable, index, elementType ?? ValType.Unknown, ie.Span);
     }
 
     private SemanticExpression BindUnaryOperation(UnaryOperation uop)

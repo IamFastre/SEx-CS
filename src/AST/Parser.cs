@@ -115,10 +115,12 @@ internal class Parser
         }
     }
 
-    private ParenExpression? GetParenthesized()
+    private ParenthesizedExpression? GetParenthesized()
     {
         var openParen  = Eat();
-        var expression = Current.Kind != TokenKind.CloseParenthesis ? GetRange() : null;
+        var expression = Current.Kind != TokenKind.CloseParenthesis
+                       ? GetRange()
+                       : null;
         var closeParen = Expect(TokenKind.CloseParenthesis, $"'(' was never closed");
 
         if (expression is null)
@@ -126,7 +128,7 @@ internal class Parser
                    span:new(openParen.Span, closeParen.Span),
                    info:ExceptionInfo.Parser);
 
-        return new ParenExpression(openParen, expression, closeParen);
+        return new(openParen, expression, closeParen);
     }
 
     private Expression? GetRange()
@@ -154,6 +156,38 @@ internal class Parser
         return start;
     }
 
+    private Expression? GetIndexing(Expression iterable)
+    {
+        var openBracket  = Eat();
+        var index        = Current.Kind != TokenKind.CloseSquareBracket
+                         ? GetExpression()
+                         : null;
+        var closeBracket = Expect(TokenKind.CloseSquareBracket, $"'[' was never closed");
+
+        if (index is null)
+        {
+            Except($"Index expected before close bracket",
+                   span:new(openBracket.Span, closeBracket.Span),
+                   info:ExceptionInfo.Parser);
+            return Literal.Unknown(new(iterable.Span, closeBracket.Span));
+        }
+
+        return new IndexingExpression(iterable, openBracket, index, closeBracket);
+    }
+
+    private Expression? GetIntermediate()
+    {
+        var factor = GetPrimary();
+
+        switch (Current.Kind)
+        {
+            case TokenKind.OpenSquareBracket:
+                return GetIndexing(factor!);
+            default:
+                return factor;
+        }
+    }
+
     private Expression? GetSecondary(int parentPrecedence = 0)
     {
         Expression? left;
@@ -161,7 +195,7 @@ internal class Parser
 
         // Get Unary
         if (unaryPrecedence == 0 || unaryPrecedence < parentPrecedence)
-            left = GetPrimary();
+            left = GetIntermediate();
         else
         {
             var uOp = Eat();

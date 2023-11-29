@@ -5,22 +5,23 @@ namespace SEx.Evaluate.Values;
 [Flags]
 internal enum ValType
 {
-    Void    = 1 << 0,
-    Unknown = 1 << 1,
-    Null    = 1 << 2,
-    Boolean = 1 << 3,
-    Integer = 1 << 4,
-    Float   = 1 << 5,
-    Char    = 1 << 6,
-    String  = 1 << 7,
-    Range   = 1 << 8,
+    Void     = 1 << 0,
+    Unknown  = 1 << 1,
+    Null     = 1 << 2,
+    Boolean  = 1 << 3,
+    Integer  = 1 << 4,
+    Float    = 1 << 5,
+    Char     = 1 << 6,
+    String   = 1 << 7,
+    Range    = 1 << 8,
 
-    Whole   = Integer | Char,
-    Number  = Integer | Float,
-    Numable = Number  | Char,
-    Any     = Null | Boolean | Integer | Float | Char | String | Range,
-    Nones   = Void | Unknown | Null,
-    UAVT    = Void | Unknown, // Un-assignable value types
+    Whole    = Integer | Char,
+    Number   = Integer | Float,
+    Numable  = Number  | Char,
+    Iterable = String  | Range,
+    Any      = Null | Boolean | Integer | Float | Char | String | Range,
+    Nones    = Void | Unknown | Null,
+    UAVT     = Void | Unknown, // Un-assignable value types
 }
 
 internal static class ValTypeExtension

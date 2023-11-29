@@ -157,6 +157,9 @@ internal class Evaluator
                 case SemanticKind.Name:
                     return EvaluateName((SemanticName) expr);
 
+                case SemanticKind.IndexingExpression:
+                    return EvaluateIndexingExpression((SemanticIndexingExpression) expr);
+
                 case SemanticKind.ParenExpression:
                     return EvaluateParenExpression((SemanticParenExpression) expr);
 
@@ -184,32 +187,59 @@ internal class Evaluator
 
     private LiteralValue EvaluateRange(SemanticRange expr)
     {
+        LiteralValue value = UnknownValue.Template;
+
         var start = EvaluateExpression(expr.Start);
         var end   = EvaluateExpression(expr.End);
         var step  = expr.Step is null
                   ? new IntegerValue(1D)
                   : EvaluateExpression(expr.Step);
 
+
         if (ValType.Number.HasFlag(start.Type)
         &&  ValType.Number.HasFlag(end.Type)
         &&  ValType.Number.HasFlag(step.Type))
         {
-            return new RangeValue((NumberValue) start, (NumberValue) end, (NumberValue) step);
+            value = new RangeValue((NumberValue) start, (NumberValue) end, (NumberValue) step);
+            if (((RangeValue) value).Length is null)
+            {
+                Except($"Range end point and step direction don't match", expr.Span, ExceptionType.MathError);
+                value = UnknownValue.Template;
+            }
         }
 
-        return UnknownValue.Template;
+
+        return value;
     }
 
     private LiteralValue EvaluateName(SemanticName name)
         => Scope[name];
 
-    private LiteralValue EvaluateUnaryOperation(SemanticUnaryOperation expr)
+    private LiteralValue EvaluateIndexingExpression(SemanticIndexingExpression ie)
     {
-        var operand = EvaluateExpression(expr.Operand);
+        var iterable = EvaluateExpression(ie.Iterable);
+        var index    = EvaluateExpression(ie.Index);
+        var elem     = IIterableValue.GetElement(iterable, index);
+
+        if (!ValType.Iterable.HasFlag(iterable.Type))
+            Except($"Can't perform indexing on '{iterable.Type.str()}'", ie.Iterable.Span);
+
+        else if (ie.Type is ValType.Unknown)
+            Except($"Can't perform indexing on '{iterable.Type.str()}' with '{index.Type.str()}'", ie.Index.Span);
+
+        else if (elem is null)
+            Except($"Index is out of boundary", ie.Index.Span);
+
+        return elem ?? UnknownValue.Template;
+    }
+
+    private LiteralValue EvaluateUnaryOperation(SemanticUnaryOperation uop)
+    {
+        var operand = EvaluateExpression(uop.Operand);
 
         double _double;
 
-        switch (expr.OperationKind)
+        switch (uop.OperationKind)
         {
             case UnaryOperationKind.Identity:
                 return operand;
@@ -226,7 +256,7 @@ internal class Evaluator
                 return new BoolValue(!(bool) operand.Value);
         }
 
-        throw new Exception($"Unrecognized unary operation kind: {expr.OperationKind}");
+        throw new Exception($"Unrecognized unary operation kind: {uop.OperationKind}");
     }
 
     private LiteralValue EvaluateBinaryOperation(SemanticBinaryOperation biop)

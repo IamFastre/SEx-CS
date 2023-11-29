@@ -4,20 +4,20 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class ParenExpression : Expression
+internal sealed class ParenthesizedExpression : Expression
 {
-    public Token OpenParen        { get; }
+    public Token       OpenParen  { get; }
     public Expression? Expression { get; }
-    public Token CloseParen       { get; }
+    public Token       CloseParen { get; }
 
     public override Span     Span { get; }
-    public override NodeKind Kind => NodeKind.ParenExpression;
+    public override NodeKind Kind => NodeKind.ParenthesizedExpression;
 
-    public ParenExpression(Token openParen, Expression? expression,Token closeParen)
+    public ParenthesizedExpression(Token open, Expression? expression,Token close)
     {
-        OpenParen  = openParen;
+        OpenParen  = open;
         Expression = expression;
-        CloseParen = closeParen;
+        CloseParen = close;
 
         Span       = new Span(OpenParen.Span.Start, CloseParen.Span.End);
     }

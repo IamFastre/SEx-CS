@@ -20,6 +20,6 @@ internal sealed class SemanticParenExpression : SemanticExpression
         Expression = expression;
         CloseParen = closeParen;
 
-        Span = new Span(openParen.Span.Start, closeParen.Span.End);
+        Span = new(openParen.Span.Start, closeParen.Span.End);
     }
 }

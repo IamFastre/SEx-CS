@@ -5,6 +5,7 @@ public enum ExceptionType
     BaseException,
     SyntaxError,
     TypeError,
+    MathError,
     StringParseError,
     OverflowError,
     InternalError,
