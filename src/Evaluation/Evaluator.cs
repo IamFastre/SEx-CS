@@ -224,11 +224,11 @@ internal class Evaluator
         if (!ValType.Iterable.HasFlag(iterable.Type))
             Except($"Can't perform indexing on '{iterable.Type.str()}'", ie.Iterable.Span);
 
-        else if (ie.Type is ValType.Unknown)
-            Except($"Can't perform indexing on '{iterable.Type.str()}' with '{index.Type.str()}'", ie.Index.Span);
-
         else if (elem is null)
             Except($"Index is out of boundary", ie.Index.Span);
+
+        else if (elem.Type is ValType.Unknown)
+            Except($"Can't perform indexing on '{iterable.Type.str()}' with '{index.Type.str()}'", ie.Index.Span);
 
         return elem ?? UnknownValue.Template;
     }

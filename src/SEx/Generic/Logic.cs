@@ -10,13 +10,13 @@ internal static class StringExtension
 
     public static string Repeat(this string text, int n)
     {
-    var arr = new char[text.Length * n];
-    for (var i = 0; i < n; i++)
-    {
-        text.CopyTo(0, arr, i * text.Length, text.Length);
-    }
-    
-    return new string(arr);
+        var arr = new char[text.Length * n];
+        for (var i = 0; i < n; i++)
+        {
+            text.CopyTo(0, arr, i * text.Length, text.Length);
+        }
+        
+        return new string(arr);
     }
 
 }

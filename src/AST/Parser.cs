@@ -160,7 +160,7 @@ internal class Parser
     {
         var openBracket  = Eat();
         var index        = Current.Kind != TokenKind.CloseSquareBracket
-                         ? GetExpression()
+                         ? GetRange()
                          : null;
         var closeBracket = Expect(TokenKind.CloseSquareBracket, $"'[' was never closed");
 

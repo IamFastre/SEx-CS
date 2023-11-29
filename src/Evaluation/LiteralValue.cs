@@ -35,7 +35,7 @@ internal interface IIterableValue
                 break;
         }
 
-        return null;
+        return UnknownValue.Template;
     }
 }
 
@@ -158,110 +158,4 @@ internal sealed class CharValue : LiteralValue
     public CharValue(char value) => _value = value;
 
     public override string ToString() => $"{C.BLUE2}'{_value.ToString().Escape()}'{C.END}";
-}
-
-internal sealed class StringValue : LiteralValue, IIterableValue<IntegerValue, CharValue>, IIterableValue<RangeValue, StringValue>
-{
-    private readonly string _value;
-    public override object Value => _value;
-    public override ValType Type => ValType.String;
-
-    public StringValue(string value) => _value = value;
-
-    public override string ToString()
-        => $"{C.BLUE2}\"{_value.Escape()}\"{C.END}";
-
-
-    public CharValue? GetElement(IntegerValue index)
-    {
-        var i = double.IsNegative((double) index.Value)
-                ? (_value.Length + ((double) index.Value))
-                : ((double) index.Value);
-
-        return i >= 0
-            && _value.Length > i
-            && int.TryParse(index.Value.ToString(), out _)
-            ?  new (_value[(int)i])
-            :  null;
-    }
-
-    public bool Contains(LiteralValue value)
-        => _value.Contains(value.Value.ToString()!);
-
-    public static ValType GetIndexReturn(ValType index) => index switch
-    {
-        ValType.Integer => ValType.Char,
-        ValType.Range   => ValType.String,
-        _ => ValType.Unknown,
-    };
-
-    public StringValue? GetElement(RangeValue index)
-    {
-            Range range;
-            if (index.Direction == 1)
-                range = (int)(double) index.Start.Value..(((int)(double) index.End.Value) + 1);
-            else
-                range = (int)(double) index.End.Value..(((int)(double) index.Start.Value) + 1);
-            
-            return new(_value[range]);
-    }
-}
-
-internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, NumberValue>
-{
-    public override object Value => null!;
-    public override ValType Type => ValType.Range;
-
-    public NumberValue Start { get; }
-    public NumberValue End   { get; }
-    public NumberValue Step  { get; }
-
-    public int Direction => double.IsPositive((double) Step.Value) ? 1 : -1;
-
-    public IntegerValue? Length
-    {
-        get
-        {
-            var len = new IntegerValue(
-                Math.Floor(((double) End.Value - (double) Start.Value) / (double) Step.Value) + 1D
-            );
-            return double.IsPositive((double) len.Value) ? len : null;
-        }
-    }
-
-    public RangeValue(NumberValue start, NumberValue end, NumberValue step)
-    {
-        Start = start;
-        End   = end;
-        Step  = step;
-    }
-
-    public override string ToString()
-        => $"{Start.SimpleString()}:{End.SimpleString()}:{Step.SimpleString()}";
-
-    public NumberValue? GetElement(IntegerValue index)
-    {
-        var val = NumberValue.Get((double) index.Value * (double) Step.Value + (double) Start.Value);
-        return Contains(index) ? val : null;
-    }
-
-    public bool Contains(LiteralValue value)
-    {
-        var bigger  = ((double) Start.Value) > ((double) End.Value)
-                    ? ((double) Start.Value)
-                    : ((double) End.Value);
-
-        var smaller = ((double) Start.Value) < ((double) End.Value)
-                    ? ((double) Start.Value)
-                    : ((double) End.Value);
-
-        return smaller <= ((double) value.Value) &&
-               bigger  >= ((double) value.Value);
-    }
-
-    public static ValType GetIndexReturn(ValType index) => index switch
-    {
-        ValType.Integer => ValType.Number,
-        _ => ValType.Unknown,
-    };
 }
