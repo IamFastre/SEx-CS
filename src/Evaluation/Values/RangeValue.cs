@@ -30,7 +30,10 @@ internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, Nu
     }
 
     public override string ToString()
-        => $"{Start.SimpleString()}:{End.SimpleString()}:{Step.SimpleString()}";
+        => $"{Start}:{End}:{Step}";
+
+    public override string str()
+        => $"{Start.str()}:{End.str()}:{Step.str()}";
 
     public NumberValue? GetElement(IntegerValue index)
     {
@@ -57,4 +60,29 @@ internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, Nu
         ValType.Integer => ValType.Number,
         _ => ValType.Unknown,
     };
+
+    public Range GetSystemRange()
+    {
+        if (Direction == 1)
+            return (int)(double) Start.Value..(((int)(double) End.Value) + 1);
+        else
+            return (int)(double) End.Value..(((int)(double) Start.Value) + 1);
+    }
+
+    public T[] GetSlice<T>(T[] slice)
+    {
+        List<T> fin = new();
+        for (int i = 0; i < GetSystemRange().End.Value; i++)
+        {
+            var step = (int)(i * Math.Abs((double) Step.Value));
+            if (step >= slice.Length)
+                break;
+            fin.Add(slice[step]);
+        }
+
+        if (Direction == -1)
+            fin.Reverse();
+
+        return fin.ToArray();
+    }
 }

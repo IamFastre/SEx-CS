@@ -14,11 +14,12 @@ internal enum ValType
     Char     = 1 << 6,
     String   = 1 << 7,
     Range    = 1 << 8,
+    List     = 1 << 9,
 
     Whole    = Integer | Char,
     Number   = Integer | Float,
     Numable  = Number  | Char,
-    Iterable = String  | Range,
+    Iterable = String  | Range | List,
     Any      = Null | Boolean | Integer | Float | Char | String | Range,
     Nones    = Void | Unknown | Null,
     UAVT     = Void | Unknown, // Un-assignable value types
@@ -55,10 +56,11 @@ internal static class ValTypeExtension
         ValType.Char    => CONSTS.CHAR,
         ValType.String  => CONSTS.STRING,
         ValType.Range   => CONSTS.RANGE,
+        ValType.List    => CONSTS.LIST,
 
         ValType.Number  => $"{CONSTS.INTEGER} or {CONSTS.FLOAT}",
         ValType.Any     => CONSTS.ANY,
 
-        _ => type.ToString()
+        _ => type.ToString().ToLower()
     };
 }

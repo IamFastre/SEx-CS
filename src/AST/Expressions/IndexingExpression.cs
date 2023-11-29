@@ -21,7 +21,7 @@ internal sealed class IndexingExpression : Expression
         Index        = expression;
         CloseBracket = close;
 
-        Span         = new Span(Iterable.Span.Start, CloseBracket.Span.End);
+        Span         = new(Iterable.Span.Start, CloseBracket.Span.End);
     }
 
 

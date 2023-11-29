@@ -10,5 +10,6 @@ internal sealed class BoolValue : LiteralValue
 
     public BoolValue(bool value) => _value = value;
 
-    public override string ToString() => C.VIOLET + (_value ? CONSTS.TRUE : CONSTS.FALSE) + C.END;
+    public override string ToString() => C.VIOLET + str() + C.END;
+    public override string str()      => _value ? CONSTS.TRUE : CONSTS.FALSE;
 }

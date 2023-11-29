@@ -12,5 +12,6 @@ internal sealed class CharValue : LiteralValue
 
     public CharValue(char value) => _value = value;
 
-    public override string ToString() => $"{C.BLUE2}'{_value.ToString().Escape()}'{C.END}";
+    public override string ToString() => $"{C.BLUE2}'{str()}'{C.END}";
+    public override string str()      => _value.ToString().Escape();
 }

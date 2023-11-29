@@ -57,7 +57,7 @@ internal class Parser
         if (Current.Kind == kind)
             return Eat();
 
-        message ??= EOF ? "Expression not expected to end yet" : $"Unexpected \"{Current.Value}\"";
+        message ??= EOF ? "Expression not expected to end yet" : $"Unexpected '{Current.Value}'";
         Except(message, span:span, info: !EOF || !reread ? ExceptionInfo.Parser : ExceptionInfo.ReParser);
 
         if (eatAnyway && !EOF)
@@ -108,6 +108,9 @@ internal class Parser
             case TokenKind.OpenParenthesis:
                 return GetParenthesized();
 
+            case TokenKind.OpenSquareBracket:
+                return GetList();
+
             default:
                 Except($"Invalid syntax '{Current.Value}'", info:ExceptionInfo.Parser);
                 Eat();
@@ -115,7 +118,7 @@ internal class Parser
         }
     }
 
-    private ParenthesizedExpression? GetParenthesized()
+    private ParenthesizedExpression GetParenthesized()
     {
         var openParen  = Eat();
         var expression = Current.Kind != TokenKind.CloseParenthesis
@@ -129,6 +132,43 @@ internal class Parser
                    info:ExceptionInfo.Parser);
 
         return new(openParen, expression, closeParen);
+    }
+
+    private Expression[] GetSeparated(TokenKind endToken)
+    {
+        if (Current.Kind == endToken)
+            return Array.Empty<Expression>();
+
+        List<Expression> expressions = new();
+
+        do
+        {
+            var expr = GetExpression();
+
+            if (expr is not null)
+            {
+                expressions.Add(expr);
+
+                if (IsNextKind(TokenKind.Comma))
+                    continue;
+            }
+
+            break;
+        }
+        while (Current.Kind != endToken);
+
+        return expressions.ToArray();
+    }
+
+    private ListLiteral GetList()
+    {
+        var openBracket  = Eat();
+        var exprs        = Current.Kind != TokenKind.CloseSquareBracket
+                         ? GetSeparated(TokenKind.CloseSquareBracket)
+                         : Array.Empty<Expression>();
+        var closeBracket = Expect(TokenKind.CloseSquareBracket, $"'[' was never closed");
+
+        return new(openBracket, exprs, closeBracket);
     }
 
     private Expression? GetRange()
@@ -428,12 +468,16 @@ internal class Parser
         {
             case TokenKind.Hash:
                 return GetDeclarationStatement();
+
             case TokenKind.OpenCurlyBracket:
                 return GetBlockStatement();
+
             case TokenKind.If:
                 return GetIfStatement();
+
             case TokenKind.While:
                 return GetWhileStatement();
+
             default:
                 return GetExpressionStatement();
         }

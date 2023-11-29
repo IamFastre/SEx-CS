@@ -10,10 +10,14 @@ internal sealed class StringValue
     public override object Value => _value;
     public override ValType Type => ValType.String;
 
-    public StringValue(string value) => _value = value;
+    public StringValue(string value)
+        => _value = value;
 
     public override string ToString()
-        => $"{C.BLUE2}\"{_value.Escape()}\"{C.END}";
+        => $"{C.BLUE2}\"{str()}\"{C.END}";
+
+    public override string str()
+        => _value.Escape();
 
     public bool Contains(LiteralValue value)
         => _value.Contains(value.Value.ToString()!);
@@ -41,24 +45,12 @@ internal sealed class StringValue
     public StringValue? GetElement(RangeValue index)
     {
             string slice;
-            Range range;
-            if (index.Direction == 1)
-                range = (int)(double) index.Start.Value..(((int)(double) index.End.Value) + 1);
-            else
-                range = (int)(double) index.End.Value..(((int)(double) index.Start.Value) + 1);
-
+            Range range = index.GetSystemRange();
+  
             try { slice = _value[range]; }
             catch { return null; }
 
-            string _ = string.Empty;
-            for (int i = 0; i < range.End.Value; i++)
-            {
-                var step = (int)(i * Math.Abs((double) index.Step.Value) + range.Start.Value);
-                if (step > range.End.Value)
-                    break;
-                _ += slice[step];
-            }
-
-            return new(index.Direction == 1 ? _ : new(_.Reverse().ToArray()));
+            string _ = new(index.GetSlice(slice.ToArray()));
+            return new(_);
     }
 }

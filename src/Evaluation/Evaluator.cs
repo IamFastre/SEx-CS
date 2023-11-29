@@ -120,6 +120,10 @@ internal class Evaluator
     private LiteralValue EvaluateExpressionStatement(SemanticExpressionStatement stmt)
         => EvaluateExpression(stmt.Expression);
 
+    //=====================================================================//
+    //=====================================================================//
+    //=====================================================================//
+
     private LiteralValue EvaluateExpression(SemanticExpression? expr)
     {
         if (expr is null)
@@ -156,6 +160,9 @@ internal class Evaluator
 
                 case SemanticKind.Name:
                     return EvaluateName((SemanticName) expr);
+
+                case SemanticKind.List:
+                    return EvaluateArray((SemanticList) expr);
 
                 case SemanticKind.IndexingExpression:
                     return EvaluateIndexingExpression((SemanticIndexingExpression) expr);
@@ -215,8 +222,18 @@ internal class Evaluator
         return value;
     }
 
-    private LiteralValue EvaluateName(SemanticName name)
-        => Scope[name];
+    private LiteralValue EvaluateName(SemanticName n)
+        => Scope[n];
+
+    private ListValue EvaluateArray(SemanticList ll)
+    {
+        List<LiteralValue> values = new();
+
+        foreach (var statement in ll.Elements)
+            values.Add(EvaluateExpression(statement));
+
+        return new ListValue(values, ll.ElementType);
+    }
 
     private LiteralValue EvaluateIndexingExpression(SemanticIndexingExpression ie)
     {
@@ -500,7 +517,7 @@ internal class Evaluator
                 return val;
         }
         else
-            Scope.Assign(aseprx.Assignee, val);
+            Scope.Assign(aseprx.Assignee, val, aseprx.Expression.Span);
 
         return Scope.TryResolve(aseprx.Assignee.Value);
     }

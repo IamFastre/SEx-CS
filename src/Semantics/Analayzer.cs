@@ -153,6 +153,9 @@ internal class Analyzer
             case NodeKind.Name:
                 return BindName((NameLiteral) expr);
 
+            case NodeKind.List:
+                return BindList((ListLiteral) expr);
+
             case NodeKind.ParenthesizedExpression:
                 return BindParenExpression((ParenthesizedExpression) expr);
 
@@ -196,6 +199,30 @@ internal class Analyzer
 
     private SemanticName BindName(NameLiteral n)
         => new(n, Scope.ResolveType(n));
+
+    private SemanticList BindList(ListLiteral ll)
+    {
+        if (ll.Elements.Length > 0)
+        {
+            List<SemanticExpression> expressions = new();
+            var arRef = BindExpression(ll.Elements.First());
+            expressions.Add(arRef);
+
+            foreach (var elem in ll.Elements[1..])
+            {
+                var expr = BindExpression(elem);
+
+                if (expr.Type == arRef.Type)
+                    expressions.Add(expr);
+                else
+                    Except($"list of type '{arRef.Type.str()}' can't have a '{expr.Type.str()}' element", ll.Span);
+            }
+
+            return new(expressions.ToArray(), arRef.Type, ll.Span);
+        }
+
+        return new(Array.Empty<SemanticExpression>(), ValType.Any, ll.Span);
+    }
 
     private SemanticParenExpression BindParenExpression(ParenthesizedExpression pe)
     {

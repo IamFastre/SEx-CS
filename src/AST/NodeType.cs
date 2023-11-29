@@ -16,6 +16,7 @@ public enum NodeKind
     String,
     Range,
     Name,
+    List,
 
     // Statements & Their clauses
     ProgramStatement,

@@ -25,6 +25,7 @@ internal sealed class SemanticIndexingExpression : SemanticExpression
     {
         ValType.String => StringValue.GetIndexReturn(index),
         ValType.Range  => RangeValue.GetIndexReturn(index),
+        ValType.List   => ListValue.GetIndexReturn(index),
 
         _ => null,
     };

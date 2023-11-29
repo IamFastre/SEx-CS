@@ -15,9 +15,16 @@ internal interface IIterableValue
                     return str.GetElement(rngv);
                 break;
             
-            case RangeValue str:
+            case RangeValue rng:
                 if (index is IntegerValue intv2)
-                    return str.GetElement(intv2);
+                    return rng.GetElement(intv2);
+                break;
+
+            case ListValue lst:
+                if (index is IntegerValue intv3)
+                    return lst.GetElement(intv3);
+                if (index is RangeValue rngv2)
+                    return lst.GetElement(rngv2);
                 break;
         }
 

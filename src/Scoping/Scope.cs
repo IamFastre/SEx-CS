@@ -125,7 +125,7 @@ internal class Scope
         }
     }
 
-    public void Assign(SemanticName name, LiteralValue value)
+    public void Assign(SemanticName name, LiteralValue value, Span? valueSpan = null)
     {
         Types.Remove(name.Value);
 
@@ -137,7 +137,7 @@ internal class Scope
 
         else if (Contains(name.Value)
              && !IsAssignable(name.Type, value.Type))
-            Except($"Can't assign type '{value.Type.str()}' to '{name.Type.str()}'", name.Span);
+            Except($"Can't assign type '{value.Type.str()}' to '{name.Type.str()}'", valueSpan ?? name.Span);
 
         else
             Names[name.Value] = value;
