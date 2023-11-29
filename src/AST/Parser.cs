@@ -188,14 +188,14 @@ internal class Parser
 
         if (name is null)
         {
-            Except($"Expected a name {(!returnAfter ? "after" : "before")} operator '{op.Value}'", span:op.Span);
+            Except($"Expected a name before/after operator '{op.Value}'", span:op.Span);
             return Literal.Unknown(op.Span);
         }
 
         if (name is NameLiteral nm)
             return new CountingOperation(op, nm, returnAfter);
 
-        Except($"Operand of '{op.Value}' must be a name", span:name.Span);
+        Except($"Operand of '{op.Value}' must be a name", span:name.Span, info:ExceptionInfo.Parser);
         return Literal.Unknown(new(op.Span, name.Span));
     }
 
