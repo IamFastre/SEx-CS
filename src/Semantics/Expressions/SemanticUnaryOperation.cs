@@ -9,29 +9,23 @@ internal enum UnaryOperationKind
     Identity,
     Negation,
     Complement,
-    Incrementing,
-    Decrementing
 }
 
 internal sealed class SemanticUnaryOperation : SemanticExpression
 {
-    public Token              Operator      { get; }
     public SemanticExpression Operand       { get; }
-
     public UnaryOperationKind OperationKind { get; }
 
-    public override Span Span { get; }
-    public override ValType Type      => Operand.Type;
+    public override Span         Span       { get; }
+    public override ValType      Type => Operand.Type;
     public override SemanticKind Kind => SemanticKind.UnaryOperation;
 
-    public SemanticUnaryOperation(Token @operator, SemanticExpression operand, UnaryOperationKind? kind = null)
+    public SemanticUnaryOperation(SemanticExpression operand, UnaryOperationKind kind, Span span)
     {
-        Operator      = @operator;
         Operand       = operand;
+        OperationKind = kind;
 
-        OperationKind = kind ?? GetOperationKind(@operator.Kind, operand.Type)!.Value;
-
-        Span = new Span(@operator.Span.Start, Operand.Span.End);
+        Span          = span;
     }
 
     public static UnaryOperationKind? GetOperationKind(TokenKind kind, ValType operand)

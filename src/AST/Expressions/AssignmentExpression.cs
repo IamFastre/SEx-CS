@@ -22,7 +22,9 @@ internal class AssignmentExpression : Expression
         Span       = new Span(Assignee.Span, Expression.Span);
     }
 
-    public override string ToString() => $"<{C.BLUE2}Assignment{C.END}: {Assignee} {C.BLUE2}=>{C.END} {Expression}{C.END}>";
+    public override string ToString()
+        => $"<{C.BLUE2}Assignment{C.END}: {Assignee} {C.BLUE2}=>{C.END} {Expression}{C.END}>";
+
     public override IEnumerable<Node> GetChildren()
     {
         yield return Assignee;

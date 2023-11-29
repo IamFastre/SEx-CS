@@ -33,6 +33,7 @@ public enum NodeKind
     ParenthesizedExpression,
     IndexingExpression,
     UnaryOperation,
+    CountingOperation,
     BinaryOperation,
     TernaryOperation,
 }

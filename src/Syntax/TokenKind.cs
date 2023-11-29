@@ -116,6 +116,9 @@ internal static class TokenKindExtension
     public static bool IsAdditive(this TokenKind kind)        => additives.Contains(kind);
     public static bool IsMultiplicative(this TokenKind kind)  => multiplicatives.Contains(kind);
 
+    public static bool IsCounting(this TokenKind kind)        => kind is TokenKind.Increment
+                                                                      or TokenKind.Decrement;
+
     public static bool IsComparative(this TokenKind kind)     => TokenKind.__COMPARATIVE_START__ < kind
                                                               && TokenKind.__COMPARATIVE_END__   > kind;
 
@@ -131,10 +134,11 @@ internal static class TokenKindExtension
     {
         return kind switch
         {
+            TokenKind.Increment or
+            TokenKind.Decrement => 7,
+
             TokenKind.Plus      or
             TokenKind.Minus     or
-            TokenKind.Increment or
-            TokenKind.Decrement or
             TokenKind.ExclamationMark => 6,
 
             _ => 0,

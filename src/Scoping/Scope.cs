@@ -125,7 +125,7 @@ internal class Scope
         }
     }
 
-    public void Assign(NameLiteral name, LiteralValue value)
+    public void Assign(SemanticName name, LiteralValue value)
     {
         Types.Remove(name.Value);
 
@@ -136,8 +136,8 @@ internal class Scope
             Except($"Can't reassign to constant '{name.Value}'", name.Span);
 
         else if (Contains(name.Value)
-             && !IsAssignable(Names[name.Value].Type, value.Type))
-            Except($"Can't assign type '{value.Type.str()}' to '{Names[name.Value].Type.str()}'", name.Span);
+             && !IsAssignable(name.Type, value.Type))
+            Except($"Can't assign type '{value.Type.str()}' to '{name.Type.str()}'", name.Span);
 
         else
             Names[name.Value] = value;

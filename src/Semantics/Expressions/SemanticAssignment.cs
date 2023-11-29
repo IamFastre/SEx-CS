@@ -7,7 +7,7 @@ namespace SEx.Semantics;
 
 internal sealed class SemanticAssignment : SemanticExpression
 {
-    public NameLiteral        Assignee   { get; }
+    public SemanticName       Assignee   { get; }
     public Token              Equal      { get; }
     public SemanticExpression Expression { get; }
 
@@ -15,7 +15,7 @@ internal sealed class SemanticAssignment : SemanticExpression
     public override Span    Span { get; }
     public override SemanticKind Kind => SemanticKind.AssignExpression;
 
-    public SemanticAssignment(NameLiteral assignee, Token equal, SemanticExpression expr)
+    public SemanticAssignment(SemanticName assignee, Token equal, SemanticExpression expr)
     {
         Assignee   = assignee;
         Equal      = equal;

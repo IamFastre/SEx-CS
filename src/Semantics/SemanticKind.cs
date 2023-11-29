@@ -22,6 +22,7 @@ public enum SemanticKind
     ParenExpression,
     IndexingExpression,
     UnaryOperation,
+    CountingOperation,
     BinaryOperation,
     TernaryOperation,
 

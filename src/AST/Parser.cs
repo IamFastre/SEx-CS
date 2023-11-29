@@ -175,6 +175,30 @@ internal class Parser
         return new IndexingExpression(iterable, openBracket, index, closeBracket);
     }
 
+    private Expression? GetCounting(Expression? factor = null)
+    {
+        bool returnAfter = factor is not null;
+        Expression? name = factor;
+        Token       op;
+    
+        op   = Eat();
+
+        if (!returnAfter)
+            name = GetPrimary();
+
+        if (name is null)
+        {
+            Except($"Expected a name {(!returnAfter ? "after" : "before")} operator '{op.Value}'", span:op.Span);
+            return Literal.Unknown(op.Span);
+        }
+
+        if (name is NameLiteral nm)
+            return new CountingOperation(op, nm, returnAfter);
+
+        Except($"Operand of '{op.Value}' must be a name", span:name.Span);
+        return Literal.Unknown(new(op.Span, name.Span));
+    }
+
     private Expression? GetIntermediate()
     {
         var factor = GetPrimary();
@@ -183,6 +207,11 @@ internal class Parser
         {
             case TokenKind.OpenSquareBracket:
                 return GetIndexing(factor!);
+
+            case TokenKind.Increment:
+            case TokenKind.Decrement:
+                return GetCounting(factor!);
+
             default:
                 return factor;
         }
@@ -198,13 +227,18 @@ internal class Parser
             left = GetIntermediate();
         else
         {
+            if (Current.Kind.IsCounting())
+                return GetCounting();
+
             var uOp = Eat();
             left = GetSecondary(unaryPrecedence);
+
             if (left is null)
             {
                 Except($"Expected an expression after operator '{uOp.Value}'", span:uOp.Span);
                 return Literal.Unknown(uOp.Span);
             }
+
             left = new UnaryOperation(uOp, left);
         }
 

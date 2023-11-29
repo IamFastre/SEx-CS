@@ -20,7 +20,9 @@ internal sealed class UnaryOperation : Expression
     }
 
 
-    public override string ToString() => $"<{C.BLUE2}UnaryOperation{C.END}: {C.GREEN2}{Operator.Value}{C.END} {Operand}>";
+    public override string ToString()
+        => $"<{C.BLUE2}UnaryOperation{C.END}: {C.GREEN2}{Operator.Value}{C.END} {Operand}>";
+
     public override IEnumerable<Node> GetChildren()
     {
         yield return Operator.Node;

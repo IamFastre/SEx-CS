@@ -23,7 +23,9 @@ internal sealed class ParenthesizedExpression : Expression
     }
 
 
-    public override string ToString() => $"{C.RED}({C.END}{Expression}{C.RED}){C.END}";
+    public override string ToString()
+        => $"{C.RED}({C.END}{Expression}{C.RED}){C.END}";
+
     public override IEnumerable<Node> GetChildren()
     {
         yield return OpenParen.Node;

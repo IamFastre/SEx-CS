@@ -39,7 +39,9 @@ internal sealed class CompoundAssignmentExpression : Expression
         _ => throw new Exception("Unknown assignment kind"),
     };
 
-    public override string ToString() => $"<{C.BLUE2}CompoundAssignment{C.END}: {Assignee} {C.GREEN2}{Operator.Value}{C.END} {Expression}>";
+    public override string ToString()
+        => $"<{C.BLUE2}CompoundAssignment{C.END}: {Assignee} {C.GREEN2}{Operator.Value}{C.END} {Expression}>";
+
     public override IEnumerable<Node> GetChildren()
     {
         yield return Assignee;

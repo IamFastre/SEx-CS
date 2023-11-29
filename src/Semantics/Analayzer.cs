@@ -4,6 +4,7 @@ using SEx.Scoping;
 using SEx.Evaluate.Values;
 using SEx.Generic.Text;
 using SEx.Generic.Constants;
+using SEx.Parse;
 
 namespace SEx.Semantics;
 
@@ -161,6 +162,9 @@ internal class Analyzer
             case NodeKind.UnaryOperation:
                 return BindUnaryOperation((UnaryOperation) expr);
 
+            case NodeKind.CountingOperation:
+                return BindCountingOperation((CountingOperation) expr);
+
             case NodeKind.BinaryOperation:
                 return BindBinaryOperation((BinaryOperation) expr);
 
@@ -219,7 +223,21 @@ internal class Analyzer
             return operand;
         }
 
-        return new SemanticUnaryOperation(uop.Operator, operand, opKind);
+        return new SemanticUnaryOperation(operand, opKind.Value, uop.Span);
+    }
+
+    private SemanticExpression BindCountingOperation(CountingOperation co)
+    {
+        var name   = BindName(co.Name);
+        var opKind = SemanticCountingOperation.GetOperationKind(co.Operator.Kind, name.Type, co.ReturnAfter);
+
+        if (opKind is null)
+        {
+            Except($"Cannot apply operator '{co.Operator.Value}' on type '{name.Type.str()}'", co.Span);
+            return name;
+        }
+
+        return new SemanticCountingOperation(name, opKind.Value, co.Span);
     }
 
     private SemanticExpression BindBinaryOperation(BinaryOperation biop)
@@ -252,13 +270,16 @@ internal class Analyzer
     private SemanticAssignment BindAssignExpression(AssignmentExpression aexpr)
     {
         var expr = BindExpression(aexpr.Expression);
+        var name = BindName(aexpr.Assignee);
         Scope.Types[aexpr.Assignee.Value] = expr.Type;
-        return new(aexpr.Assignee, aexpr.Equal, expr);
+        return new(name, aexpr.Equal, expr);
     }
 
     private SemanticAssignment BindCompoundAssignExpression(CompoundAssignmentExpression caexpr)
     {
         var expr = BindBinaryOperation(new(caexpr.Assignee, caexpr.Operator, caexpr.Expression));
-        return new(caexpr.Assignee, caexpr.Operator, expr);
+        var name = BindName(caexpr.Assignee);
+
+        return new(name, caexpr.Operator, expr);
     }
 }

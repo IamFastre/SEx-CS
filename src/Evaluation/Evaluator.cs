@@ -166,6 +166,9 @@ internal class Evaluator
                 case SemanticKind.UnaryOperation:
                     return EvaluateUnaryOperation((SemanticUnaryOperation) expr);
 
+                case SemanticKind.CountingOperation:
+                    return EvaluateCountingOperation((SemanticCountingOperation) expr);
+
                 case SemanticKind.BinaryOperation:
                     return EvaluateBinaryOperation((SemanticBinaryOperation) expr);
 
@@ -257,6 +260,33 @@ internal class Evaluator
         }
 
         throw new Exception($"Unrecognized unary operation kind: {uop.OperationKind}");
+    }
+
+    private LiteralValue EvaluateCountingOperation(SemanticCountingOperation co)
+    {
+        var name = EvaluateName(co.Name);
+        var kind = co.OperationKind;
+
+        double _double
+            = kind is CountingKind.IncrementAfter or CountingKind.IncrementBefore
+            ? (double) name.Value + 1D
+
+            : kind is CountingKind.DecrementAfter or CountingKind.DecrementBefore
+            ? (double) name.Value - 1D
+
+            : throw new Exception("This shouldn't occur");
+
+        LiteralValue value;
+        if (name.Type is ValType.Integer)
+            value = new IntegerValue(_double);
+        else
+            value = new FloatValue(_double);
+
+        Scope.Assign(co.Name, value);
+
+        return kind is CountingKind.IncrementAfter or CountingKind.DecrementAfter
+             ? value
+             : name;
     }
 
     private LiteralValue EvaluateBinaryOperation(SemanticBinaryOperation biop)
