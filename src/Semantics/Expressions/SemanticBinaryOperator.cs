@@ -36,6 +36,9 @@ internal enum BinaryOperationKind
     Less,
     GreaterEqual,
     LessEqual,
+
+    ListConcatenation,
+    ListInclusion,
 }
 
 internal class SemanticBinaryOperator
@@ -144,5 +147,9 @@ internal class SemanticBinaryOperator
 
         new(TokenKind.InOperator, BinaryOperationKind.StringInclusion, ValType.String, ValType.String, ValType.Boolean),
         new(TokenKind.InOperator, BinaryOperationKind.StringInclusion, ValType.Char, ValType.String, ValType.Boolean),
+
+
+        new(TokenKind.Plus, BinaryOperationKind.ListConcatenation, ValType.List),
+        new(TokenKind.InOperator, BinaryOperationKind.ListInclusion, ValType.Any, ValType.List, ValType.Boolean),
     };
 }

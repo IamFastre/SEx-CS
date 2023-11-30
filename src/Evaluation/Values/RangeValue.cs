@@ -15,10 +15,9 @@ internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, Nu
     {
         get
         {
-            var len = new IntegerValue(
-                Math.Floor(((double) End.Value - (double) Start.Value) / (double) Step.Value) + 1D
-            );
-            return double.IsPositive((double) len.Value) ? len : null;
+            var len = Math.Floor(((double) End.Value - (double) Start.Value) / (double) Step.Value) + 1D;
+            len = double.IsNaN(len) ? 0 : len;
+            return len >= 0 ? new(len) : null;
         }
     }
 

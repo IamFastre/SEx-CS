@@ -315,6 +315,7 @@ internal class Evaluator
         bool   _bool;
         double _double;
         string _string;
+        // List<LiteralValue> _list;
 
         if (left.Type is ValType.Unknown || right.Type is ValType.Unknown)
             return UnknownValue.Template;
@@ -361,10 +362,10 @@ internal class Evaluator
             case BinaryOperationKind.AND:
             case BinaryOperationKind.OR:
             case BinaryOperationKind.XOR:
-                Int128 _1, _2;
+                Int128 _i1, _i2;
                 try
                 {
-                    (_1, _2) = (Int128.Parse(left.Value.ToString() ?? ""), Int128.Parse(right.Value.ToString() ?? ""));
+                    (_i1, _i2) = (Int128.Parse(left.Value.ToString() ?? ""), Int128.Parse(right.Value.ToString() ?? ""));
                 }
                 catch
                 {
@@ -374,13 +375,13 @@ internal class Evaluator
 
                 _double = (double)
                     ( kind == BinaryOperationKind.AND
-                    ?  _1 & _2
+                    ?  _i1 & _i2
 
                     : kind == BinaryOperationKind.OR
-                    ?  _1 | _2
+                    ?  _i1 | _i2
 
                     : kind == BinaryOperationKind.XOR
-                    ?  _1 ^  _2
+                    ?  _i1 ^  _i2
 
                     : throw new Exception("This shouldn't occur"));
 
@@ -490,7 +491,26 @@ internal class Evaluator
             case BinaryOperationKind.StringInclusion:
                 _bool = ((StringValue) right).Contains(left);
                 return new BoolValue(_bool);
-        }        
+
+            //=====================================================================//
+
+            case BinaryOperationKind.ListConcatenation:
+                ListValue _l1, _l2;
+                (_l1, _l2) = ((ListValue) left, (ListValue) right);
+
+                if (!Scope.IsAssignable(_l1.ElementType, _l2.ElementType, true))
+                {
+                    Except($"Cannot concatenate list of type '{_l1.ElementType.str()}' to '{_l2.ElementType.str()}'",
+                           biop.Span, ExceptionType.TypeError);
+                    return UnknownValue.Template;
+                }
+
+                return _l1.Concat(_l2);
+
+            case BinaryOperationKind.ListInclusion:
+                _bool = ((List<LiteralValue>) right.Value).Any((LiteralValue val) => Equals(val.Value, left.Value));
+                return new BoolValue(_bool);
+        }
 
         throw new Exception($"Unrecognized binary operation kind: {biop.Operator}");
     }

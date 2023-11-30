@@ -12,6 +12,9 @@ internal sealed class ListValue
     public  override object  Value => _values;
     public  override ValType Type  => ValType.List;
 
+    public ListValue(IEnumerable<LiteralValue> list, ValType? type = null)
+        : this (list.ToList(), type) { }
+
     public ListValue(List<LiteralValue> list, ValType? type = null)
     {
         _values     = list;
@@ -35,8 +38,9 @@ internal sealed class ListValue
             if (i != _values.Count - 1)
                 str += $"{val}, ";
             else
-                str += $"{val}{C.GREEN2}]{C.END}";
+                str += $"{val}";
         }
+        str += $"{C.GREEN2}]{C.END}";
 
         return str;
     }
@@ -85,4 +89,7 @@ internal sealed class ListValue
             var fin = index.GetSlice(slice.ToArray()).ToList();
             return new(fin, ElementType);
     }
+
+    public ListValue Concat(ListValue other)
+        => new(_values.Concat(other._values));
 }

@@ -40,6 +40,14 @@ internal class Scope
     public void Flush()
         => Names.Clear();
 
+    public static bool IsAssignable(ValType value1, ValType value2, bool noOrder)
+    {
+        if (!noOrder)
+            return IsAssignable(value1, value2);
+        
+        return IsAssignable(value1, value2) || IsAssignable(value2, value1);
+    }
+
     public static bool IsAssignable(ValType hint, ValType value)
         => hint.HasFlag(value)
         || ValType.Nones.HasFlag(value)
@@ -140,6 +148,16 @@ internal class Scope
             Except($"Can't assign type '{value.Type.str()}' to '{name.Type.str()}'", valueSpan ?? name.Span);
 
         else
+        {
+            if (name.Type == ValType.List
+            && !IsAssignable(((ListValue) Names[name.Value]).ElementType, ((ListValue) value).ElementType))
+            {
+                Except($"Cannot assign list of type '{((ListValue) Names[name.Value])
+                       .ElementType.str()}' to '{((ListValue) value).ElementType.str()}'", valueSpan ?? name.Span);
+                return;
+            }
+
             Names[name.Value] = value;
+        }
     }
 }
