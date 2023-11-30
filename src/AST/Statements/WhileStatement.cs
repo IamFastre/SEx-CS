@@ -32,10 +32,7 @@ internal sealed class WhileStatement : Statement
     public override IEnumerable<Node> GetChildren()
     {
         yield return While.Node;
-
-        if (Condition is not null)
-            yield return Condition;
-
+        yield return Condition;
         yield return Body;
 
         if (ElseClause is not null)

@@ -2,8 +2,8 @@ namespace SEx.Evaluate.Values;
 
 internal interface IIterableValue
 {
+    public abstract IntegerValue? Length { get; }
     public abstract static ValType GetIndexReturn(ValType index);
-
     public static LiteralValue? GetElement(LiteralValue iterator, LiteralValue index)
     {
         switch (iterator)

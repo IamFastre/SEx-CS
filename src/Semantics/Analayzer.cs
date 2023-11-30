@@ -62,62 +62,74 @@ internal class Analyzer
             case NodeKind.WhileStatement:
                 return BindWhileStatement((WhileStatement) stmt);
 
+            case NodeKind.ForStatement:
+                return BindForStatement((ForStatement) stmt);
+
             default:
                 throw new Exception($"Unrecognized statement kind: {stmt.Kind}");
         }
     }
 
-    private SemanticIfStatement BindIfStatement(IfStatement stmt)
+    private SemanticIfStatement BindIfStatement(IfStatement @is)
     {
         SemanticElseClause? elseClause = null;
 
-        var condition = BindExpression(stmt.Condition, ValType.Boolean | ValType.Unknown);
-        var thenStmt  = BindStatement(stmt.Then);
+        var condition = BindExpression(@is.Condition, ValType.Boolean | ValType.Unknown);
+        var thenStmt  = BindStatement(@is.Then);
 
-        if (stmt.ElseClause is not null)
-            elseClause = BindElseClause(stmt.ElseClause);
+        if (@is.ElseClause is not null)
+            elseClause = BindElseClause(@is.ElseClause);
 
-        return new(stmt.If, condition, thenStmt, elseClause);
+        return new(@is.If, condition, thenStmt, elseClause);
     }
 
-    private SemanticWhileStatement BindWhileStatement(WhileStatement stmt)
+    private SemanticWhileStatement BindWhileStatement(WhileStatement ws)
     {
         SemanticElseClause? elseClause = null;
 
-        var condition = BindExpression(stmt.Condition, ValType.Boolean | ValType.Unknown);
-        var thenStmt  = BindStatement(stmt.Body);
+        var condition = BindExpression(ws.Condition, ValType.Boolean | ValType.Unknown);
+        var thenStmt  = BindStatement(ws.Body);
 
-        if (stmt.ElseClause is not null)
-            elseClause = BindElseClause(stmt.ElseClause);
+        if (ws.ElseClause is not null)
+            elseClause = BindElseClause(ws.ElseClause);
 
-        return new(stmt.While, condition, thenStmt, elseClause);
+        return new(ws.While, condition, thenStmt, elseClause);
     }
 
-    private SemanticElseClause BindElseClause(ElseClause cls)
+    private SemanticElseClause BindElseClause(ElseClause ec)
     {
-        var elseStmt = BindStatement(cls.Body);
-        return new(cls.Else, elseStmt);
+        var elseStmt = BindStatement(ec.Body);
+        return new(ec.Else, elseStmt);
     }
 
-    private SemanticBlockStatement BindBlockStatement(BlockStatement stmt)
+    private SemanticForStatement BindForStatement(ForStatement fs)
+    {
+        var variable = BindName(fs.Variable);
+        var iterable = BindExpression(fs.Iterable);
+        var body     = BindStatement(fs.Body);
+
+        return new(fs.For, variable, iterable, body);
+    }
+
+    private SemanticBlockStatement BindBlockStatement(BlockStatement bs)
     {
         List<SemanticStatement> statements = new();
 
-        foreach (var statement in stmt.Body)
+        foreach (var statement in bs.Body)
             statements.Add(BindStatement(statement));
 
-        return new(stmt.OpenBrace, statements.ToArray(), stmt.CloseBrace);
+        return new(bs.OpenBrace, statements.ToArray(), bs.CloseBrace);
     }
 
-    private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement stmt)
+    private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement ds)
     {
-        var expr = stmt.Expression is not null ? BindExpression(stmt.Expression) : null;
-        return new(stmt, stmt.Type, expr);
+        var expr = ds.Expression is not null ? BindExpression(ds.Expression) : null;
+        return new(ds, ds.Type, expr);
     }
 
-    private SemanticExpressionStatement BindExpressionStatement(ExpressionStatement stmt)
+    private SemanticExpressionStatement BindExpressionStatement(ExpressionStatement es)
     {
-        var expr = BindExpression(stmt.Expression);
+        var expr = BindExpression(es.Expression);
         return new(expr);
     }
 

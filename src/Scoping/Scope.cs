@@ -55,7 +55,7 @@ internal class Scope
 
     public LiteralValue TryResolve(string value)
     {
-        if (Contains(value))
+        if (Names.ContainsKey(value))
             return Names[value];
         
         if (Parent is not null)
@@ -65,21 +65,18 @@ internal class Scope
     }
 
     public ValType ResolveType(NameLiteral name)
+        => ResolveType(new SemanticName(name, ValType.Unknown));
+
+    public ValType ResolveType(SemanticName name)
     {
-        if (Contains(name))
+        if (Names.ContainsKey(name.Value))
             return this[name].Type;
 
         if (Types.ContainsKey(name.Value))
             return Types[name.Value];
 
         if (Parent is not null)
-        {
-            if (Parent.Contains(name))
-                return Parent[name].Type;
-            
-            if (Parent.Types.ContainsKey(name.Value))
-                return Parent.Types[name.Value];
-        }
+            return Parent.ResolveType(name);
 
         return ValType.Unknown;
     }
@@ -88,7 +85,7 @@ internal class Scope
     public LiteralValue Resolve(SemanticName name) => Resolve(name.Value, name.Span);
     public LiteralValue Resolve(string value, Span span)
     {
-        if (Contains(value))
+        if (Names.ContainsKey(value))
             return Names[value];
         
         if (Parent is not null)
@@ -98,13 +95,11 @@ internal class Scope
         return UnknownValue.Template;
     }
 
-    internal void Declare(SemanticDeclarationStatement dec, LiteralValue value)
+    public void Declare(SemanticDeclarationStatement dec, LiteralValue value)
     {
-        Types.Remove(dec.Name.Value);
-
         if (dec.IsConstant && dec.Expression is null)
         {
-            if (Contains(dec.Name))
+            if (Names.ContainsKey(dec.Name.Value))
             {
                 if (dec.Type is not null)
                         Except($"No need for added type '{dec.Type.Value}' in constant construction",
@@ -133,31 +128,27 @@ internal class Scope
         }
     }
 
-    public void Assign(SemanticName name, LiteralValue value, Span? valueSpan = null)
+    public void Assign(SemanticName name, LiteralValue value, bool skipDeclaration = false, Span? valueSpan = null)
     {
-        Types.Remove(name.Value);
+        if (Names.ContainsKey(name.Value))
+        {
+            if (Consts.Contains(name.Value))
+                Except($"Can't reassign to constant '{name.Value}'", name.Span);
 
-        if (!Contains(name))
-            Except($"Name '{name.Value}' was not declared to assign to", name.Span);
+            else if (Names.ContainsKey(name.Value) && !IsAssignable(ResolveType(name), value.Type))
+                Except($"Can't assign type '{value.Type.str()}' to '{ResolveType(name).str()}'", valueSpan ?? name.Span);
 
-        else if (Consts.Contains(name.Value))
-            Except($"Can't reassign to constant '{name.Value}'", name.Span);
+            else if (ResolveType(name) == ValType.List && !IsAssignable(((ListValue) Names[name.Value]).ElementType, ((ListValue) value).ElementType))
+                Except($"Cannot assign list of type '{((ListValue) Names[name.Value]).ElementType.str()}' to '{((ListValue) value).ElementType.str()}'", valueSpan ?? name.Span);
 
-        else if (Contains(name.Value)
-             && !IsAssignable(name.Type, value.Type))
-            Except($"Can't assign type '{value.Type.str()}' to '{name.Type.str()}'", valueSpan ?? name.Span);
+            else
+                Names[name.Value] = value;
+        }
+
+        else if (Parent is not null && Parent.Names.ContainsKey(name.Value))
+            Parent.Assign(name, value, skipDeclaration, valueSpan);
 
         else
-        {
-            if (name.Type == ValType.List
-            && !IsAssignable(((ListValue) Names[name.Value]).ElementType, ((ListValue) value).ElementType))
-            {
-                Except($"Cannot assign list of type '{((ListValue) Names[name.Value])
-                       .ElementType.str()}' to '{((ListValue) value).ElementType.str()}'", valueSpan ?? name.Span);
-                return;
-            }
-
-            Names[name.Value] = value;
-        }
+            Except($"Name '{name.Value}' was not declared to assign to", name.Span);
     }
 }

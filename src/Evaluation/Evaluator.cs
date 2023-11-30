@@ -10,9 +10,9 @@ namespace SEx.Evaluate;
 
 internal class Evaluator
 {
-    public Scope                    Scope        { get; }
     public Diagnostics              Diagnostics  { get; }
     public SemanticProgramStatement SemanticTree { get; }
+    public Scope                    Scope        { get; protected set; }
     public LiteralValue             Value        { get; protected set; }
 
     public Evaluator(Analyzer analyzer)
@@ -60,65 +60,100 @@ internal class Evaluator
                 case SemanticKind.WhileStatement:
                     return EvaluateWhileStatement((SemanticWhileStatement) stmt);
 
+                case SemanticKind.ForStatement:
+                    return EvaluateForStatement((SemanticForStatement) stmt);
+
                 default:
                     throw new Exception($"Unexpected statement type {stmt?.Kind}");
         }
     }
 
-    private LiteralValue EvaluateIfStatement(SemanticIfStatement stmt)
+    private LiteralValue EvaluateIfStatement(SemanticIfStatement @is)
     {
         LiteralValue value = VoidValue.Template;
-        var conditionVal = EvaluateExpression(stmt.Condition);
+        var conditionVal = EvaluateExpression(@is.Condition);
 
         if (conditionVal.Type == ValType.Boolean)
         {
             if ((bool) conditionVal.Value)
-                value = EvaluateStatement(stmt.Then);
+                value = EvaluateStatement(@is.Then);
             else
-                if (stmt.ElseClause is not null)
-                    value = EvaluateStatement(stmt.ElseClause.Body);
+                if (@is.ElseClause is not null)
+                    value = EvaluateStatement(@is.ElseClause.Body);
         }
 
         return value;
     }
 
-    private LiteralValue EvaluateWhileStatement(SemanticWhileStatement stmt)
+    private LiteralValue EvaluateWhileStatement(SemanticWhileStatement ws)
     {
         LiteralValue value = VoidValue.Template;
-        var conditionVal = EvaluateExpression(stmt.Condition);
+        var conditionVal = EvaluateExpression(ws.Condition);
 
         if (conditionVal.Type == ValType.Boolean)
         {
             if ((bool) conditionVal.Value)
-                while ((bool) EvaluateExpression(stmt.Condition).Value)
-                    value = EvaluateStatement(stmt.Body);
+                while ((bool) EvaluateExpression(ws.Condition).Value)
+                    value = EvaluateStatement(ws.Body);
             else
-                if (stmt.ElseClause is not null)
-                    value = EvaluateStatement(stmt.ElseClause.Body);
+                if (ws.ElseClause is not null)
+                    value = EvaluateStatement(ws.ElseClause.Body);
         }
 
         return value;
     }
 
-    private LiteralValue EvaluateBlockStatement(SemanticBlockStatement stmt)
+    private LiteralValue EvaluateForStatement(SemanticForStatement fs)
+    {
+        LiteralValue value = VoidValue.Template;
+        var expr           = EvaluateExpression(fs.Iterable);
+
+        if (ValType.Iterable.HasFlag(expr.Type))
+        {
+            var iterableVal = (IIterableValue) expr;
+            var len         = (double)(iterableVal.Length?.Value ?? 0);
+            var scope       = new Scope(Diagnostics, Scope);
+            Scope = scope;
+
+            for (int i = 0; i < len; i++)
+            {
+                var elem = IIterableValue.GetElement((LiteralValue) iterableVal, new IntegerValue(i));
+
+                if (elem is null)
+                    break;
+
+                if (i == 0)
+                    scope.Names[fs.Variable.Value] = elem;
+                else
+                    scope.Assign(fs.Variable, elem, true, fs.Iterable.Span);
+
+                value = EvaluateStatement(fs.Body);
+            }
+            Scope = scope.Parent!;
+        }
+
+        return value;
+    }
+
+    private LiteralValue EvaluateBlockStatement(SemanticBlockStatement bs)
     {
         LiteralValue lastValue = VoidValue.Template;
-        foreach (var statement in stmt.Body)
+        foreach (var statement in bs.Body)
             lastValue = EvaluateStatement(statement);
 
         return lastValue;
     }
 
-    private LiteralValue EvaluateDeclarationStatement(SemanticDeclarationStatement stmt)
+    private LiteralValue EvaluateDeclarationStatement(SemanticDeclarationStatement ds)
     {
-        var value = stmt.Expression is null ? UndefinedValue.New(stmt.TypeHint) : EvaluateExpression(stmt.Expression);
-        if (stmt.Name.Value.Length > 0)
-            Scope.Declare(stmt, value);
+        var value = ds.Expression is null ? UndefinedValue.New(ds.TypeHint) : EvaluateExpression(ds.Expression);
+        if (ds.Name.Value.Length > 0)
+            Scope.Declare(ds, value);
         return VoidValue.Template;
     }
 
-    private LiteralValue EvaluateExpressionStatement(SemanticExpressionStatement stmt)
-        => EvaluateExpression(stmt.Expression);
+    private LiteralValue EvaluateExpressionStatement(SemanticExpressionStatement es)
+        => EvaluateExpression(es.Expression);
 
     //=====================================================================//
     //=====================================================================//
@@ -192,18 +227,18 @@ internal class Evaluator
         throw new Exception($"Unexpected expression type {expr?.Kind}");
     }
 
-    private LiteralValue EvaluateParenExpression(SemanticParenExpression expr)
-        => EvaluateExpression(expr.Expression);
+    private LiteralValue EvaluateParenExpression(SemanticParenExpression pe)
+        => EvaluateExpression(pe.Expression);
 
-    private LiteralValue EvaluateRange(SemanticRange expr)
+    private LiteralValue EvaluateRange(SemanticRange r)
     {
         LiteralValue value = UnknownValue.Template;
 
-        var start = EvaluateExpression(expr.Start);
-        var end   = EvaluateExpression(expr.End);
-        var step  = expr.Step is null
+        var start = EvaluateExpression(r.Start);
+        var end   = EvaluateExpression(r.End);
+        var step  = r.Step is null
                   ? new IntegerValue(1D)
-                  : EvaluateExpression(expr.Step);
+                  : EvaluateExpression(r.Step);
 
 
         if (ValType.Number.HasFlag(start.Type)
@@ -213,7 +248,7 @@ internal class Evaluator
             value = new RangeValue((NumberValue) start, (NumberValue) end, (NumberValue) step);
             if (((RangeValue) value).Length is null)
             {
-                Except($"Range end point and step direction don't match", expr.Span, ExceptionType.MathError);
+                Except($"Range end point and step direction don't match", r.Span, ExceptionType.MathError);
                 value = UnknownValue.Template;
             }
         }
@@ -225,14 +260,16 @@ internal class Evaluator
     private LiteralValue EvaluateName(SemanticName n)
         => Scope[n];
 
-    private ListValue EvaluateArray(SemanticList ll)
+    private LiteralValue EvaluateArray(SemanticList ll)
     {
         List<LiteralValue> values = new();
 
         foreach (var statement in ll.Elements)
             values.Add(EvaluateExpression(statement));
 
-        return new ListValue(values, ll.ElementType);
+        var type = values.Count > 0 ? values[0].Type : ll.ElementType; 
+
+        return new ListValue(values, type);
     }
 
     private LiteralValue EvaluateIndexingExpression(SemanticIndexingExpression ie)
@@ -537,7 +574,7 @@ internal class Evaluator
                 return val;
         }
         else
-            Scope.Assign(aseprx.Assignee, val, aseprx.Expression.Span);
+            Scope.Assign(aseprx.Assignee, val, valueSpan:aseprx.Expression.Span);
 
         return Scope.TryResolve(aseprx.Assignee.Value);
     }

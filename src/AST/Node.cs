@@ -51,7 +51,7 @@ internal abstract class Node
             => $"<{C.YELLOW2}{a}: {C.GREEN2}'{b}'{C.END}>";
 
 
-        var children = GetChildren();
+        var children = GetChildren().ToArray();
         if (this is Literal LT)
         {
             writer.WriteLine(leaf(LT.Kind.ToString(), LT.Value ?? ""));
@@ -59,8 +59,11 @@ internal abstract class Node
         }
 
         writer.WriteLine($"[{C.BLUE2}{C.BLINK}{Kind}{C.END}]");
-        foreach (var child in children)
+
+        for (int i = 0; i < children.Length; i++)
         {
+            var child = children[i];
+
             if (child == children.LastOrDefault())
                 writer.Write(indent + last);
             else
@@ -73,7 +76,7 @@ internal abstract class Node
                 continue;
             }
 
-            if (child == children.LastOrDefault())
+            if (i == children.Length - 1)
                 child.WriteTree(writer, indent + space);
             else
                 child.WriteTree(writer, indent + vertical);

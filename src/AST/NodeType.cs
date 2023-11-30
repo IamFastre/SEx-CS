@@ -27,6 +27,7 @@ public enum NodeKind
     IfStatement,
     WhileStatement,
     ElseClause,
+    ForStatement,
 
     // Expressions
     AssignmentExpression,

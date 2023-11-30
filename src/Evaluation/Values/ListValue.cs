@@ -12,6 +12,8 @@ internal sealed class ListValue
     public  override object  Value => _values;
     public  override ValType Type  => ValType.List;
 
+    public IntegerValue Length => new(_values.Count);
+
     public ListValue(IEnumerable<LiteralValue> list, ValType? type = null)
         : this (list.ToList(), type) { }
 

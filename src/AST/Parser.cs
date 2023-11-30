@@ -152,7 +152,6 @@ internal class Parser
                 if (IsNextKind(TokenKind.Comma))
                     continue;
             }
-
             break;
         }
         while (Current.Kind != endToken);
@@ -418,6 +417,22 @@ internal class Parser
         return new(elseKeyword, statement);
     }
 
+    private ForStatement GetForStatement()
+    {
+        var forKeyword = Eat();
+        var variable   = Expect(TokenKind.Identifier, "Expected an identifier");
+        Expect(TokenKind.InOperator);
+        var iterable   = GetExpression() ?? Literal.Unknown(Current.Span);
+        Expect(TokenKind.Colon, $"Expected a colon after 'for' clause", span:forKeyword.Span);
+        var statement = GetStatement();
+
+        if (statement is ExpressionStatement exprStmt)
+            if (exprStmt.Expression.Kind is NodeKind.Unknown)
+                Except("Expected a statement", span:forKeyword.Span);
+    
+        return new(forKeyword, new(variable), iterable, statement);
+    }
+
     private WhileStatement GetWhileStatement()
     {
         ElseClause? elseClause = null;
@@ -425,9 +440,9 @@ internal class Parser
         var condition    = GetExpression() ?? Literal.Unknown(Current.Span);
 
         if (condition.Kind is NodeKind.Unknown)
-                Except($"Expected an expression after while keyword", span:whileKeyword.Span);
+                Except($"Expected an expression after 'while' keyword", span:whileKeyword.Span);
 
-        Expect(TokenKind.Colon, $"Expected a colon after while condition", span:whileKeyword.Span);
+        Expect(TokenKind.Colon, $"Expected a colon after 'while' condition", span:whileKeyword.Span);
         var statement = GetStatement();
 
         if (statement is ExpressionStatement exprStmt)
@@ -447,9 +462,9 @@ internal class Parser
         var condition = GetExpression() ?? Literal.Unknown(Current.Span);
 
         if (condition.Kind is NodeKind.Unknown)
-                Except($"Expected an expression after if keyword", span:ifKeyword.Span);
+                Except($"Expected an expression after 'if' keyword", span:ifKeyword.Span);
 
-        Expect(TokenKind.Colon, $"Expected a colon after if condition", span:ifKeyword.Span);
+        Expect(TokenKind.Colon, $"Expected a colon after 'if' condition", span:ifKeyword.Span);
         var statement = GetStatement();
 
         if (statement is ExpressionStatement exprStmt)
@@ -477,6 +492,9 @@ internal class Parser
 
             case TokenKind.While:
                 return GetWhileStatement();
+
+            case TokenKind.For:
+                return GetForStatement();
 
             default:
                 return GetExpressionStatement();

@@ -10,6 +10,8 @@ internal sealed class StringValue
     public override object Value => _value;
     public override ValType Type => ValType.String;
 
+    public IntegerValue Length => new(_value.Length);
+
     public StringValue(string value)
         => _value = value;
 
