@@ -22,7 +22,7 @@ internal enum ValType
     Iterable = String  | Range   | List,
     Any      = Null    | Boolean | Integer | Float | Char | String | Range,
     Nones    = Void    | Unknown | Null,
-    UAVT     = Void    | Unknown, // Un-assignable value types
+    UAVTs     = Void    | Unknown, // Un-assignable value types
 }
 
 internal static class ValTypeExtension

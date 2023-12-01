@@ -6,6 +6,9 @@ internal abstract class LiteralValue
     public abstract object Value { get; }
     public abstract ValType Type { get; }
 
+    public bool IsKnown   => this is not UnknownValue;
+    public bool IsDefined => this is not UndefinedValue;
+
     public ValType GetValueType() => this switch
     {
         VoidValue    => ValType.Void,

@@ -9,7 +9,7 @@ namespace SEx.Semantics;
 internal sealed class SemanticDeclarationStatement : SemanticStatement
 {
     public NameLiteral         Name       { get; }
-    public Token?              Type       { get; }
+    public Token?              TypeToken  { get; }
     public ValType             TypeHint   { get; }
     public bool                IsConstant { get; }
     public SemanticExpression? Expression { get; }
@@ -17,12 +17,12 @@ internal sealed class SemanticDeclarationStatement : SemanticStatement
     public override Span Span { get; }
     public override SemanticKind Kind => SemanticKind.DeclarationStatement;
 
-    public SemanticDeclarationStatement(DeclarationStatement declaration, Token? type, SemanticExpression? expression)
+    public SemanticDeclarationStatement(DeclarationStatement declaration, Token? typeToken, SemanticExpression? expression)
     {
         Name       = declaration.Name;
         IsConstant = declaration.IsConstant;
-        Type       = type;
-        TypeHint   = GetNameType(type?.Value);
+        TypeToken  = typeToken;
+        TypeHint   = GetNameType(typeToken?.Value);
         Expression = expression;
         Span       = declaration.Span;
     }
@@ -35,10 +35,8 @@ internal sealed class SemanticDeclarationStatement : SemanticStatement
         CONSTS.CHAR    => ValType.Char,
         CONSTS.STRING  => ValType.String,
         CONSTS.RANGE   => ValType.Range,
-
         CONSTS.NUMBER  => ValType.Number,
-        CONSTS.ANY     => ValType.Any,
 
-        _ => ValType.Null,
+        _              => ValType.Any,
     };
 }

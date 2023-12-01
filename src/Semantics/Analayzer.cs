@@ -124,6 +124,9 @@ internal class Analyzer
     private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement ds)
     {
         var expr = ds.Expression is not null ? BindExpression(ds.Expression) : null;
+        Scope.Types[ds.Name.Value] = expr?.Type
+                                   ?? SemanticDeclarationStatement.GetNameType(ds.Type?.Value);
+
         return new(ds, ds.Type, expr);
     }
 
@@ -210,7 +213,7 @@ internal class Analyzer
     }
 
     private SemanticName BindName(NameLiteral n)
-        => new(n, Scope.ResolveType(n));
+        => new(n, Scope.ResolveType(n.Value));
 
     private SemanticList BindList(ListLiteral ll)
     {
@@ -242,13 +245,19 @@ internal class Analyzer
         return new(pe.OpenParen, expr, pe.CloseParen);
     }
 
-    private SemanticIndexingExpression BindIndexingExpression(IndexingExpression ie)
+    private SemanticExpression BindIndexingExpression(IndexingExpression ie)
     {
         var iterable    = BindExpression(ie.Iterable);
         var index       = BindExpression(ie.Index);
         var elementType = SemanticIndexingExpression.GetElementType(iterable.Type, index.Type);
 
-        return new(iterable, index, elementType ?? ValType.Unknown, ie.Span);
+        if (elementType is null)
+        {
+            Except($"Can't perform indexing on '{iterable.Type.str()}'", ie.Iterable.Span);
+            return new SemanticFailedExpression(new[] { iterable, index });
+        }
+
+        return new SemanticIndexingExpression(iterable, index, elementType ?? ValType.Unknown, ie.Span);
     }
 
     private SemanticExpression BindUnaryOperation(UnaryOperation uop)
@@ -259,7 +268,7 @@ internal class Analyzer
         if (opKind is null)
         {
             Except($"Cannot apply operator '{uop.Operator.Value}' on type '{operand.Type.str()}'", uop.Span);
-            return operand;
+            return new SemanticFailedExpression(new[] { operand });
         }
 
         return new SemanticUnaryOperation(operand, opKind.Value, uop.Span);
@@ -273,7 +282,7 @@ internal class Analyzer
         if (opKind is null)
         {
             Except($"Cannot apply operator '{co.Operator.Value}' on type '{name.Type.str()}'", co.Span);
-            return name;
+            return new SemanticFailedExpression(new[] { name });
         }
 
         return new SemanticCountingOperation(name, opKind.Value, co.Span);

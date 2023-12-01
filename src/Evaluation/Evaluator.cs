@@ -146,9 +146,23 @@ internal class Evaluator
 
     private LiteralValue EvaluateDeclarationStatement(SemanticDeclarationStatement ds)
     {
-        var value = ds.Expression is null ? UndefinedValue.New(ds.TypeHint) : EvaluateExpression(ds.Expression);
-        if (ds.Name.Value.Length > 0)
+        var value = ds.Expression is null
+                  ? UndefinedValue.New(ds.TypeHint)
+                  : EvaluateExpression(ds.Expression);
+
+        if (ds.IsConstant && ds.Expression is null)
+        {
+            if (ds.TypeToken is not null)
+                Except($"No need for added type '{ds.TypeToken.Value}' in constant construction",
+                       ds.TypeToken.Span, ExceptionType.SyntaxError);
+            else if (!Scope.TryResolve(ds.Name.Value, out _))
+                    Except($"No value was given to constant '{ds.Name.Value}'", ds.Name.Span);
+            else
+                Scope.MakeConst(ds.Name);
+        }
+        else
             Scope.Declare(ds, value);
+
         return VoidValue.Template;
     }
 
@@ -258,7 +272,7 @@ internal class Evaluator
     }
 
     private LiteralValue EvaluateName(SemanticName n)
-        => Scope[n];
+        => Scope.Resolve(n.Value, n.Span);
 
     private LiteralValue EvaluateArray(SemanticList ll)
     {
@@ -278,10 +292,7 @@ internal class Evaluator
         var index    = EvaluateExpression(ie.Index);
         var elem     = IIterableValue.GetElement(iterable, index);
 
-        if (!ValType.Iterable.HasFlag(iterable.Type))
-            Except($"Can't perform indexing on '{iterable.Type.str()}'", ie.Iterable.Span);
-
-        else if (elem is null)
+        if (elem is null)
             Except($"Index is out of boundary", ie.Index.Span);
 
         else if (elem.Type is ValType.Unknown)
@@ -354,31 +365,14 @@ internal class Evaluator
         string _string;
         // List<LiteralValue> _list;
 
-        if (left.Type is ValType.Unknown || right.Type is ValType.Unknown)
+        if (!left.IsKnown || !right.IsKnown)
             return UnknownValue.Template;
 
-        if (kind is not (BinaryOperationKind.Equality or BinaryOperationKind.Inequality or BinaryOperationKind.NullishCoalescence)
-        && (left is UndefinedValue || right is UndefinedValue))
-        {
-            string val = "";
-            ValType type = biop.Type;
-            Span span = biop.Span;
-            if (biop.Left is SemanticName L)
-            {
-                    val  = L.Value;
-                    type = L.Type;
-                    span = L.Span;
-            }
-            if (biop.Right is SemanticName R)
-            {
-                    val  = R.Value;
-                    type = R.Type;
-                    span = R.Span;
-            }
+        if (!left.IsDefined)
+            return UseOfUndefined((SemanticName) biop.Left);
 
-            Except($"Name '{val}' (of type '{type.str()}') not assigned to yet", span);
-            return UnknownValue.Template;
-        }
+        if (!right.IsDefined)
+            return UseOfUndefined((SemanticName) biop.Right);
 
         switch (kind)
         {
@@ -570,13 +564,14 @@ internal class Evaluator
 
         if (val.Type is ValType.Unknown)
         {
-            if (!Scope.Contains(aseprx.Assignee))
+            if (!Scope.TryResolve(aseprx.Assignee.Value, out val))
                 return val;
         }
         else
             Scope.Assign(aseprx.Assignee, val, valueSpan:aseprx.Expression.Span);
 
-        return Scope.TryResolve(aseprx.Assignee.Value);
+        Scope.TryResolve(aseprx.Assignee.Value, out val);
+        return val;
     }
 
     private LiteralValue EvaluateFailedExpression(SemanticFailedExpression fe)
@@ -676,4 +671,15 @@ internal class Evaluator
 
         return null;
     }
+
+    //=====================================================================//
+    //=====================================================================//
+    //=====================================================================//
+
+    private LiteralValue UseOfUndefined(SemanticName n)
+    {
+        Except($"Name '{n.Value}' (of type '{n.Type.str()}') not assigned to yet", n.Span);
+        return UnknownValue.Template;
+    }
+
 }
