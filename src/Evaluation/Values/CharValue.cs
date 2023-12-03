@@ -7,11 +7,14 @@ internal sealed class CharValue : LiteralValue
 {
 
     private readonly char _value;
-    public override object Value => _value;
-    public override ValType Type => ValType.Char;
+    public  override object Value => _value;
+    public  override ValType Type => ValType.Char;
 
     public CharValue(char value) => _value = value;
 
-    public override string ToString() => $"{C.BLUE2}'{str()}'{C.END}";
-    public override string str()      => _value.ToString().Escape();
+    public override string ToString()
+    => $"{C.BLUE2}'{str()}'{C.END}";
+
+    public override string str()
+        => _value.ToString().Escape();
 }

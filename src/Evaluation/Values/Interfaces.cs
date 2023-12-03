@@ -14,7 +14,7 @@ internal interface IIterableValue
                 if (index is RangeValue rngv)
                     return str.GetElement(rngv);
                 break;
-            
+
             case RangeValue rng:
                 if (index is IntegerValue intv2)
                     return rng.GetElement(intv2);

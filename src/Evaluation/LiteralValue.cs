@@ -1,6 +1,5 @@
 namespace SEx.Evaluate.Values;
 
-
 internal abstract class LiteralValue
 {
     public abstract object Value { get; }
@@ -8,6 +7,7 @@ internal abstract class LiteralValue
 
     public bool IsKnown   => this is not UnknownValue;
     public bool IsDefined => this is not UndefinedValue;
+    public bool IsGeneric => this is     GenericValue;
 
     public ValType GetValueType() => this switch
     {

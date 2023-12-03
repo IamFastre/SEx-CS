@@ -37,7 +37,7 @@ internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, Nu
     public NumberValue? GetElement(IntegerValue index)
     {
         var val = NumberValue.Get((double) index.Value * (double) Step.Value + (double) Start.Value);
-        return Contains(index) ? val : null;
+        return Contains(val) ? val : null;
     }
 
     public bool Contains(LiteralValue value)
@@ -50,8 +50,7 @@ internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, Nu
                     ? ((double) Start.Value)
                     : ((double) End.Value);
 
-        return smaller <= ((double) value.Value) &&
-               bigger  >= ((double) value.Value);
+        return (smaller <= ((double) value.Value)) && (bigger >= ((double) value.Value));
     }
 
     public static ValType GetIndexReturn(ValType index) => index switch

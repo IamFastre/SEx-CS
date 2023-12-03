@@ -7,8 +7,11 @@ internal class NullValue : LiteralValue
     public override object Value => null!;
     public override ValType Type => ValType.Null;
 
-    public override string ToString() => C.RED2 + str() + C.END;
-    public override string str()      => CONSTS.NULL;
+    public override string ToString()
+        => C.RED2 + str() + C.END;
+
+    public override string str()
+        => CONSTS.NULL;
 }
 
 internal sealed class VoidValue : LiteralValue
@@ -18,8 +21,11 @@ internal sealed class VoidValue : LiteralValue
     public override object Value => null!;
     public override ValType Type => ValType.Void;
 
-    public override string ToString() => str();
-    public override string str()      => "";
+    public override string ToString()
+        => str();
+
+    public override string str()
+        => "";
 }
 
 internal sealed class UnknownValue : LiteralValue
@@ -29,14 +35,24 @@ internal sealed class UnknownValue : LiteralValue
     public override object Value => null!;
     public override ValType Type => ValType.Unknown;
 
-    public override string ToString() => C.RED2 + str() + C.END;
-    public override string str()      => CONSTS.UNKNOWN;
+    public override string ToString()
+        => C.RED2 + str() + C.END;
+
+    public override string str()
+        => CONSTS.UNKNOWN;
 }
 
-internal sealed class UndefinedValue : NullValue
+internal sealed class UndefinedValue : LiteralValue
 {
     private ValType _type;
     public static UndefinedValue New(ValType type = ValType.Null) => new() {_type = type};
 
+    public override object Value => null!;
     public override ValType Type => _type;
+
+    public override string ToString()
+        => C.RED2 + str() + C.END;
+
+    public override string str()
+        => CONSTS.UNDEFINED;
 }

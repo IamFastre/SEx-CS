@@ -394,15 +394,25 @@ internal class Evaluator
             case BinaryOperationKind.OR:
             case BinaryOperationKind.XOR:
                 Int128 _i1, _i2;
-                try
-                {
-                    (_i1, _i2) = (Int128.Parse(left.Value.ToString() ?? ""), Int128.Parse(right.Value.ToString() ?? ""));
-                }
-                catch
+                if (left.Type is ValType.Integer && (double) left.Value > (double) Int128.MaxValue)
                 {
                     Except($"Integer too big for bitwise {kind}", biop.Span, ExceptionType.OverflowError);
                     return UnknownValue.Template;
                 }
+                else if (left is BoolValue b)
+                    _i1  = b.ToInt();
+                else
+                    _i1 = Int128.Parse(left.Value.ToString() ?? "");
+
+                if (right.Type is ValType.Integer && (double) right.Value > (double) Int128.MaxValue)
+                {
+                    Except($"Integer too big for bitwise {kind}", biop.Span, ExceptionType.OverflowError);
+                    return UnknownValue.Template;
+                }
+                else if (right is BoolValue b)
+                    _i2  = b.ToInt();
+                else
+                    _i2 = Int128.Parse(right.Value.ToString() ?? "");
 
                 _double = (double)
                     ( kind == BinaryOperationKind.AND

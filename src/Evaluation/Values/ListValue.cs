@@ -4,23 +4,28 @@ using SEx.Generic.Constants;
 namespace SEx.Evaluate.Values;
 
 internal sealed class ListValue
-    : LiteralValue, IIterableValue<IntegerValue, LiteralValue>, IIterableValue<RangeValue, ListValue>
+    : GenericValue,
+      IIterableValue<IntegerValue, LiteralValue>,
+      IIterableValue<RangeValue, ListValue>
 {
-    public ValType ElementType { get; }
 
     private readonly List<LiteralValue> _values;
-    public  override object  Value => _values;
-    public  override ValType Type  => ValType.List;
+    public  override ValType[] ElementTypes { get; }
 
-    public IntegerValue Length => new(_values.Count);
+    public override object    Value => _values;
+    public override ValType   Type  => ValType.List;
+
+    public ValType      ElementType => ElementTypes[0];
+    public IntegerValue Length      => new(_values.Count);
+
 
     public ListValue(IEnumerable<LiteralValue> list, ValType? type = null)
         : this (list.ToList(), type) { }
 
     public ListValue(List<LiteralValue> list, ValType? type = null)
     {
-        _values     = list;
-        ElementType = type ?? list[0].Type;
+        _values      = list;
+        ElementTypes = new ValType[1] { type ?? ValType.Any };
     }
 
     public static ValType GetIndexReturn(ValType index) => index switch

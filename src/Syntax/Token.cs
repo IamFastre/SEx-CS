@@ -27,8 +27,8 @@ internal class Token
 
      public override string ToString()
      {
-        var val = Kind is TokenKind.WhiteSpace or TokenKind.EOF || Value == null
-        ? $": {C.GREEN2}{Value}" : "";
+        var val = Kind.IsParserIgnorable() || Kind is TokenKind.EOF || Value is null
+                ? "" : $": {C.GREEN2}{Value}";
 
         return $"[{C.YELLOW2}{Kind}{val}{C.END}]";
      }
@@ -37,8 +37,8 @@ internal class Token
 
 internal class TokenNode : Node
 {
-    public Token  Token { get; }
-    public string Value { get; }
+    public Token  Token        { get; }
+    public string Value        { get; }
 
     public override Span Span  { get; }
     public override NodeKind Kind => NodeKind.Token;

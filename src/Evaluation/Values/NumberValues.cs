@@ -14,8 +14,8 @@ internal sealed class IntegerValue : NumberValue
 {
 
     private readonly double _value;
-    public override object Value => _value;
-    public override ValType Type => ValType.Integer;
+    public  override object Value => _value;
+    public  override ValType Type => ValType.Integer;
 
     public IntegerValue(double value)
     {
@@ -38,8 +38,8 @@ internal sealed class FloatValue : NumberValue
 {
 
     private readonly double _value;
-    public override object Value => _value;
-    public override ValType Type => ValType.Float;
+    public  override object Value => _value;
+    public  override ValType Type => ValType.Float;
 
     public FloatValue(double value) => _value = value;
 

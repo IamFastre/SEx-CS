@@ -8,9 +8,9 @@ namespace SEx.Scoping;
 
 internal class Scope
 {
-    public Diagnostics  Diagnostics { get; }
-    public Scope?       Parent      { get; }
-    public List<string> Consts      { get; }
+    public Diagnostics  Diagnostics               { get; }
+    public Scope?       Parent                    { get; }
+    public List<string> Consts                    { get; }
     public Dictionary<string, LiteralValue> Names { get; }
     public Dictionary<string, ValType>      Types { get; }
 
@@ -162,8 +162,10 @@ internal class Scope
             else if (TryResolveType(name.Value, out ValType type) && !IsAssignable(type, value.Type))
                 Except($"Can't assign type '{value.Type.str()}' to '{type.str()}'", valueSpan ?? name.Span);
 
-            else if (type == ValType.List && !IsAssignable(((ListValue) Names[name.Value]).ElementType, ((ListValue) value).ElementType))
-                Except($"Cannot assign list of type '{((ListValue) Names[name.Value]).ElementType.str()}' to '{((ListValue) value).ElementType.str()}'", valueSpan ?? name.Span);
+            else if (Names[name.Value] is GenericValue nameGen
+            && value is GenericValue valGen
+            && !nameGen.Matches(valGen))
+                Except($"Can't assign generic type '{valGen.TypeString}' to '{nameGen.TypeString}'", valueSpan ?? name.Span);
 
             else
                 Names[name.Value] = value;

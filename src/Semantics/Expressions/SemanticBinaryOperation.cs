@@ -53,6 +53,8 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
                 return BinaryOperationKind.LAND;
             if (op is TokenKind.LogicalOR or TokenKind.OR)
                 return BinaryOperationKind.LOR;
+            if (op is TokenKind.XOR)
+                return BinaryOperationKind.XOR;
         }
 
         if ((left, right).Match(ValType.Number))

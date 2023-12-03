@@ -312,7 +312,7 @@ internal class Analyzer
         if (trueExpr.Type != falseExpr.Type)
             Except($"Types '{trueExpr.Type.str()}' and '{falseExpr.Type.str()}' don't match in ternary operation", terop.Span);
 
-        return new SemanticTernaryOperation(condition, trueExpr, falseExpr);
+        return new(condition, trueExpr, falseExpr);
     }
 
     private SemanticAssignment BindAssignExpression(AssignmentExpression aexpr)

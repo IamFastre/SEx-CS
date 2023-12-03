@@ -20,9 +20,9 @@ internal enum ValType
     Number   = Integer | Float,
     Numable  = Number  | Char,
     Iterable = String  | Range   | List,
-    Any      = Null    | Boolean | Integer | Float | Char | String | Range,
+    Any      = Null    | Boolean | Integer | Float | Char | String | Range | List,
     Nones    = Void    | Unknown | Null,
-    UAVTs     = Void    | Unknown, // Un-assignable value types
+    UAVTs    = Void    | Unknown, // Un-assignable value types
 }
 
 internal static class ValTypeExtension

@@ -90,6 +90,7 @@ internal class SemanticBinaryOperator
 
         new(TokenKind.AND, BinaryOperationKind.AND, ValType.Boolean),
         new(TokenKind.OR, BinaryOperationKind.OR, ValType.Boolean),
+        new(TokenKind.XOR, BinaryOperationKind.XOR, ValType.Boolean),
 
 
         new(TokenKind.Greater, BinaryOperationKind.Greater, ValType.Number, ValType.Boolean),
