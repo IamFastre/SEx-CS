@@ -7,7 +7,7 @@ internal static class CONSTS
 {
     public const string NULL      = "null";
     public const string UNKNOWN   = "?";
-    public const string UNDEFINED = "?";
+    public const string UNDEFINED = UNKNOWN;
     public const string VOID      = "";
 
     public const string TRUE      = "true";

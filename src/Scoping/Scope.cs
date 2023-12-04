@@ -1,87 +1,60 @@
-using SEx.AST;
 using SEx.Diagnose;
 using SEx.Evaluate.Values;
 using SEx.Generic.Text;
-using SEx.Semantics;
 
 namespace SEx.Scoping;
 
 internal class Scope
 {
-    public Diagnostics  Diagnostics               { get; }
-    public Scope?       Parent                    { get; }
-    public List<string> Consts                    { get; }
-    public Dictionary<string, LiteralValue> Names { get; }
-    public Dictionary<string, ValType>      Types { get; }
+    public Scope?       Parent      { get; }
+    public Dictionary<VariableSymbol, LiteralValue> Variables { get; }
 
-    public LiteralValue this[string key, Span span] => Resolve(key, span);
+    public LiteralValue this[VariableSymbol variable] => Variables[variable];
 
-    public Scope(Diagnostics? diagnostics = null, Scope? parent = null)
+    public Scope(Scope? parent = null)
     {
-        Diagnostics = diagnostics ?? new();
         Parent      = parent;
-        Consts      = new();
-        Names       = new();
-        Types       = new();
+        Variables   = new();
     }
 
-    public void Except(string message,
-                       Span span,
-                       ExceptionType type = ExceptionType.SymbolError,
-                       ExceptionInfo? info = null)
-        => Diagnostics.Add(type, message, span, info ?? ExceptionInfo.Scope);
+    public void AddVariable(VariableSymbol variable, LiteralValue value)
+        => Variables.Add(variable, value);
+
+    public void EditVariable(VariableSymbol variable, LiteralValue value)
+    {
+        if (Variables.ContainsKey(variable))
+            Variables[variable] = value;
+        else
+            throw new ArgumentException("This item does not exits");
+    }
 
     public void Flush()
-        => Names.Clear();
+        => Variables.Clear();
 
     //=====================================================================//
-
-    public static bool IsAssignable(ValType value1, ValType value2, bool noOrder)
-    {
-        if (!noOrder)
-            return IsAssignable(value1, value2);
-        
-        return IsAssignable(value1, value2) || IsAssignable(value2, value1);
-    }
-
-    public static bool IsAssignable(ValType hint, ValType value)
-        => hint.HasFlag(value)
-        || ValType.Nones.HasFlag(value)
-        || ValType.Nones.HasFlag(hint);
-
-
     //=====================================================================//
 
-    public ValType ResolveType(string name)
+    public ValType ResolveType(VariableSymbol variable)
     {
-        if (Names.ContainsKey(name))
-            return Names[name].Type;
-
-        if (Types.ContainsKey(name))
-            return Types[name];
+        if (Variables.ContainsKey(variable))
+            return Variables[variable].Type;
 
         if (Parent is not null)
-            return Parent.ResolveType(name);
+            return Parent.ResolveType(variable);
 
         return ValType.Unknown;
     }
 
-    public bool TryResolveType(string name, out ValType value)
+    public bool TryResolveType(VariableSymbol variable, out ValType value)
     {
-        if (Names.ContainsKey(name))
+        if (Variables.ContainsKey(variable))
         {
-            value = Names[name].Type;
-            return true;
-        }
-
-        if (Types.ContainsKey(name))
-        {
-            value = Types[name];
+            value = Variables[variable].Type;
             return true;
         }
 
         if (Parent is not null)
-            return Parent.TryResolveType(name, out value);
+            return Parent.TryResolveType(variable, out value);
 
         value = ValType.Unknown;
         return false;
@@ -89,28 +62,27 @@ internal class Scope
 
     //=====================================================================//
 
-    public LiteralValue Resolve(string name, Span span)
+    public LiteralValue Resolve(VariableSymbol variable)
     {
-        if (Names.ContainsKey(name))
-            return Names[name];
+        if (Variables.ContainsKey(variable))
+            return Variables[variable];
         
         if (Parent is not null)
-            return Parent.Resolve(name, span);
+            return Parent.Resolve(variable);
 
-        Except($"Name '{name}' is not defined", span);
         return UnknownValue.Template;
     }
 
-    public bool TryResolve(string name, out LiteralValue value)
+    public bool TryResolve(VariableSymbol variable, out LiteralValue value)
     {
-        if (Names.ContainsKey(name))
+        if (Variables.ContainsKey(variable))
         {
-            value = Names[name];
+            value = Variables[variable];
             return true;
         }
 
         if (Parent is not null)
-            return Parent.TryResolve(name, out value);
+            return Parent.TryResolve(variable, out value);
 
         value = UnknownValue.Template;
         return false;
@@ -118,63 +90,28 @@ internal class Scope
 
     //=====================================================================//
 
-    public void PreDeclare(string name, ValType type)
-        => Types[name] = type;
+    public bool IsDeclared(VariableSymbol variable)
+        => Variables.ContainsKey(variable);
 
-    public void PostDeclare(string name)
-        => Types.Remove(name);
-
-    //=====================================================================//
-
-    public void Declare(SemanticDeclarationStatement ds, LiteralValue value)
+    public void Declare(VariableSymbol variable, LiteralValue value)
     {
-        if (Names.ContainsKey(ds.Name.Value))
-            Except($"Name '{ds.Name.Value}' is already declared", ds.Span);
-
-        else if (IsAssignable(ds.TypeHint, value.Type))
-        {
-            if (ds.IsConstant)
-                    Consts.Add(ds.Name.Value);
-
-            Names[ds.Name.Value] = value;
-        }
-        else
-            Except($"Can't assign type '{value.Type.str()}' to '{ds.TypeHint.str()}'", ds.Expression!.Span);
-
-        PostDeclare(ds.Name.Value);
+        if ((variable.Type, value.Type).IsAssignable())
+            AddVariable(variable, value);
     }
 
-    public void MakeConst(NameLiteral name)
+    public void MakeConstant(string name)
     {
-        if (Consts.Contains(name.Value))
-            Except($"Name '{name.Value}' is already a constant", name.Span);
-        else
-            Consts.Add(name.Value);
+        foreach (var sym in Variables.Keys)
+            if (sym.Name == name)
+                sym.MakeConstant();
     }
 
-    public void Assign(SemanticName name, LiteralValue value, bool skipDeclaration = false, Span? valueSpan = null)
+    public void Assign(VariableSymbol variable, LiteralValue value)
     {
-        if (Names.ContainsKey(name.Value))
-        {
-            if (Consts.Contains(name.Value))
-                Except($"Can't reassign to constant '{name.Value}'", name.Span);
+        if (Variables.ContainsKey(variable))
+                EditVariable(variable, value);
 
-            else if (TryResolveType(name.Value, out ValType type) && !IsAssignable(type, value.Type))
-                Except($"Can't assign type '{value.Type.str()}' to '{type.str()}'", valueSpan ?? name.Span);
-
-            else if (Names[name.Value] is GenericValue nameGen
-            && value is GenericValue valGen
-            && !nameGen.Matches(valGen))
-                Except($"Can't assign generic type '{valGen.TypeString}' to '{nameGen.TypeString}'", valueSpan ?? name.Span);
-
-            else
-                Names[name.Value] = value;
-        }
-
-        else if (Parent is not null && Parent.Names.ContainsKey(name.Value))
-            Parent.Assign(name, value, skipDeclaration, valueSpan);
-
-        else
-            Except($"Name '{name.Value}' was not declared to assign to", name.Span);
+        else if (Parent is not null && Parent.Variables.ContainsKey(variable))
+            Parent.Assign(variable, value);
     }
 }

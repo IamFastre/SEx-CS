@@ -7,7 +7,7 @@ internal abstract class NumberValue : LiteralValue
     public override ValType Type => ValType.Number;
 
     public static NumberValue Get(double value)
-        => IntegerValue.IsEligible(value) ? new IntegerValue(value) : new FloatValue(value);
+        => IntegerValue.IsInt(value) ? new IntegerValue(value) : new FloatValue(value);
 }
 
 internal sealed class IntegerValue : NumberValue
@@ -19,12 +19,12 @@ internal sealed class IntegerValue : NumberValue
 
     public IntegerValue(double value)
     {
-        if (!IsEligible(value))
+        if (!IsInt(value))
             throw new Exception("Value given is not int");
         _value = value;
     }
 
-    public static bool IsEligible(double value)
+    public static bool IsInt(double value)
         => double.IsInteger(value) || double.IsInfinity(value)|| double.IsNaN(value);
 
     public override string ToString()

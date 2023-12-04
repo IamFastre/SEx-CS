@@ -15,19 +15,18 @@ internal class Evaluator
     public Scope                    Scope        { get; protected set; }
     public LiteralValue             Value        { get; protected set; }
 
-    public Evaluator(Analyzer analyzer)
+    public Evaluator(SemanticProgramStatement stmt, Scope? scope = null, Diagnostics? diagnostics = null)
     {
-        Scope        = analyzer.Scope;
-        Diagnostics  = analyzer.Diagnostics;
-        SemanticTree = analyzer.Tree!;
+        SemanticTree = stmt;
+        Scope        = scope       ?? new();
+        Diagnostics  = diagnostics ?? new();
         Value        = UnknownValue.Template;
     }
 
     private void Except(string message,
                         Span span,
-                        ExceptionType type = ExceptionType.SyntaxError,
-                        ExceptionInfo? info = null)
-        => Diagnostics.Add(type, message, span, info ?? ExceptionInfo.Evaluator);
+                        ExceptionType type = ExceptionType.SyntaxError)
+        => Diagnostics.Add(type, message, span);
 
     public LiteralValue Evaluate()
         => Value = EvaluateProgram(SemanticTree);
@@ -112,8 +111,8 @@ internal class Evaluator
         {
             var iterableVal = (IIterableValue) expr;
             var len         = (double)(iterableVal.Length?.Value ?? 0);
-            var scope       = new Scope(Diagnostics, Scope);
-            Scope = scope;
+
+            Scope = new(Scope);
 
             for (int i = 0; i < len; i++)
             {
@@ -123,13 +122,14 @@ internal class Evaluator
                     break;
 
                 if (i == 0)
-                    scope.Names[fs.Variable.Value] = elem;
+                    Scope.Declare(fs.Variable, elem);
                 else
-                    scope.Assign(fs.Variable, elem, true, fs.Iterable.Span);
+                    Scope.Assign(fs.Variable, elem);
 
                 value = EvaluateStatement(fs.Body);
             }
-            Scope = scope.Parent!;
+
+            Scope = Scope.Parent!;
         }
 
         return value;
@@ -147,21 +147,18 @@ internal class Evaluator
     private LiteralValue EvaluateDeclarationStatement(SemanticDeclarationStatement ds)
     {
         var value = ds.Expression is null
-                  ? UndefinedValue.New(ds.TypeHint)
+                  ? UndefinedValue.New(ds.Variable.Type)
                   : EvaluateExpression(ds.Expression);
 
-        if (ds.IsConstant && ds.Expression is null)
+        if (!Scope.TryResolve(ds.Variable, out _))
         {
-            if (ds.TypeToken is not null)
-                Except($"No need for added type '{ds.TypeToken.Value}' in constant construction",
-                       ds.TypeToken.Span, ExceptionType.SyntaxError);
-            else if (!Scope.TryResolve(ds.Name.Value, out _))
-                    Except($"No value was given to constant '{ds.Name.Value}'", ds.Name.Span);
+            if ((ds.Variable.Type, value.Type).IsAssignable())
+                Scope.Declare(ds.Variable, value);
             else
-                Scope.MakeConst(ds.Name);
+                Scope.Declare(ds.Variable, UndefinedValue.New(ds.Variable.Type));
         }
-        else
-            Scope.Declare(ds, value);
+        else if (ds.Variable.IsConstant && ds.Expression is null)
+            Scope.MakeConstant(ds.Variable.Name);
 
         return VoidValue.Template;
     }
@@ -208,7 +205,7 @@ internal class Evaluator
                     return EvaluateRange((SemanticRange) expr);
 
                 case SemanticKind.Name:
-                    return EvaluateName((SemanticName) expr);
+                    return EvaluateVariable((SemanticVariable) expr);
 
                 case SemanticKind.List:
                     return EvaluateArray((SemanticList) expr);
@@ -235,7 +232,10 @@ internal class Evaluator
                     return EvaluateAssignExpression((SemanticAssignment) expr);
 
                 case SemanticKind.FailedExpression:
-                    return EvaluateFailedExpression((SemanticFailedExpression) expr);
+                    return UnknownValue.Template;
+
+                case SemanticKind.FailedExpressions:
+                    return EvaluateFailedExpression((SemanticFailedExpressions) expr);
         }
 
         throw new Exception($"Unexpected expression type {expr?.Kind}");
@@ -271,8 +271,13 @@ internal class Evaluator
         return value;
     }
 
-    private LiteralValue EvaluateName(SemanticName n)
-        => Scope.Resolve(n.Value, n.Span);
+    private LiteralValue EvaluateVariable(SemanticVariable n)
+    {
+        if (!Scope.TryResolve(n.Symbol, out var value))
+            Diagnostics.Report.UndefinedVariable(n.Symbol.Name, n.Span);
+
+        return value;
+    }
 
     private LiteralValue EvaluateArray(SemanticList ll)
     {
@@ -329,7 +334,7 @@ internal class Evaluator
 
     private LiteralValue EvaluateCountingOperation(SemanticCountingOperation co)
     {
-        var name = EvaluateName(co.Name);
+        var name = EvaluateVariable(co.Name);
         var kind = co.OperationKind;
 
         double _double
@@ -347,7 +352,7 @@ internal class Evaluator
         else
             value = new FloatValue(_double);
 
-        Scope.Assign(co.Name, value);
+        Scope.Assign(co.Name.Symbol, value);
 
         return kind is CountingKind.IncrementAfter or CountingKind.DecrementAfter
              ? value
@@ -369,10 +374,10 @@ internal class Evaluator
             return UnknownValue.Template;
 
         if (!left.IsDefined)
-            return UseOfUndefined((SemanticName) biop.Left);
+            return UseOfUndefined((SemanticVariable) biop.Left);
 
         if (!right.IsDefined)
-            return UseOfUndefined((SemanticName) biop.Right);
+            return UseOfUndefined((SemanticVariable) biop.Right);
 
         switch (kind)
         {
@@ -539,7 +544,7 @@ internal class Evaluator
                 ListValue _l1, _l2;
                 (_l1, _l2) = ((ListValue) left, (ListValue) right);
 
-                if (!Scope.IsAssignable(_l1.ElementType, _l2.ElementType, true))
+                if (!(_l1.ElementType, _l2.ElementType).IsAssignable(true))
                 {
                     Except($"Cannot concatenate list of type '{_l1.ElementType.str()}' to '{_l2.ElementType.str()}'",
                            biop.Span, ExceptionType.TypeError);
@@ -572,19 +577,13 @@ internal class Evaluator
     {
         var val = EvaluateExpression(aseprx.Expression);
 
-        if (val.Type is ValType.Unknown)
-        {
-            if (!Scope.TryResolve(aseprx.Assignee.Value, out val))
-                return val;
-        }
-        else
-            Scope.Assign(aseprx.Assignee, val, valueSpan:aseprx.Expression.Span);
+        if (Scope.TryResolve(aseprx.Assignee, out var output) && (!aseprx.Assignee.IsConstant))
+            Scope.Assign(aseprx.Assignee, val);
 
-        Scope.TryResolve(aseprx.Assignee.Value, out val);
-        return val;
+        return val.Type is ValType.Unknown ? output : val;
     }
 
-    private LiteralValue EvaluateFailedExpression(SemanticFailedExpression fe)
+    private LiteralValue EvaluateFailedExpression(SemanticFailedExpressions fe)
     {
         foreach (var expr in fe.Expressions)
             EvaluateExpression(expr);
@@ -686,9 +685,9 @@ internal class Evaluator
     //=====================================================================//
     //=====================================================================//
 
-    private LiteralValue UseOfUndefined(SemanticName n)
+    private LiteralValue UseOfUndefined(SemanticVariable n)
     {
-        Except($"Name '{n.Value}' (of type '{n.Type.str()}') not assigned to yet", n.Span);
+        Except($"Name '{n.Symbol.Name}' (of type '{n.Type.str()}') not assigned to yet", n.Span);
         return UnknownValue.Template;
     }
 

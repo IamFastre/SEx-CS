@@ -3,35 +3,31 @@ using SEx.Diagnose;
 using SEx.Scoping;
 using SEx.Evaluate.Values;
 using SEx.Generic.Text;
-using SEx.Generic.Constants;
 using SEx.Parse;
 
 namespace SEx.Semantics;
 
-internal class Analyzer
+internal sealed class Analyzer
 {
     public Diagnostics                Diagnostics { get; }
-    public Scope                      Scope       { get; }
     public ProgramStatement           SimpleTree  { get; }
-    public SemanticProgramStatement?  Tree        { get; protected set; }
+    public SemanticScope              Scope       { get; private set; }
+    public SemanticProgramStatement?  Tree        { get; private set; }
 
-    public Analyzer(ProgramStatement stmt, Diagnostics? diagnostics = null, Scope? scope = null)
+    public Analyzer(ProgramStatement stmt, SemanticScope? scope = null, Diagnostics? diagnostics = null)
     {
         SimpleTree  = stmt;
+        Scope       = scope       ?? new();
         Diagnostics = diagnostics ?? new();
-        Scope       = scope ?? new(Diagnostics);
     }
 
     private void Except(string message,
                         Span span,
-                        ExceptionType type = ExceptionType.TypeError,
-                        ExceptionInfo? info = null)
-        => Diagnostics.Add(type, message, span, info ?? ExceptionInfo.Analyzer);
+                        ExceptionType type = ExceptionType.TypeError)
+        => Diagnostics.Add(type, message, span);
 
-    public SemanticStatement Analyze()
-    {
-        return Tree = BindProgram(SimpleTree);
-    }
+    public SemanticProgramStatement Analyze()
+        => Tree = BindProgram(SimpleTree);
 
     private SemanticProgramStatement BindProgram(ProgramStatement stmt)
     {
@@ -104,9 +100,18 @@ internal class Analyzer
 
     private SemanticForStatement BindForStatement(ForStatement fs)
     {
-        var variable = BindName(fs.Variable);
         var iterable = BindExpression(fs.Iterable);
+        var elemType = iterable.Type.GetElementType();
+
+        if (elemType is ValType.Unknown)
+            Diagnostics.Report.CannotIterate(iterable.Type.str(), iterable.Span);
+
+        Scope = new(Scope);
+
+        var variable = DeclareVariable(fs.Variable, elemType, true);
         var body     = BindStatement(fs.Body);
+
+        Scope = Scope.Parent!;
 
         return new(fs.For, variable, iterable, body);
     }
@@ -124,10 +129,32 @@ internal class Analyzer
     private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement ds)
     {
         var expr = ds.Expression is not null ? BindExpression(ds.Expression) : null;
-        Scope.Types[ds.Name.Value] = expr?.Type
-                                   ?? SemanticDeclarationStatement.GetNameType(ds.Type?.Value);
+        var hint = SemanticDeclarationStatement.GetNameType(ds.Type?.Value);
+        var type = expr is not null && hint == ValType.Any ? expr.Type : hint;
+        var var  = new VariableSymbol(ds.Variable.Value, type, ds.IsConstant);
 
-        return new(ds, ds.Type, expr);
+        if (ds.IsConstant && expr is null)
+        {
+            if (Scope.TryResolve(var.Name, out var symbol))
+            {
+                if (ds.Type is not null)
+                    Diagnostics.Report.UselessTypeAdded(ds.Type!.Value, ds.Type.Span);
+                else if (((VariableSymbol) symbol!).IsConstant)
+                    Diagnostics.Report.AlreadyConstant(ds.Variable.Value, ds.Variable.Span);
+                else
+                    Scope.Assign(var);
+            }
+            else
+                Diagnostics.Report.ValuelessConstant(ds.Variable.Value, ds.Variable.Span);
+        }
+
+        else if (expr is not null && !(hint, expr.Type).IsAssignable())
+            Diagnostics.Report.TypesDoNotMatch(hint.str(), expr.Type.str(), ds.Span);
+
+        else if (!Scope.TryDeclare(var))
+            Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
+
+        return new(var, ds.Variable.Span, ds, expr);
     }
 
     private SemanticExpressionStatement BindExpressionStatement(ExpressionStatement es)
@@ -135,6 +162,34 @@ internal class Analyzer
         var expr = BindExpression(es.Expression);
         return new(expr);
     }
+
+    //=====================================================================//
+    
+    private VariableSymbol DeclareVariable(NameLiteral n, ValType type, bool isConst = false)
+    {
+        var symbol = new VariableSymbol(n.Value, type, isConst);
+        Scope.Symbols.Add(n.Value, symbol);
+        return symbol;
+    }
+    
+    private VariableSymbol? GetVariable(NameLiteral n)
+    {
+        switch (Scope.Resolve(n.Value))
+        {
+            case VariableSymbol variable:
+                return variable;
+
+            case null:
+                Diagnostics.Report.UndefinedVariable(n.Value, n.Span);
+                return null;
+
+            default:
+                Diagnostics.Report.SymbolWrongUsage(n.Value, n.Span);
+                return null;
+        }
+    }
+    
+    //=====================================================================//
 
     private SemanticExpression BindExpression(Expression expr, ValType expected)
     {
@@ -212,8 +267,14 @@ internal class Analyzer
         return new(start, end, step);
     }
 
-    private SemanticName BindName(NameLiteral n)
-        => new(n, Scope.ResolveType(n.Value));
+    private SemanticExpression BindName(NameLiteral n)
+    {
+        var symbol = GetVariable(n);
+        if (symbol == null)
+            return new SemanticFailedExpression(n.Span);
+
+        return new SemanticVariable(symbol, n.Span);
+    }
 
     private SemanticList BindList(ListLiteral ll)
     {
@@ -254,7 +315,7 @@ internal class Analyzer
         if (elementType is null)
         {
             Except($"Can't perform indexing on '{iterable.Type.str()}'", ie.Iterable.Span);
-            return new SemanticFailedExpression(new[] { iterable, index });
+            return new SemanticFailedExpressions(new[] { iterable, index });
         }
 
         return new SemanticIndexingExpression(iterable, index, elementType ?? ValType.Unknown, ie.Span);
@@ -268,7 +329,7 @@ internal class Analyzer
         if (opKind is null)
         {
             Except($"Cannot apply operator '{uop.Operator.Value}' on type '{operand.Type.str()}'", uop.Span);
-            return new SemanticFailedExpression(new[] { operand });
+            return new SemanticFailedExpressions(new[] { operand });
         }
 
         return new SemanticUnaryOperation(operand, opKind.Value, uop.Span);
@@ -276,13 +337,17 @@ internal class Analyzer
 
     private SemanticExpression BindCountingOperation(CountingOperation co)
     {
-        var name   = BindName(co.Name);
+        var name = (SemanticVariable) BindName(co.Name);
+
+        if (name is null)
+            return new SemanticFailedExpression(co.Span);
+
         var opKind = SemanticCountingOperation.GetOperationKind(co.Operator.Kind, name.Type, co.ReturnAfter);
 
         if (opKind is null)
         {
             Except($"Cannot apply operator '{co.Operator.Value}' on type '{name.Type.str()}'", co.Span);
-            return new SemanticFailedExpression(new[] { name });
+            return new SemanticFailedExpression(co.Span);
         }
 
         return new SemanticCountingOperation(name, opKind.Value, co.Span);
@@ -297,7 +362,7 @@ internal class Analyzer
         if (opKind is null)
         {
             Except($"Cannot apply operator '{biop.Operator.Value}' on types: '{left.Type.str()}' and '{right.Type.str()}'", biop.Span);
-            return new SemanticFailedExpression(new[] { left, right });
+            return new SemanticFailedExpressions(new[] { left, right });
         }
 
         return new SemanticBinaryOperation(left, opKind.Value, right);
@@ -315,19 +380,51 @@ internal class Analyzer
         return new(condition, trueExpr, falseExpr);
     }
 
-    private SemanticAssignment BindAssignExpression(AssignmentExpression aexpr)
+    private SemanticExpression BindAssignExpression(AssignmentExpression aexpr)
     {
         var expr = BindExpression(aexpr.Expression);
-        var name = BindName(aexpr.Assignee);
-        Scope.Types[aexpr.Assignee.Value] = expr.Type;
-        return new(name, aexpr.Equal, expr);
+        var name = GetVariable(aexpr.Assignee);
+
+        if (name is null)
+            return expr;
+
+        if (name.IsConstant)
+        {
+            Diagnostics.Report.CannotAssignToConst(name.Name, aexpr.Assignee.Span);
+            return BindName(aexpr.Assignee);
+        }
+
+        if (name.TestType(expr.Type))
+        {
+            Scope.Assign(name);
+            return new SemanticAssignment(name, expr, aexpr.Span);
+        }
+        
+        Diagnostics.Report.TypesDoNotMatch(name.Type.str(), expr.Type.str(), aexpr.Span);
+        return expr;
     }
 
-    private SemanticAssignment BindCompoundAssignExpression(CompoundAssignmentExpression caexpr)
+    private SemanticExpression BindCompoundAssignExpression(CompoundAssignmentExpression caexpr)
     {
         var expr = BindBinaryOperation(new(caexpr.Assignee, caexpr.Operator, caexpr.Expression));
-        var name = BindName(caexpr.Assignee);
+        var name = GetVariable(caexpr.Assignee);
 
-        return new(name, caexpr.Operator, expr);
+        if (name is null)
+            return expr;
+
+        if (name.IsConstant)
+        {
+            Diagnostics.Report.CannotAssignToConst(name.Name, caexpr.Assignee.Span);
+            return BindName(caexpr.Assignee);
+        }
+
+        if (name.TestType(expr.Type))
+        {
+            Scope.Assign(name);
+            return new SemanticAssignment(name, expr, caexpr.Span);
+        }
+        
+        Diagnostics.Report.TypesDoNotMatch(name.Type.str(), expr.Type.str(), caexpr.Span);
+        return expr;
     }
 }

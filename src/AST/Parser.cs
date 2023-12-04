@@ -49,8 +49,8 @@ internal class Parser
     private void Except(string message,
                         ExceptionType type = ExceptionType.SyntaxError,
                         Span? span = null,
-                        ExceptionInfo? info = null)
-        => Diagnostics.Add(type, message, span ?? Current.Span, info ?? ExceptionInfo.ReParser);
+                        bool rereadLine = true)
+        => Diagnostics.Add(type, message, span ?? Current.Span, rereadLine);
 
     private Token Expect(TokenKind kind, string? message = null, bool eatAnyway = false, bool reread = true, Span? span = null)
     {
@@ -58,7 +58,7 @@ internal class Parser
             return Eat();
 
         message ??= EOF ? "Expression not expected to end yet" : $"Unexpected '{Current.Value}'";
-        Except(message, span:span, info: !EOF || !reread ? ExceptionInfo.Parser : ExceptionInfo.ReParser);
+        Except(message, span:span, rereadLine: !EOF || reread);
 
         if (eatAnyway && !EOF)
             Eat();
@@ -112,7 +112,7 @@ internal class Parser
                 return GetList();
 
             default:
-                Except($"Invalid syntax '{Current.Value}'", info:ExceptionInfo.Parser);
+                Except($"Invalid syntax '{Current.Value}'", rereadLine:false);
                 Eat();
                 return GetPrimary();
         }
@@ -129,7 +129,7 @@ internal class Parser
         if (expression is null)
             Except($"Expression expected before close parenthesis",
                    span:new(openParen.Span, closeParen.Span),
-                   info:ExceptionInfo.Parser);
+                   rereadLine:false);
 
         return new(openParen, expression, closeParen);
     }
@@ -207,7 +207,7 @@ internal class Parser
         {
             Except($"Index expected before close bracket",
                    span:new(openBracket.Span, closeBracket.Span),
-                   info:ExceptionInfo.Parser);
+                   rereadLine:false);
             return Literal.Unknown(new(iterable.Span, closeBracket.Span));
         }
 
@@ -234,7 +234,7 @@ internal class Parser
         if (name is NameLiteral nm)
             return new CountingOperation(op, nm, returnAfter);
 
-        Except($"Operand of '{op.Value}' must be a name", span:name.Span, info:ExceptionInfo.Parser);
+        Except($"Operand of '{op.Value}' must be a name", span:name.Span, rereadLine:false);
         return Literal.Unknown(new(op.Span, name.Span));
     }
 
@@ -338,7 +338,7 @@ internal class Parser
 
             if (left is not NameLiteral)
             {
-                Except($"Invalid left-hand side assignee", span:left!.Span, info:ExceptionInfo.Parser);
+                Except($"Invalid left-hand side assignee", span:left!.Span, rereadLine:false);
                 return left;
             }
 

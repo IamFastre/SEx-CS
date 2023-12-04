@@ -7,7 +7,7 @@ namespace SEx.AST;
 internal sealed class DeclarationStatement : Statement
 {
     public Token       Hash       { get; }
-    public NameLiteral Name       { get; }
+    public NameLiteral Variable       { get; }
     public Token?      Type       { get; }
     public Expression? Expression { get; }
     public bool        IsConstant { get; }
@@ -18,7 +18,7 @@ internal sealed class DeclarationStatement : Statement
     public DeclarationStatement(Token hash, NameLiteral name, Token? type = null, Expression? expression = null, bool isConst = false)
     {
         Hash       = hash;
-        Name       = name;
+        Variable       = name;
         Type       = type;
         Expression = expression;
         IsConstant = isConst;
@@ -30,11 +30,11 @@ internal sealed class DeclarationStatement : Statement
     public override IEnumerable<Node> GetChildren()
     {
         yield return Hash.Node;
-        yield return Name;
+        yield return Variable;
         if (Expression != null)
             yield return Expression;
     }
 
     public override string ToString()
-        => $"<{C.BLUE2}Declaration: {C.GREEN2}{Name} {C.BLUE2}=>{C.END} {Expression?.ToString() ?? CONSTS.NULL}{C.END}>";
+        => $"<{C.BLUE2}Declaration: {C.GREEN2}{Variable} {C.BLUE2}=>{C.END} {Expression?.ToString() ?? CONSTS.NULL}{C.END}>";
 }

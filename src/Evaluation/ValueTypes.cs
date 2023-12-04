@@ -37,6 +37,16 @@ internal static class ValTypeExtension
         return left.HasFlag(Ns.L) && right.Value.HasFlag(Ns.R);
     }
 
+    public static bool IsAssignable(this (ValType hint, ValType value) types, bool interchangeable)
+        => interchangeable
+        && ((types.hint, types.value).IsAssignable()
+        || (types.value, types.hint).IsAssignable());
+
+    public static bool IsAssignable(this (ValType hint, ValType value) types)
+        => types.hint.HasFlag(types.value)
+        || ValType.Nones.HasFlag(types.value)
+        || ValType.Nones.HasFlag(types.hint);
+
     public static bool Known(this (ValType L, ValType R) Ns)
         => Ns.L.Known() && Ns.R.Known();
 
@@ -44,6 +54,15 @@ internal static class ValTypeExtension
         => type is not ValType.Unknown or ValType.Void; 
 
     public static string ToString(this ValType type) => type.str();
+
+    public static ValType GetElementType(this ValType type) => type switch
+    {
+        ValType.String => ValType.Char,
+        ValType.Range  => ValType.Integer,
+        ValType.List   => ValType.Any,
+
+        _ => ValType.Unknown
+    };
 
     public static string str(this ValType type) => type switch
     {

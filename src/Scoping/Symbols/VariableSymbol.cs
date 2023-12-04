@@ -2,16 +2,33 @@ using SEx.Evaluate.Values;
 
 namespace SEx.Scoping;
 
-internal sealed class VariableSymbol
+internal class VariableSymbol : Symbol
 {
-    public string    Name       { get; }
-    public ValueType Type       { get; }
-    public bool      IsConstant { get; }
+    public ValType Type       { get; protected set; }
+    public bool    IsConstant { get; protected set; }
 
-    public VariableSymbol(string name, ValueType? type = null, bool isConstant = false)
+    public override SymbolKind Kind => SymbolKind.Variable;
+
+    public VariableSymbol(string name, ValType? type = null, bool isConstant = false)
+        : base(name)
     {
-        Name       = name;
         Type       = type ?? ValType.Any;
         IsConstant = isConstant;
+    }
+
+    public void MakeConstant() => IsConstant = true;
+
+    public override int  GetHashCode()       => Name.GetHashCode();
+    public override bool Equals(object? obj) => GetHashCode() == obj?.GetHashCode();
+
+    public bool TestType(ValType type)
+    {
+        if ((Type, type).IsAssignable())
+        {
+            Type = type;
+            return true;
+        }
+
+        return false;
     }
 }

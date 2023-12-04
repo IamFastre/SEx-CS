@@ -1,20 +1,22 @@
 using SEx.AST;
 using SEx.Generic.Text;
 using SEx.Evaluate.Values;
+using SEx.Scoping;
 
 namespace SEx.Semantics;
 
-internal class SemanticName : SemanticExpression
+internal class SemanticVariable : SemanticExpression
 {
-    public string Value           { get; }
+    public VariableSymbol  Symbol { get; }
     public override Span    Span  { get; }
     public override ValType Type  { get; }
+
     public override SemanticKind Kind => SemanticKind.Name;
 
-    public SemanticName(NameLiteral literal, ValType type)
+    public SemanticVariable(VariableSymbol symbol, Span span)
     {
-        Type  = type;
-        Span  = literal.Span;
-        Value = literal.Value;
+        Symbol = symbol;
+        Type   = symbol.Type;
+        Span   = span;
     }
 }

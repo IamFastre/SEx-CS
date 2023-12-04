@@ -49,9 +49,8 @@ internal class Lexer
     
         void Except(string message,
                     ExceptionType type = ExceptionType.SyntaxError,
-                    Span? givenSpan = null,
-                    ExceptionInfo? info = null)
-            => Diagnostics.Add(type, message, givenSpan ?? span, info ?? ExceptionInfo.Lexer);
+                    Span? givenSpan = null)
+            => Diagnostics.Add(type, message, givenSpan ?? span);
 
         string AddValue(int advanceWhen = 0)
         {

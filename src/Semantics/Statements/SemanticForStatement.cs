@@ -1,19 +1,20 @@
 using SEx.Generic.Text;
 using SEx.Lex;
+using SEx.Scoping;
 
 namespace SEx.Semantics;
 
 internal sealed class SemanticForStatement : SemanticStatement
 {
     public Token               For      { get; }
-    public SemanticName        Variable { get; }
+    public VariableSymbol      Variable { get; }
     public SemanticExpression  Iterable { get; }
     public SemanticStatement   Body     { get; }
 
     public override Span         Span   { get; }
     public override SemanticKind Kind => SemanticKind.ForStatement;
 
-    public SemanticForStatement(Token @for, SemanticName variable, SemanticExpression iterable, SemanticStatement body)
+    public SemanticForStatement(Token @for, VariableSymbol variable, SemanticExpression iterable, SemanticStatement body)
     {
         For      = @for;
         Variable = variable;

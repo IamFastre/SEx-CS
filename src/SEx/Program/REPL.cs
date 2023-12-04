@@ -41,11 +41,12 @@ internal class REPL
 
         ParseArguments();
 
-        Line         = "";
-        Script       = new();
-        Diagnostics  = new();
-        Scope        = new(Diagnostics);
-        Value        = UnknownValue.Template;
+        Line          = "";
+        Script        = new();
+        Diagnostics   = new();
+        SemanticScope = new();
+        Scope         = new();
+        Value         = UnknownValue.Template;
 
         if (Environment.OSVersion.Platform == PlatformID.Win32NT)
         {
@@ -54,14 +55,15 @@ internal class REPL
         }
     }
 
-    public Diagnostics         Diagnostics  { get; }
-    public Scope               Scope        { get; }
-    public StringBuilder       Script       { get; }
-    public string              Line         { get; protected set; }
-    public Token[]?            Tokens       { get; protected set; }
-    public Statement?          SimpleTree   { get; protected set; }
-    public SemanticStatement?  SemanticTree { get; protected set; }
-    public LiteralValue        Value        { get; protected set; }
+    public Diagnostics                Diagnostics   { get; }
+    public Scope                      Scope         { get; }
+    public SemanticScope              SemanticScope { get; }
+    public StringBuilder              Script        { get; }
+    public string                     Line          { get; protected set; }
+    public Token[]?                   Tokens        { get; protected set; }
+    public Statement?                 SimpleTree    { get; protected set; }
+    public SemanticProgramStatement?  SemanticTree  { get; protected set; }
+    public LiteralValue               Value         { get; protected set; }
 
     private void ParseArguments()
     {
@@ -119,7 +121,7 @@ internal class REPL
                 var parser = new Parser(lexer);
                 SimpleTree = parser.Parse();
 
-                if (Diagnostics.Exceptions.Any((SyntaxException e) => e.Info.ReReadLine)
+                if (Diagnostics.Exceptions.Any((SyntaxException e) => e.ReReadLine)
                 &&  !string.IsNullOrWhiteSpace(Line))
                 {
                     Diagnostics.Flush();
@@ -128,10 +130,10 @@ internal class REPL
 
                 PrintDebugs();
 
-                var analyzer  = new Analyzer(parser.Tree!, Diagnostics, Scope);
+                var analyzer  = new Analyzer(parser.Tree!, SemanticScope, Diagnostics);
                 SemanticTree  = analyzer.Analyze();
 
-                var evaluator = new Evaluator(analyzer);
+                var evaluator = new Evaluator(SemanticTree, Scope, Diagnostics);
                 Value         = evaluator.Evaluate();
 
                 Throw();

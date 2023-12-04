@@ -8,15 +8,15 @@ public class SyntaxException
 {
     public readonly ExceptionType Type;
     public readonly string        Text;
+    public readonly bool          ReReadLine;
     public readonly Span          Span;
-    public readonly ExceptionInfo Info;
 
-    public SyntaxException(ExceptionType type, string text, Span span, ExceptionInfo? info = null)
+    public SyntaxException(ExceptionType type, string text, Span span, bool rereadLine = false)
     {
-        Type = type;
-        Text = text;
-        Span = span;
-        Info = info ?? ExceptionInfo.Default;
+        Type       = type;
+        Text       = text;
+        Span       = span;
+        ReReadLine = rereadLine;
     }
 
     public override string ToString()
@@ -65,19 +65,4 @@ public class SyntaxException
             catch {}
         }
     }
-}
-
-public class ExceptionInfo
-{
-    public required Sender Sender;
-    public bool ReReadLine = false;
-
-    public static readonly ExceptionInfo Default = new() { Sender = Sender.Unknown };
-
-    public static readonly ExceptionInfo Lexer     = new() { Sender = Sender.Lexer };
-    public static readonly ExceptionInfo ReParser  = new() { Sender = Sender.Parser, ReReadLine = true };
-    public static readonly ExceptionInfo Parser    = new() { Sender = Sender.Parser };
-    public static readonly ExceptionInfo Analyzer  = new() { Sender = Sender.Analyzer };
-    public static readonly ExceptionInfo Scope     = new() { Sender = Sender.Scope };
-    public static readonly ExceptionInfo Evaluator = new() { Sender = Sender.Evaluator };
 }

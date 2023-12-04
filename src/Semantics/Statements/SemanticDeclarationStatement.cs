@@ -3,28 +3,27 @@ using SEx.Evaluate.Values;
 using SEx.Generic.Constants;
 using SEx.Generic.Text;
 using SEx.Lex;
+using SEx.Scoping;
 
 namespace SEx.Semantics;
 
 internal sealed class SemanticDeclarationStatement : SemanticStatement
 {
-    public NameLiteral         Name       { get; }
-    public Token?              TypeToken  { get; }
-    public ValType             TypeHint   { get; }
-    public bool                IsConstant { get; }
-    public SemanticExpression? Expression { get; }
+    public VariableSymbol        Variable   { get; }
+    public Span                  VarSpan    { get; }
+    public DeclarationStatement  Node       { get; }
+    public SemanticExpression?   Expression { get; }
 
     public override Span Span { get; }
     public override SemanticKind Kind => SemanticKind.DeclarationStatement;
 
-    public SemanticDeclarationStatement(DeclarationStatement declaration, Token? typeToken, SemanticExpression? expression)
+    public SemanticDeclarationStatement(VariableSymbol var, Span span, DeclarationStatement node, SemanticExpression? expr)
     {
-        Name       = declaration.Name;
-        IsConstant = declaration.IsConstant;
-        TypeToken  = typeToken;
-        TypeHint   = GetNameType(typeToken?.Value);
-        Expression = expression;
-        Span       = declaration.Span;
+        Variable   = var;
+        VarSpan    = span;
+        Node       = node;
+        Expression = expr;
+        Span       = node.Span;
     }
 
     public static ValType GetNameType(string? type) => type switch
