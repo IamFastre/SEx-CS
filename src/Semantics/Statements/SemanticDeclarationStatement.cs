@@ -25,17 +25,4 @@ internal sealed class SemanticDeclarationStatement : SemanticStatement
         Expression = expr;
         Span       = node.Span;
     }
-
-    public static ValType GetNameType(string? type) => type switch
-    {
-        CONSTS.BOOLEAN => ValType.Boolean,
-        CONSTS.INTEGER => ValType.Integer,
-        CONSTS.FLOAT   => ValType.Float,
-        CONSTS.CHAR    => ValType.Char,
-        CONSTS.STRING  => ValType.String,
-        CONSTS.RANGE   => ValType.Range,
-        CONSTS.NUMBER  => ValType.Number,
-
-        _              => ValType.Any,
-    };
 }

@@ -1,3 +1,5 @@
+using SEx.Scoping;
+
 namespace SEx.Evaluate.Values;
 
 internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, NumberValue>
@@ -53,10 +55,10 @@ internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, Nu
         return (smaller <= ((double) value.Value)) && (bigger >= ((double) value.Value));
     }
 
-    public static ValType GetIndexReturn(ValType index) => index switch
+    public static TypeSymbol GetIndexReturn(ValType index) => index switch
     {
-        ValType.Integer => ValType.Number,
-        _ => ValType.Unknown,
+        ValType.Integer => TypeSymbol.Number,
+        _ => TypeSymbol.Unknown,
     };
 
     public Range GetSystemRange()

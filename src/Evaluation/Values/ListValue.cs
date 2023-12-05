@@ -1,5 +1,6 @@
 
 using SEx.Generic.Constants;
+using SEx.Scoping;
 
 namespace SEx.Evaluate.Values;
 
@@ -28,11 +29,11 @@ internal sealed class ListValue
         ElementTypes = new ValType[1] { type ?? ValType.Any };
     }
 
-    public static ValType GetIndexReturn(ValType index) => index switch
+    public static TypeSymbol GetIndexReturn(ValType index) => index switch
     {
-        ValType.Integer => ValType.Any,
-        ValType.Range   => ValType.List,
-        _ => ValType.Unknown,
+        ValType.Integer => TypeSymbol.Any,
+        ValType.Range   => GenericTypeSymbol.List(TypeSymbol.Any),
+        _ => TypeSymbol.Unknown,
     };
 
     public override string ToString()

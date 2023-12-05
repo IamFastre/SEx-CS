@@ -4,15 +4,15 @@ namespace SEx.Scoping;
 
 internal class VariableSymbol : Symbol
 {
-    public ValType Type       { get; protected set; }
-    public bool    IsConstant { get; protected set; }
+    public TypeSymbol Type       { get; protected set; }
+    public bool       IsConstant { get; protected set; }
 
     public override SymbolKind Kind => SymbolKind.Variable;
 
-    public VariableSymbol(string name, ValType? type = null, bool isConstant = false)
+    public VariableSymbol(string name, TypeSymbol? type = null, bool isConstant = false)
         : base(name)
     {
-        Type       = type ?? ValType.Any;
+        Type       = type ?? TypeSymbol.Any;
         IsConstant = isConstant;
     }
 
@@ -21,7 +21,7 @@ internal class VariableSymbol : Symbol
     public override int  GetHashCode()       => Name.GetHashCode();
     public override bool Equals(object? obj) => GetHashCode() == obj?.GetHashCode();
 
-    public bool TestType(ValType type)
+    public bool TestType(TypeSymbol type)
     {
         if ((Type, type).IsAssignable())
         {

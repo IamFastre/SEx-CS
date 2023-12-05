@@ -1,5 +1,6 @@
 using SEx.Generic.Constants;
 using SEx.Generic.Logic;
+using SEx.Scoping;
 
 namespace SEx.Evaluate.Values;
 
@@ -24,11 +25,11 @@ internal sealed class StringValue
     public bool Contains(LiteralValue value)
         => _value.Contains(value.Value.ToString()!);
 
-    public static ValType GetIndexReturn(ValType index) => index switch
+    public static TypeSymbol GetIndexReturn(ValType index) => index switch
     {
-        ValType.Integer => ValType.Char,
-        ValType.Range   => ValType.String,
-        _ => ValType.Unknown,
+        ValType.Integer => TypeSymbol.Char,
+        ValType.Range   => TypeSymbol.String,
+        _               => TypeSymbol.Unknown,
     };
 
     public CharValue? GetElement(IntegerValue index)

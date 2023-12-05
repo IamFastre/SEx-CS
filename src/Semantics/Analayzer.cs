@@ -70,7 +70,7 @@ internal sealed class Analyzer
     {
         SemanticElseClause? elseClause = null;
 
-        var condition = BindExpression(@is.Condition, ValType.Boolean | ValType.Unknown);
+        var condition = BindExpression(@is.Condition, TypeSymbol.Boolean);
         var thenStmt  = BindStatement(@is.Then);
 
         if (@is.ElseClause is not null)
@@ -83,7 +83,7 @@ internal sealed class Analyzer
     {
         SemanticElseClause? elseClause = null;
 
-        var condition = BindExpression(ws.Condition, ValType.Boolean | ValType.Unknown);
+        var condition = BindExpression(ws.Condition, TypeSymbol.Boolean);
         var thenStmt  = BindStatement(ws.Body);
 
         if (ws.ElseClause is not null)
@@ -101,10 +101,10 @@ internal sealed class Analyzer
     private SemanticForStatement BindForStatement(ForStatement fs)
     {
         var iterable = BindExpression(fs.Iterable);
-        var elemType = iterable.Type.GetElementType();
+        var elemType = iterable.Type.ElementType;
 
-        if (elemType is ValType.Unknown)
-            Diagnostics.Report.CannotIterate(iterable.Type.str(), iterable.Span);
+        if (elemType == TypeSymbol.Unknown)
+            Diagnostics.Report.CannotIterate(iterable.Type.ToString(), iterable.Span);
 
         Scope = new(Scope);
 
@@ -129,8 +129,8 @@ internal sealed class Analyzer
     private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement ds)
     {
         var expr = ds.Expression is not null ? BindExpression(ds.Expression) : null;
-        var hint = SemanticDeclarationStatement.GetNameType(ds.Type?.Value);
-        var type = expr is not null && hint == ValType.Any ? expr.Type : hint;
+        var hint = TypeSymbol.GetNameType(ds.Type?.Value);
+        var type = expr is not null && hint == TypeSymbol.Any ? expr.Type : hint;
         var var  = new VariableSymbol(ds.Variable.Value, type, ds.IsConstant);
 
         if (ds.IsConstant && expr is null)
@@ -149,7 +149,7 @@ internal sealed class Analyzer
         }
 
         else if (expr is not null && !(hint, expr.Type).IsAssignable())
-            Diagnostics.Report.TypesDoNotMatch(hint.str(), expr.Type.str(), ds.Span);
+            Diagnostics.Report.TypesDoNotMatch(hint.ToString(), expr.Type, ds.Span);
 
         else if (!Scope.TryDeclare(var))
             Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
@@ -165,7 +165,7 @@ internal sealed class Analyzer
 
     //=====================================================================//
     
-    private VariableSymbol DeclareVariable(NameLiteral n, ValType type, bool isConst = false)
+    private VariableSymbol DeclareVariable(NameLiteral n, TypeSymbol type, bool isConst = false)
     {
         var symbol = new VariableSymbol(n.Value, type, isConst);
         Scope.Symbols.Add(n.Value, symbol);
@@ -191,14 +191,13 @@ internal sealed class Analyzer
     
     //=====================================================================//
 
-    private SemanticExpression BindExpression(Expression expr, ValType expected)
+    private SemanticExpression BindExpression(Expression expr, TypeSymbol expected)
     {
         var val = BindExpression(expr);
-        if (!expected.HasFlag(val.Type))
+        if (!expected.Matches(val.Type))
         {
-            if (expected.HasFlag(ValType.Unknown) && expected != ValType.Unknown)
-                expected -= ValType.Unknown;
-            Except($"Expected an expression of type '{expected.str()}'", expr.Span);
+            if (!expected.IsKnown)
+            Except($"Expected an expression of type '{expected}'", expr.Span);
         }
         
         return val;
@@ -260,9 +259,9 @@ internal sealed class Analyzer
 
     private SemanticRange BindRange(RangeLiteral r)
     {
-        var start = BindExpression(r.Start, ValType.Number);
-        var end   = BindExpression(r.End, ValType.Number);
-        var step  = r.Step is null ? null : BindExpression(r.Step, ValType.Number);
+        var start = BindExpression(r.Start, TypeSymbol.Number);
+        var end   = BindExpression(r.End, TypeSymbol.Number);
+        var step  = r.Step is null ? null : BindExpression(r.Step, TypeSymbol.Number);
 
         return new(start, end, step);
     }
@@ -291,13 +290,13 @@ internal sealed class Analyzer
                 if (expr.Type == arRef.Type)
                     expressions.Add(expr);
                 else
-                    Except($"list of type '{arRef.Type.str()}' can't have a '{expr.Type.str()}' element", ll.Span);
+                    Except($"list of type '{arRef.Type}' can't have a '{expr.Type}' element", ll.Span);
             }
 
             return new(expressions.ToArray(), arRef.Type, ll.Span);
         }
 
-        return new(Array.Empty<SemanticExpression>(), ValType.Any, ll.Span);
+        return new(Array.Empty<SemanticExpression>(), TypeSymbol.Any, ll.Span);
     }
 
     private SemanticParenExpression BindParenExpression(ParenthesizedExpression pe)
@@ -310,25 +309,25 @@ internal sealed class Analyzer
     {
         var iterable    = BindExpression(ie.Iterable);
         var index       = BindExpression(ie.Index);
-        var elementType = SemanticIndexingExpression.GetElementType(iterable.Type, index.Type);
+        var elementType = SemanticIndexingExpression.GetElementType(iterable.Type.ID, index.Type.ID);
 
         if (elementType is null)
         {
-            Except($"Can't perform indexing on '{iterable.Type.str()}'", ie.Iterable.Span);
+            Except($"Can't perform indexing on '{iterable.Type}'", ie.Iterable.Span);
             return new SemanticFailedExpressions(new[] { iterable, index });
         }
 
-        return new SemanticIndexingExpression(iterable, index, elementType ?? ValType.Unknown, ie.Span);
+        return new SemanticIndexingExpression(iterable, index, elementType ?? TypeSymbol.Unknown, ie.Span);
     }
 
     private SemanticExpression BindUnaryOperation(UnaryOperation uop)
     {
         var operand = BindExpression(uop.Operand);
-        var opKind  = SemanticUnaryOperation.GetOperationKind(uop.Operator.Kind, operand.Type);
+        var opKind  = SemanticUnaryOperation.GetOperationKind(uop.Operator.Kind, operand.Type.ID);
 
         if (opKind is null)
         {
-            Except($"Cannot apply operator '{uop.Operator.Value}' on type '{operand.Type.str()}'", uop.Span);
+            Except($"Cannot apply operator '{uop.Operator.Value}' on type '{operand.Type}'", uop.Span);
             return new SemanticFailedExpressions(new[] { operand });
         }
 
@@ -346,7 +345,7 @@ internal sealed class Analyzer
 
         if (opKind is null)
         {
-            Except($"Cannot apply operator '{co.Operator.Value}' on type '{name.Type.str()}'", co.Span);
+            Except($"Cannot apply operator '{co.Operator.Value}' on type '{name.Type}'", co.Span);
             return new SemanticFailedExpression(co.Span);
         }
 
@@ -357,11 +356,11 @@ internal sealed class Analyzer
     {
         var left   = BindExpression(biop.LHS);
         var right  = BindExpression(biop.RHS);
-        var opKind = SemanticBinaryOperation.GetOperationKind(biop.Operator.Kind, left.Type, right.Type);
+        var opKind = SemanticBinaryOperation.GetOperationKind(biop.Operator.Kind, left.Type.ID, right.Type.ID);
 
         if (opKind is null)
         {
-            Except($"Cannot apply operator '{biop.Operator.Value}' on types: '{left.Type.str()}' and '{right.Type.str()}'", biop.Span);
+            Except($"Cannot apply operator '{biop.Operator.Value}' on types: '{left.Type}' and '{right.Type}'", biop.Span);
             return new SemanticFailedExpressions(new[] { left, right });
         }
 
@@ -370,12 +369,12 @@ internal sealed class Analyzer
 
     private SemanticTernaryOperation BindTernaryOperation(TernaryOperation terop)
     {
-        var condition = BindExpression(terop.Condition, ValType.Boolean);
+        var condition = BindExpression(terop.Condition, TypeSymbol.Boolean);
         var trueExpr  = BindExpression(terop.TrueExpression);
         var falseExpr = BindExpression(terop.FalseExpression);
 
         if (trueExpr.Type != falseExpr.Type)
-            Except($"Types '{trueExpr.Type.str()}' and '{falseExpr.Type.str()}' don't match in ternary operation", terop.Span);
+            Except($"Types '{trueExpr.Type}' and '{falseExpr.Type}' don't match in ternary operation", terop.Span);
 
         return new(condition, trueExpr, falseExpr);
     }
@@ -400,7 +399,7 @@ internal sealed class Analyzer
             return new SemanticAssignment(name, expr, aexpr.Span);
         }
         
-        Diagnostics.Report.TypesDoNotMatch(name.Type.str(), expr.Type.str(), aexpr.Span);
+        Diagnostics.Report.TypesDoNotMatch(name.Type.ToString(), expr.Type.ToString(), aexpr.Span);
         return expr;
     }
 
@@ -424,7 +423,7 @@ internal sealed class Analyzer
             return new SemanticAssignment(name, expr, caexpr.Span);
         }
         
-        Diagnostics.Report.TypesDoNotMatch(name.Type.str(), expr.Type.str(), caexpr.Span);
+        Diagnostics.Report.TypesDoNotMatch(name.Type.ToString(), expr.Type.ToString(), caexpr.Span);
         return expr;
     }
 }

@@ -27,6 +27,21 @@ internal class TypeSymbol : Symbol
     public virtual bool Matches(TypeSymbol other)
         => ID.HasFlag(other.ID);
 
+
+    public static TypeSymbol GetNameType(string? type) => type switch
+    {
+        CONSTS.BOOLEAN => Boolean,
+        CONSTS.NUMBER  => Number,
+        CONSTS.INTEGER => Integer,
+        CONSTS.FLOAT   => Float,
+        CONSTS.CHAR    => Char,
+        CONSTS.STRING  => String,
+        CONSTS.RANGE   => Range,
+
+        _              => Any,
+    };
+
+
     // Special types
     public static readonly TypeSymbol Unknown = new(CONSTS.UNKNOWN, ValType.Unknown);
     public static readonly TypeSymbol Void    = new(CONSTS.VOID,    ValType.Void);
@@ -35,9 +50,9 @@ internal class TypeSymbol : Symbol
     // Data types
     public static readonly TypeSymbol Any     = new(CONSTS.ANY,     ValType.Any);
     public static readonly TypeSymbol Null    = new(CONSTS.NULL,    ValType.Null);
-    public static readonly TypeSymbol Bool    = new(CONSTS.BOOLEAN, ValType.Boolean);
+    public static readonly TypeSymbol Boolean = new(CONSTS.BOOLEAN, ValType.Boolean);
     public static readonly TypeSymbol Number  = new(CONSTS.NUMBER,  ValType.Number);
-    public static readonly TypeSymbol Int     = new(CONSTS.INTEGER, ValType.Integer);
+    public static readonly TypeSymbol Integer = new(CONSTS.INTEGER, ValType.Integer);
     public static readonly TypeSymbol Float   = new(CONSTS.FLOAT,   ValType.Float);
     public static readonly TypeSymbol Char    = new(CONSTS.CHAR,    ValType.Char);
     public static readonly TypeSymbol String  = new(CONSTS.STRING,  ValType.String, Char);
