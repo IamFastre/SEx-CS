@@ -3,6 +3,7 @@ namespace SEx.Scoping;
 internal enum SymbolKind
 {
     Type,
+    GenericType,
     Variable,
 }
 

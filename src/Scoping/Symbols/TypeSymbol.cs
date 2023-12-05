@@ -2,10 +2,13 @@ using SEx.Generic.Constants;
 
 namespace SEx.Scoping;
 
-internal sealed class TypeSymbol : Symbol
+internal class TypeSymbol : Symbol
 {
-    private TypeSymbol(string name) : base(name) { }
     public override SymbolKind Kind => SymbolKind.Type;
+    protected TypeSymbol(string name) : base(name) { }
+
+    public override int  GetHashCode()       => ToString().GetHashCode();
+    public override bool Equals(object? obj) => obj?.ToString() == ToString();
 
     // Special types
     public static readonly TypeSymbol Unknown = new(CONSTS.UNKNOWN);
