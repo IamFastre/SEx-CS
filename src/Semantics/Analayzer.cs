@@ -319,7 +319,6 @@ internal sealed class Analyzer
         var iterable    = BindExpression(ie.Iterable);
         var index       = BindExpression(ie.Index);
         var elementType = iterable.Type.ElementType;
-        // var elementType = SemanticIndexingExpression.GetElementType(iterable.Type.ID, index.Type.ID);
 
         if (elementType is null)
         {
