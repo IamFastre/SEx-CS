@@ -360,10 +360,33 @@ internal class Parser
     private ExpressionStatement GetExpressionStatement()
         => new(GetExpression() ?? Literal.Unknown(Tokens[^1].Span));
 
+    private GenericTypeClause GetGenericTypeClause(Token type)
+    {
+        List<TypeClause> types = new();
+        var dimension = 0;
+
+        do
+        {
+            if (Current.Kind == TokenKind.Comma)
+                Eat();
+            types.Add(GetTypeClause());
+        }
+        while (Current.Kind == TokenKind.Comma && Current.Kind != TokenKind.Greater);
+        var close = Expect(TokenKind.Greater, reread:false);
+
+        while (IsNextKind(TokenKind.OpenSquareBracket) && IsNextKind(TokenKind.CloseSquareBracket))
+            dimension++;
+
+        return new(type, types.ToArray(), close.Span, dimension);
+    }
+
     private TypeClause GetTypeClause()
     {
         var type = Expect(TokenKind.Type, "Expected a type after colon", true);
         var dimension = 0;
+
+        if (IsNextKind(TokenKind.Less))
+            return GetGenericTypeClause(type);
 
         while (IsNextKind(TokenKind.OpenSquareBracket) && IsNextKind(TokenKind.CloseSquareBracket))
             dimension++;

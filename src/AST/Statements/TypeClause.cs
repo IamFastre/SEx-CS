@@ -26,3 +26,13 @@ internal class TypeClause : Clause
         yield return Type.Node;
     }
 }
+
+internal class GenericTypeClause : TypeClause
+{
+    public TypeClause[] Parameters { get; }
+    public override NodeKind Kind => NodeKind.GenericTypeClause;
+
+    public GenericTypeClause(Token type, TypeClause[] parameters, Span end, int dimension = 0)
+        : base(type, end, dimension)
+        => Parameters = parameters;
+}

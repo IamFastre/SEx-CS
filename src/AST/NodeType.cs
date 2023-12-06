@@ -23,6 +23,7 @@ public enum NodeKind
     ExpressionStatement,
     DeclarationStatement,
     TypeClause,
+    GenericTypeClause,
     BlockStatement,
     // Conditional
     IfStatement,

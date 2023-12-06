@@ -171,12 +171,26 @@ internal sealed class Analyzer
         Scope.Symbols.Add(n.Value, symbol);
         return symbol;
     }
+    private TypeSymbol[] GetTypes(TypeClause[] tcs)
+    {
+        List<TypeSymbol> types = new();
+        foreach (var tc in tcs)
+            types.Add(GetType(tc));
+        
+        return types.ToArray();
+    }
 
     private TypeSymbol GetType(TypeClause tc)
     {
-        var type = TypeSymbol.GetTypeByString(tc.Type.Value);
-        if (type is null) return
-            TypeSymbol.Any;
+        var type = tc.Kind == NodeKind.TypeClause
+                 ? TypeSymbol.GetTypeByString(tc.Type.Value)
+                 : GenericTypeSymbol.GetTypeByString(tc.Type.Value, GetTypes(((GenericTypeClause) tc).Parameters));
+
+        if (type is null)
+        {
+            Diagnostics.Report.InvalidTypeClause(tc.Span);
+            return TypeSymbol.Unknown;
+        }
 
         for (int i = 0; i < tc.ListDimension; i++)
             type = GenericTypeSymbol.List(type);
@@ -392,7 +406,7 @@ internal sealed class Analyzer
     {
         var expr = aexpr.Operation is null
                  ? BindExpression(aexpr.Expression)
-                 : BindBinaryOperation(new(aexpr.Assignee, aexpr.Equal, aexpr.Expression));
+                 : BindBinaryOperation(new(aexpr.Assignee, aexpr.Operation, aexpr.Expression));
 
         var name = GetVariable(aexpr.Assignee);
 

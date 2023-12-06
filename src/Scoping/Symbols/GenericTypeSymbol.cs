@@ -56,6 +56,15 @@ internal sealed class GenericTypeSymbol : TypeSymbol
         return str + ">";
     }
 
+    public static GenericTypeSymbol? GetTypeByString(string? type, TypeSymbol[] symbols) => type switch
+    {
+        CONSTS.LIST => symbols.Length == 1 ? List(symbols[0]) : null,
+        _ => null
+    };
+
+    public static GenericTypeSymbol AnyList
+        => new(CONSTS.LIST, $"{Any}[]", TypeID.List, Any, Any);
+
     public static GenericTypeSymbol List(TypeSymbol type)
         => new(CONSTS.LIST, $"{type}[]", TypeID.List, type, type);
 }

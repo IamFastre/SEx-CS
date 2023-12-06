@@ -8,7 +8,7 @@ internal sealed class AssignmentExpression : Expression
 {
     public NameLiteral Assignee    { get; }
     public Token       Equal       { get; }
-    public TokenKind?  Operation   { get; }
+    public Token?      Operation   { get; }
     public Expression  Expression  { get; }
 
     public override Span     Span  { get; }
@@ -18,12 +18,14 @@ internal sealed class AssignmentExpression : Expression
     {
         Assignee   = name;
         Equal      = equal;
-        Operation  = GetOperationKind(equal.Kind);
+        Operation  = equal.Kind != TokenKind.Equal
+                   ? new(equal.Value, GetOperationKind(equal.Kind), equal.Span)
+                   : null;
         Expression = expr;
         Span       = new(name.Span, expr.Span);
     }
 
-    private static TokenKind? GetOperationKind(TokenKind kind) => kind switch
+    private static TokenKind GetOperationKind(TokenKind kind) => kind switch
     {
         TokenKind.PlusEqual              => TokenKind.Plus,
         TokenKind.MinusEqual             => TokenKind.Minus,
@@ -38,7 +40,7 @@ internal sealed class AssignmentExpression : Expression
         TokenKind.LogicalOREqual         => TokenKind.LogicalOR,
         TokenKind.NullishCoalescingEqual => TokenKind.NullishCoalescing,
 
-        _ => null,
+        _ => throw new Exception("if this happens imma kms"),
     };
 
     public override string ToString()
