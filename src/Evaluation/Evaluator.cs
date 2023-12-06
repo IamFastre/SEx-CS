@@ -588,9 +588,9 @@ internal class Evaluator
         var val = EvaluateExpression(aseprx.Expression);
 
         if (Scope.TryResolve(aseprx.Assignee, out var output) && (!aseprx.Assignee.IsConstant))
-            Scope.Assign(aseprx.Assignee, val);
+            Scope.Assign(aseprx.Assignee, output = val);
 
-        return !output.Type.IsKnown ? val : output;
+        return output.Type.IsKnown ? output : val;
     }
 
     private LiteralValue EvaluateFailedExpression(SemanticFailedExpressions fe)

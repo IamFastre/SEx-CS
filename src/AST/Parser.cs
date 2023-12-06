@@ -348,10 +348,7 @@ internal class Parser
                 return Literal.Unknown(new(left!.Span, eq.Span));
             }
 
-            if (eq.Kind == TokenKind.Equal)
-                return new AssignmentExpression((NameLiteral) left, eq, expr);
-
-            return new CompoundAssignmentExpression((NameLiteral) left, eq, expr);
+            return new AssignmentExpression((NameLiteral) left, eq, expr);
         }
 
         return left;

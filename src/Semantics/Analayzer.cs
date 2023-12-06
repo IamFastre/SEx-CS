@@ -247,9 +247,6 @@ internal sealed class Analyzer
             case NodeKind.AssignmentExpression:
                 return BindAssignExpression((AssignmentExpression) expr);
 
-            case NodeKind.CompoundAssignmentExpression:
-                return BindCompoundAssignExpression((CompoundAssignmentExpression) expr);
-
             default:
                 throw new Exception($"Unrecognized expression kind: {expr.Kind}");
         }
@@ -382,7 +379,10 @@ internal sealed class Analyzer
 
     private SemanticExpression BindAssignExpression(AssignmentExpression aexpr)
     {
-        var expr = BindExpression(aexpr.Expression);
+        var expr = aexpr.Operation is null
+                 ? BindExpression(aexpr.Expression)
+                 : BindBinaryOperation(new(aexpr.Assignee, aexpr.Equal, aexpr.Expression));
+
         var name = GetVariable(aexpr.Assignee);
 
         if (name is null)
@@ -403,29 +403,5 @@ internal sealed class Analyzer
         }
         
         return new SemanticAssignment(name, expr, aexpr.Span);
-    }
-
-    private SemanticExpression BindCompoundAssignExpression(CompoundAssignmentExpression caexpr)
-    {
-        var expr = BindBinaryOperation(new(caexpr.Assignee, caexpr.Operator, caexpr.Expression));
-        var name = GetVariable(caexpr.Assignee);
-
-        if (name is null)
-            return expr;
-
-        if (name.IsConstant)
-        {
-            Diagnostics.Report.CannotAssignToConst(name.Name, caexpr.Assignee.Span);
-            return BindName(caexpr.Assignee);
-        }
-
-        if (name.TestType(expr.Type))
-        {
-            Scope.Assign(name);
-            return new SemanticAssignment(name, expr, caexpr.Span);
-        }
-        
-        Diagnostics.Report.TypesDoNotMatch(name.Type.ToString(), expr.Type.ToString(), caexpr.Span);
-        return expr;
     }
 }
