@@ -5,9 +5,9 @@ namespace SEx.Evaluate.Values;
 internal abstract class LiteralValue
 {
     public abstract object     Value { get; }
-    public abstract TypeSymbol Type { get; }
+    public abstract TypeSymbol Type  { get; }
 
-    public bool IsKnown   => Type.ID is TypeID.Unknown;
+    public bool IsKnown   => Type.ID is not TypeID.Unknown;
     public bool IsDefined => this is not UndefinedValue;
     public bool IsGeneric => Type is GenericTypeSymbol;
 

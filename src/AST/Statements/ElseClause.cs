@@ -6,18 +6,17 @@ namespace SEx.AST;
 
 internal sealed class ElseClause : Clause
 {
-    public override Span     Span { get; }
-    public override NodeKind Kind { get; }
-
     public Token     Else  { get; }
     public Statement Body  { get; }
+
+    public override Span     Span { get; }
+    public override NodeKind Kind => NodeKind.ElseClause;
 
     public ElseClause(Token @else, Statement body)
     {
         Else = @else;
         Body = body;
         Span = new(@else.Span, body.Span);
-        Kind = NodeKind.ElseClause;
     }
 
     public override IEnumerable<Node> GetChildren()

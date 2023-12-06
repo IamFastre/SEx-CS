@@ -155,7 +155,7 @@ internal class Evaluator
         {
             if ((ds.Variable.Type, value.Type).IsAssignable())
                 Scope.Declare(ds.Variable, value);
-            else
+            else if (ds.Expression is null)
                 Scope.Declare(ds.Variable, UndefinedValue.New(ds.Variable.Type));
         }
         else if (ds.Variable.IsConstant && ds.Expression is null)
@@ -378,7 +378,6 @@ internal class Evaluator
         bool   _bool;
         double _double;
         string _string;
-        // List<LiteralValue> _list;
 
         if (!left.IsKnown || !right.IsKnown)
             return UnknownValue.Template;

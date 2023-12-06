@@ -16,11 +16,11 @@ internal enum TypeID
     Range    = 1 << 8,
     List     = 1 << 9,
 
+    Any      = int.MaxValue,
     Whole    = Integer | Char,
     Number   = Integer | Float,
     Numable  = Number  | Char,
     Iterable = String  | Range   | List,
-    Any      = Null    | Boolean | Integer | Float | Char | String | Range | List,
     Nones    = Void    | Unknown | Null,
     UAVTs    = Void    | Unknown, // Un-assignable value types
 }

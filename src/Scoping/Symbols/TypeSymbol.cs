@@ -27,8 +27,9 @@ internal class TypeSymbol : Symbol
         => ID.HasFlag(other.ID);
 
 
-    public static TypeSymbol GetTypeByID(TypeID type) => type switch
+    public static TypeSymbol? GetTypeByID(TypeID type) => type switch
     {
+        TypeID.Any     => Any,
         TypeID.Boolean => Boolean,
         TypeID.Number  => Number,
         TypeID.Integer => Integer,
@@ -37,11 +38,12 @@ internal class TypeSymbol : Symbol
         TypeID.String  => String,
         TypeID.Range   => Range,
 
-        _              => Any,
+        _              => null,
     };
 
-    public static TypeSymbol GetTypeByString(string? type) => type switch
+    public static TypeSymbol? GetTypeByString(string? type) => type switch
     {
+        CONSTS.ANY     => Any,
         CONSTS.BOOLEAN => Boolean,
         CONSTS.NUMBER  => Number,
         CONSTS.INTEGER => Integer,
@@ -50,7 +52,7 @@ internal class TypeSymbol : Symbol
         CONSTS.STRING  => String,
         CONSTS.RANGE   => Range,
 
-        _              => Any,
+        _              => null,
     };
 
 

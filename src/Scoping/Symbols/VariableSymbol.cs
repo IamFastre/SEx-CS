@@ -21,7 +21,7 @@ internal class VariableSymbol : Symbol
 
     public bool TestType(TypeSymbol type)
     {
-        if ((type, Type).IsAssignable())
+        if ((Type, type).IsAssignable())
         {
             Type = type;
             return true;

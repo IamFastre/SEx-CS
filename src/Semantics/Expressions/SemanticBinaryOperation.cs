@@ -20,7 +20,7 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
         Operator = SemanticBinaryOperator.GetSemanticOperator(left.Type.ID, kind, right.Type.ID)!;
         Right    = right;
 
-        Type = TypeSymbol.GetTypeByID(Operator.ResultType);
+        Type = TypeSymbol.GetTypeByID(Operator.ResultType)!;
         Span = new Span(left.Span.Start, right.Span.End);
     }
 

@@ -7,19 +7,19 @@ namespace SEx.AST;
 internal sealed class DeclarationStatement : Statement
 {
     public Token       Hash       { get; }
-    public NameLiteral Variable       { get; }
-    public Token?      Type       { get; }
+    public NameLiteral Variable   { get; }
+    public TypeClause? TypeClause { get; }
     public Expression? Expression { get; }
     public bool        IsConstant { get; }
 
     public override Span     Span { get; }
     public override NodeKind Kind => NodeKind.DeclarationStatement;
 
-    public DeclarationStatement(Token hash, NameLiteral name, Token? type = null, Expression? expression = null, bool isConst = false)
+    public DeclarationStatement(Token hash, NameLiteral name, TypeClause? type = null, Expression? expression = null, bool isConst = false)
     {
         Hash       = hash;
-        Variable       = name;
-        Type       = type;
+        Variable   = name;
+        TypeClause = type;
         Expression = expression;
         IsConstant = isConst;
 
@@ -31,6 +31,8 @@ internal sealed class DeclarationStatement : Statement
     {
         yield return Hash.Node;
         yield return Variable;
+        if (TypeClause != null)
+            yield return TypeClause;
         if (Expression != null)
             yield return Expression;
     }

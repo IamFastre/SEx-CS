@@ -2,7 +2,6 @@ using SEx.AST;
 using SEx.Diagnose;
 using SEx.Scoping;
 using SEx.Scoping.Symbols;
-using SEx.Evaluate.Values;
 using SEx.Generic.Text;
 using SEx.Parse;
 
@@ -130,7 +129,7 @@ internal sealed class Analyzer
     private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement ds)
     {
         var expr = ds.Expression is not null ? BindExpression(ds.Expression) : null;
-        var hint = TypeSymbol.GetTypeByString(ds.Type?.Value);
+        var hint = ds.TypeClause is not null ? GetType(ds.TypeClause) : TypeSymbol.Any;
         var type = expr is not null && hint == TypeSymbol.Any ? expr.Type : hint;
         var var  = new VariableSymbol(ds.Variable.Value, type, ds.IsConstant);
 
@@ -138,8 +137,8 @@ internal sealed class Analyzer
         {
             if (Scope.TryResolve(var.Name, out var symbol))
             {
-                if (ds.Type is not null)
-                    Diagnostics.Report.UselessTypeAdded(ds.Type!.Value, ds.Type.Span);
+                if (ds.TypeClause is not null)
+                    Diagnostics.Report.UselessTypeAdded(hint.Name, ds.TypeClause.Span);
                 else if (((VariableSymbol) symbol!).IsConstant)
                     Diagnostics.Report.AlreadyConstant(ds.Variable.Value, ds.Variable.Span);
                 else
@@ -172,7 +171,19 @@ internal sealed class Analyzer
         Scope.Symbols.Add(n.Value, symbol);
         return symbol;
     }
-    
+
+    private TypeSymbol GetType(TypeClause tc)
+    {
+        var type = TypeSymbol.GetTypeByString(tc.Type.Value);
+        if (type is null) return
+            TypeSymbol.Any;
+
+        for (int i = 0; i < tc.ListDimension; i++)
+            type = GenericTypeSymbol.List(type);
+        
+        return type;
+    }
+
     private VariableSymbol? GetVariable(NameLiteral n)
     {
         switch (Scope.Resolve(n.Value))
@@ -189,7 +200,7 @@ internal sealed class Analyzer
                 return null;
         }
     }
-    
+
     //=====================================================================//
 
     private SemanticExpression BindExpression(Expression expr, TypeSymbol expected)
@@ -307,7 +318,8 @@ internal sealed class Analyzer
     {
         var iterable    = BindExpression(ie.Iterable);
         var index       = BindExpression(ie.Index);
-        var elementType = SemanticIndexingExpression.GetElementType(iterable.Type.ID, index.Type.ID);
+        var elementType = iterable.Type.ElementType;
+        // var elementType = SemanticIndexingExpression.GetElementType(iterable.Type.ID, index.Type.ID);
 
         if (elementType is null)
         {

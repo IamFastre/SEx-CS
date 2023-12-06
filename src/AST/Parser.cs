@@ -242,11 +242,11 @@ internal class Parser
     {
         var factor = GetPrimary();
 
+        while (Current.Kind == TokenKind.OpenSquareBracket)
+            factor = GetIndexing(factor!);
+
         switch (Current.Kind)
         {
-            case TokenKind.OpenSquareBracket:
-                return GetIndexing(factor!);
-
             case TokenKind.Increment:
             case TokenKind.Decrement:
                 return GetCounting(factor!);
@@ -360,10 +360,21 @@ internal class Parser
     private ExpressionStatement GetExpressionStatement()
         => new(GetExpression() ?? Literal.Unknown(Tokens[^1].Span));
 
+    private TypeClause GetTypeClause()
+    {
+        var type = Expect(TokenKind.Type, "Expected a type after colon", true);
+        var dimension = 0;
+
+        while (IsNextKind(TokenKind.OpenSquareBracket) && IsNextKind(TokenKind.CloseSquareBracket))
+            dimension++;
+
+        return new(type, Peek(-1).Span, dimension);
+    }
+
     private DeclarationStatement GetDeclarationStatement()
     {
         Expression? expr = null;
-        Token? type = null;
+        TypeClause? type = null;
         var hash = Eat();
         var isConst = Current.Kind == TokenKind.Asterisk;
         if (isConst) Eat();
@@ -371,7 +382,7 @@ internal class Parser
         var name = Expect(TokenKind.Identifier, "Expected a name to declare");
 
         if (IsNextKind(TokenKind.Colon))
-            type = Expect(TokenKind.Type, "Expected a type after colon", true);
+            type = GetTypeClause();
 
         if (Current.Kind == TokenKind.Equal)
         {
