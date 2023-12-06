@@ -1,6 +1,6 @@
 using SEx.Generic.Constants;
 using SEx.Generic.Logic;
-using SEx.Scoping;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
@@ -9,7 +9,7 @@ internal sealed class StringValue
 {
     private readonly string _value;
     public override object Value => _value;
-    public override ValType Type => ValType.String;
+    public override TypeSymbol Type => TypeSymbol.String;
 
     public IntegerValue Length => new(_value.Length);
 
@@ -25,10 +25,10 @@ internal sealed class StringValue
     public bool Contains(LiteralValue value)
         => _value.Contains(value.Value.ToString()!);
 
-    public static TypeSymbol GetIndexReturn(ValType index) => index switch
+    public static TypeSymbol GetIndexReturn(TypeID index) => index switch
     {
-        ValType.Integer => TypeSymbol.Char,
-        ValType.Range   => TypeSymbol.String,
+        TypeID.Integer => TypeSymbol.Char,
+        TypeID.Range   => TypeSymbol.String,
         _               => TypeSymbol.Unknown,
     };
 

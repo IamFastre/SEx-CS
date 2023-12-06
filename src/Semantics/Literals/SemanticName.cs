@@ -1,15 +1,13 @@
-using SEx.AST;
 using SEx.Generic.Text;
-using SEx.Evaluate.Values;
-using SEx.Scoping;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
 internal class SemanticVariable : SemanticExpression
 {
-    public VariableSymbol  Symbol { get; }
-    public override Span    Span  { get; }
-    public override ValType Type  { get; }
+    public VariableSymbol      Symbol { get; }
+    public override Span       Span  { get; }
+    public override TypeSymbol Type  { get; }
 
     public override SemanticKind Kind => SemanticKind.Name;
 

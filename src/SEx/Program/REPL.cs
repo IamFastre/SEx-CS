@@ -10,6 +10,7 @@ using SEx.Evaluate.Values;
 using SEx.Scoping;
 using SEx.Generic.Constants;
 using SEx.Generic.Text;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Main;
 
@@ -89,7 +90,7 @@ internal class REPL
     }
 
     public void PrintValue()
-        => Console.WriteLine(TypeShown ? $"<{C.YELLOW2}{Value.Type.str()}{C.END}>: {ValueString}" : ValueString);
+        => Console.WriteLine(TypeShown ? $"<{C.YELLOW2}{Value.Type}{C.END}>: {ValueString}" : ValueString);
 
     public void Loop()
     {
@@ -138,7 +139,7 @@ internal class REPL
 
                 Throw();
 
-                if (!(Value.Type == ValType.Void)) 
+                if (!(Value.Type == TypeSymbol.Void)) 
                     PrintValue();
 
                 Script.Clear();

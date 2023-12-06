@@ -1,6 +1,7 @@
 using SEx.AST;
 using SEx.Diagnose;
 using SEx.Scoping;
+using SEx.Scoping.Symbols;
 using SEx.Evaluate.Values;
 using SEx.Generic.Text;
 using SEx.Parse;
@@ -103,12 +104,12 @@ internal sealed class Analyzer
         var iterable = BindExpression(fs.Iterable);
         var elemType = iterable.Type.ElementType;
 
-        if (elemType == TypeSymbol.Unknown)
+        if (elemType is null)
             Diagnostics.Report.CannotIterate(iterable.Type.ToString(), iterable.Span);
 
         Scope = new(Scope);
 
-        var variable = DeclareVariable(fs.Variable, elemType, true);
+        var variable = DeclareVariable(fs.Variable, elemType ?? TypeSymbol.Unknown, true);
         var body     = BindStatement(fs.Body);
 
         Scope = Scope.Parent!;
@@ -129,7 +130,7 @@ internal sealed class Analyzer
     private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement ds)
     {
         var expr = ds.Expression is not null ? BindExpression(ds.Expression) : null;
-        var hint = TypeSymbol.GetNameType(ds.Type?.Value);
+        var hint = TypeSymbol.GetTypeByString(ds.Type?.Value);
         var type = expr is not null && hint == TypeSymbol.Any ? expr.Type : hint;
         var var  = new VariableSymbol(ds.Variable.Value, type, ds.IsConstant);
 
@@ -149,7 +150,7 @@ internal sealed class Analyzer
         }
 
         else if (expr is not null && !(hint, expr.Type).IsAssignable())
-            Diagnostics.Report.TypesDoNotMatch(hint.ToString(), expr.Type, ds.Span);
+            Diagnostics.Report.TypesDoNotMatch(hint.ToString(), expr.Type.ToString(), ds.Span);
 
         else if (!Scope.TryDeclare(var))
             Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
@@ -356,7 +357,7 @@ internal sealed class Analyzer
     {
         var left   = BindExpression(biop.LHS);
         var right  = BindExpression(biop.RHS);
-        var opKind = SemanticBinaryOperation.GetOperationKind(biop.Operator.Kind, left.Type.ID, right.Type.ID);
+        var opKind = SemanticBinaryOperation.GetOperationKind(biop.Operator.Kind, left.Type, right.Type);
 
         if (opKind is null)
         {
@@ -394,13 +395,14 @@ internal sealed class Analyzer
         }
 
         if (name.TestType(expr.Type))
-        {
             Scope.Assign(name);
-            return new SemanticAssignment(name, expr, aexpr.Span);
+        else
+        {
+            Diagnostics.Report.TypesDoNotMatch(name.Type.ToString(), expr.Type.ToString(), aexpr.Span);
+            return BindName(aexpr.Assignee);
         }
         
-        Diagnostics.Report.TypesDoNotMatch(name.Type.ToString(), expr.Type.ToString(), aexpr.Span);
-        return expr;
+        return new SemanticAssignment(name, expr, aexpr.Span);
     }
 
     private SemanticExpression BindCompoundAssignExpression(CompoundAssignmentExpression caexpr)

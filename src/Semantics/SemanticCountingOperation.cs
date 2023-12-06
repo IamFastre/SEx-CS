@@ -1,7 +1,7 @@
 using SEx.Evaluate.Values;
 using SEx.Generic.Text;
 using SEx.Lex;
-using SEx.Scoping;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
@@ -20,7 +20,7 @@ internal class SemanticCountingOperation : SemanticExpression
     public CountingKind     OperationKind { get; }
 
     public override Span         Span   { get; }
-    public override ValType      Type => Name.Type;
+    public override TypeSymbol   Type => Name.Type;
     public override SemanticKind Kind => SemanticKind.CountingOperation;
 
     public SemanticCountingOperation(SemanticVariable name, CountingKind kind, Span span)
@@ -31,12 +31,12 @@ internal class SemanticCountingOperation : SemanticExpression
         Span          = span;
     }
 
-    public static CountingKind? GetOperationKind(TokenKind op, ValType operand, bool returnAfter) => (op, operand) switch
+    public static CountingKind? GetOperationKind(TokenKind op, TypeSymbol operand, bool returnAfter) => (op, operand.ID) switch
     {
-        (TokenKind.Increment, ValType.Integer or ValType.Float)
+        (TokenKind.Increment, TypeID.Integer or TypeID.Float or TypeID.Char)
             => returnAfter ? CountingKind.IncrementAfter : CountingKind.IncrementBefore,
 
-        (TokenKind.Decrement, ValType.Integer or ValType.Float)
+        (TokenKind.Decrement, TypeID.Integer or TypeID.Float or TypeID.Char)
             => returnAfter ? CountingKind.DecrementAfter : CountingKind.DecrementBefore,
 
         _ => null,

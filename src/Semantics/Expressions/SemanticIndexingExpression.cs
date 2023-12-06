@@ -1,6 +1,6 @@
 using SEx.Evaluate.Values;
 using SEx.Generic.Text;
-using SEx.Scoping;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
@@ -22,11 +22,11 @@ internal sealed class SemanticIndexingExpression : SemanticExpression
         Span     = span;
     }
 
-    public static TypeSymbol? GetElementType(ValType iterator, ValType index) => iterator switch
+    public static TypeSymbol? GetElementType(TypeID iterator, TypeID index) => iterator switch
     {
-        ValType.String => StringValue.GetIndexReturn(index),
-        ValType.Range  => RangeValue.GetIndexReturn(index),
-        ValType.List   => ListValue.GetIndexReturn(index),
+        TypeID.String => StringValue.GetIndexReturn(index),
+        TypeID.Range  => RangeValue.GetIndexReturn(index),
+        TypeID.List   => ListValue.GetIndexReturn(index),
 
         _ => null,
     };

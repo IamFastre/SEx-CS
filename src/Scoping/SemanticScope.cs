@@ -1,4 +1,4 @@
-using SEx.Evaluate.Values;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Scoping;
 

@@ -1,7 +1,7 @@
 using SEx.Evaluate.Values;
 using SEx.Generic.Text;
 using SEx.Lex;
-using SEx.Scoping;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
@@ -29,10 +29,10 @@ internal sealed class SemanticUnaryOperation : SemanticExpression
         Span          = span;
     }
 
-    public static UnaryOperationKind? GetOperationKind(TokenKind kind, ValType operand)
+    public static UnaryOperationKind? GetOperationKind(TokenKind kind, TypeID operand)
     {
 
-        if (operand is ValType.Integer || operand is ValType.Float)
+        if (operand is TypeID.Integer || operand is TypeID.Float)
             return kind switch
             {
                 TokenKind.Plus  => UnaryOperationKind.Identity,
@@ -40,7 +40,7 @@ internal sealed class SemanticUnaryOperation : SemanticExpression
                 _ => null,
             };
 
-        if (operand is ValType.Boolean)
+        if (operand is TypeID.Boolean)
             return kind switch
             {
                 TokenKind.ExclamationMark  => UnaryOperationKind.Complement,

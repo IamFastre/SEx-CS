@@ -1,11 +1,11 @@
-using SEx.Scoping;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
 internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, NumberValue>
 {
     public override object Value => null!;
-    public override ValType Type => ValType.Range;
+    public override TypeSymbol Type => TypeSymbol.Range;
 
     public NumberValue Start { get; }
     public NumberValue End   { get; }
@@ -55,9 +55,9 @@ internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, Nu
         return (smaller <= ((double) value.Value)) && (bigger >= ((double) value.Value));
     }
 
-    public static TypeSymbol GetIndexReturn(ValType index) => index switch
+    public static TypeSymbol GetIndexReturn(TypeID index) => index switch
     {
-        ValType.Integer => TypeSymbol.Number,
+        TypeID.Integer => TypeSymbol.Number,
         _ => TypeSymbol.Unknown,
     };
 

@@ -1,19 +1,18 @@
-using SEx.Evaluate.Values;
 using SEx.Generic.Constants;
 
-namespace SEx.Scoping;
+namespace SEx.Scoping.Symbols;
 
 internal class TypeSymbol : Symbol
 {
-    public ValType     ID          { get; }
+    public TypeID     ID          { get; }
     public TypeSymbol? ElementType { get; }
 
-    public bool IsKnown    => ID is not ValType.Unknown;
+    public bool IsKnown    => ID is not TypeID.Unknown;
     public bool IsIterable => ElementType is not null;
 
     public override SymbolKind Kind => SymbolKind.Type;
 
-    protected TypeSymbol(string name, ValType typeKind = ValType.Any, TypeSymbol? elementType = null)
+    protected TypeSymbol(string name, TypeID typeKind = TypeID.Any, TypeSymbol? elementType = null)
         : base(name)
     {
         ID          = typeKind;
@@ -28,7 +27,20 @@ internal class TypeSymbol : Symbol
         => ID.HasFlag(other.ID);
 
 
-    public static TypeSymbol GetNameType(string? type) => type switch
+    public static TypeSymbol GetTypeByID(TypeID type) => type switch
+    {
+        TypeID.Boolean => Boolean,
+        TypeID.Number  => Number,
+        TypeID.Integer => Integer,
+        TypeID.Float   => Float,
+        TypeID.Char    => Char,
+        TypeID.String  => String,
+        TypeID.Range   => Range,
+
+        _              => Any,
+    };
+
+    public static TypeSymbol GetTypeByString(string? type) => type switch
     {
         CONSTS.BOOLEAN => Boolean,
         CONSTS.NUMBER  => Number,
@@ -43,27 +55,28 @@ internal class TypeSymbol : Symbol
 
 
     // Special types
-    public static readonly TypeSymbol Unknown = new(CONSTS.UNKNOWN, ValType.Unknown);
-    public static readonly TypeSymbol Void    = new(CONSTS.VOID,    ValType.Void);
-    public static readonly TypeSymbol Nones   = new("nones",        ValType.Nones);
+    public static readonly TypeSymbol Unknown = new(CONSTS.UNKNOWN, TypeID.Unknown);
+    public static readonly TypeSymbol Void    = new(CONSTS.VOID,    TypeID.Void);
+    public static readonly TypeSymbol Nones   = new("nones",        TypeID.Nones);
 
     // Data types
-    public static readonly TypeSymbol Any     = new(CONSTS.ANY,     ValType.Any);
-    public static readonly TypeSymbol Null    = new(CONSTS.NULL,    ValType.Null);
-    public static readonly TypeSymbol Boolean = new(CONSTS.BOOLEAN, ValType.Boolean);
-    public static readonly TypeSymbol Number  = new(CONSTS.NUMBER,  ValType.Number);
-    public static readonly TypeSymbol Integer = new(CONSTS.INTEGER, ValType.Integer);
-    public static readonly TypeSymbol Float   = new(CONSTS.FLOAT,   ValType.Float);
-    public static readonly TypeSymbol Char    = new(CONSTS.CHAR,    ValType.Char);
-    public static readonly TypeSymbol String  = new(CONSTS.STRING,  ValType.String, Char);
-    public static readonly TypeSymbol Range   = new(CONSTS.RANGE,   ValType.Range,  Number);
+    public static readonly TypeSymbol Any     = new(CONSTS.ANY,     TypeID.Any);
+    public static readonly TypeSymbol Null    = new(CONSTS.NULL,    TypeID.Null);
+    public static readonly TypeSymbol Boolean = new(CONSTS.BOOLEAN, TypeID.Boolean);
+    public static readonly TypeSymbol Number  = new(CONSTS.NUMBER,  TypeID.Number);
+    public static readonly TypeSymbol Whole   = new(CONSTS.WHOLE,   TypeID.Whole);
+    public static readonly TypeSymbol Integer = new(CONSTS.INTEGER, TypeID.Integer);
+    public static readonly TypeSymbol Float   = new(CONSTS.FLOAT,   TypeID.Float);
+    public static readonly TypeSymbol Char    = new(CONSTS.CHAR,    TypeID.Char);
+    public static readonly TypeSymbol String  = new(CONSTS.STRING,  TypeID.String, Char);
+    public static readonly TypeSymbol Range   = new(CONSTS.RANGE,   TypeID.Range,  Number);
 }
 
 internal static class TypeExtension
 {
     public static bool Match(this (TypeSymbol L, TypeSymbol R) Ns, TypeSymbol left, TypeSymbol? right = null, bool interchangeable = false)
     {
-       if (right is null)
+        if (right is null)
             return left.Matches(Ns.L) && left.Matches(Ns.R);
 
         if (interchangeable)
@@ -78,7 +91,6 @@ internal static class TypeExtension
                 || types.value.Matches(types.hint);
 
         return types.hint.Matches(types.value)
-            || TypeSymbol.Nones.Matches(types.value)
-            || TypeSymbol.Nones.Matches(types.hint);
+            || TypeSymbol.Nones.Matches(types.value);
     }
 }

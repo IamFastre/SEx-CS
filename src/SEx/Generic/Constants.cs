@@ -28,6 +28,7 @@ internal static class CONSTS
     public const string INTEGER   = "int";
     public const string FLOAT     = "float";
     public const string NUMBER    = "number";
+    public const string WHOLE     = "whole";
     public const string CHAR      = "char";
     public const string STRING    = "string";
     public const string RANGE     = "range";
@@ -36,6 +37,7 @@ internal static class CONSTS
     public static string[] TYPES  = { BOOLEAN, INTEGER, FLOAT, NUMBER, CHAR, STRING, RANGE, LIST, ANY };
 
     public const string _VERSION_ = "0.0.1";
+
 }
 
 

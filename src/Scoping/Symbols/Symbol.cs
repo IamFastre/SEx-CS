@@ -1,4 +1,4 @@
-namespace SEx.Scoping;
+namespace SEx.Scoping.Symbols;
 
 internal enum SymbolKind
 {
@@ -10,8 +10,8 @@ internal enum SymbolKind
 internal abstract class Symbol
 {
 
-    public string Name { get; }
-    public abstract SymbolKind Kind { get; }
+    public          string     Name    { get; }
+    public abstract SymbolKind Kind    { get; }
 
     protected Symbol(string name) => Name = name;
 

@@ -1,11 +1,11 @@
-using SEx.Scoping;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
 internal interface IIterableValue
 {
     public abstract IntegerValue? Length { get; }
-    public abstract static TypeSymbol GetIndexReturn(ValType index);
+    public abstract static TypeSymbol GetIndexReturn(TypeID index);
     public static LiteralValue? GetElement(LiteralValue iterator, LiteralValue index)
     {
         switch (iterator)

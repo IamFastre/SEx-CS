@@ -1,4 +1,5 @@
 using SEx.Generic.Constants;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
@@ -6,7 +7,7 @@ internal sealed class BoolValue : LiteralValue
 {
     private readonly bool _value;
     public override object Value => _value;
-    public override ValType Type => ValType.Boolean;
+    public override TypeSymbol Type => TypeSymbol.Boolean;
 
     public BoolValue(bool value) => _value = value;
 

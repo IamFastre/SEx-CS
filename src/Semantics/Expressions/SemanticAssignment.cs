@@ -1,7 +1,5 @@
-using SEx.Evaluate.Values;
 using SEx.Generic.Text;
-using SEx.Lex;
-using SEx.Scoping;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
@@ -10,7 +8,7 @@ internal sealed class SemanticAssignment : SemanticExpression
     public VariableSymbol        Assignee   { get; }
     public SemanticExpression    Expression { get; }
 
-    public override ValType      Type       { get; }
+    public override TypeSymbol   Type       { get; }
     public override Span         Span       { get; }
     public override SemanticKind Kind => SemanticKind.AssignExpression;
 

@@ -1,6 +1,6 @@
-using SEx.Evaluate.Values;
 using SEx.Generic.Text;
 using SEx.Lex;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
@@ -11,7 +11,7 @@ internal sealed class SemanticParenExpression : SemanticExpression
     public Token               CloseParen { get; }
 
     public override Span Span { get; }
-    public override ValType Type      => Expression?.Type ?? ValType.Null;
+    public override TypeSymbol   Type => Expression?.Type ?? TypeSymbol.Null;
     public override SemanticKind Kind => SemanticKind.ParenExpression;
 
     public SemanticParenExpression(Token openParen, SemanticExpression? expression, Token closeParen)

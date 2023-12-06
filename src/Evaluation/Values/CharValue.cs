@@ -1,5 +1,6 @@
 using SEx.Generic.Constants;
 using SEx.Generic.Logic;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
@@ -8,7 +9,7 @@ internal sealed class CharValue : LiteralValue
 
     private readonly char _value;
     public  override object Value => _value;
-    public  override ValType Type => ValType.Char;
+    public  override TypeSymbol Type => TypeSymbol.Char;
 
     public CharValue(char value) => _value = value;
 

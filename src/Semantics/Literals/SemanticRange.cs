@@ -1,5 +1,5 @@
-using SEx.Evaluate.Values;
 using SEx.Generic.Text;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
@@ -9,8 +9,8 @@ internal sealed class SemanticRange : SemanticExpression
     public SemanticExpression  End   { get; }
     public SemanticExpression? Step  { get; }
 
-    public override Span     Span { get; }
-    public override ValType Type      => ValType.Range;
+    public override Span         Span { get; }
+    public override TypeSymbol   Type => TypeSymbol.Range;
     public override SemanticKind Kind => SemanticKind.Range;
 
     public SemanticRange(SemanticExpression start, SemanticExpression end, SemanticExpression? step)

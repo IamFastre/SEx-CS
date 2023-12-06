@@ -1,6 +1,5 @@
-using SEx.Diagnose;
 using SEx.Evaluate.Values;
-using SEx.Generic.Text;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Scoping;
 
@@ -34,7 +33,7 @@ internal class Scope
     //=====================================================================//
     //=====================================================================//
 
-    public ValType ResolveType(VariableSymbol variable)
+    public TypeSymbol ResolveType(VariableSymbol variable)
     {
         if (Variables.ContainsKey(variable))
             return Variables[variable].Type;
@@ -42,10 +41,10 @@ internal class Scope
         if (Parent is not null)
             return Parent.ResolveType(variable);
 
-        return ValType.Unknown;
+        return TypeSymbol.Unknown;
     }
 
-    public bool TryResolveType(VariableSymbol variable, out ValType value)
+    public bool TryResolveType(VariableSymbol variable, out TypeSymbol value)
     {
         if (Variables.ContainsKey(variable))
         {
@@ -56,7 +55,7 @@ internal class Scope
         if (Parent is not null)
             return Parent.TryResolveType(variable, out value);
 
-        value = ValType.Unknown;
+        value = TypeSymbol.Unknown;
         return false;
     }
 

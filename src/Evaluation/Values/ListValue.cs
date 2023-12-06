@@ -1,38 +1,37 @@
 
 using SEx.Generic.Constants;
-using SEx.Scoping;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
 internal sealed class ListValue
-    : GenericValue,
+    : LiteralValue,
       IIterableValue<IntegerValue, LiteralValue>,
       IIterableValue<RangeValue, ListValue>
 {
 
     private readonly List<LiteralValue> _values;
-    public  override ValType[] ElementTypes { get; }
 
-    public override object    Value => _values;
-    public override ValType   Type  => ValType.List;
+    public override object Value => _values;
+    public override GenericTypeSymbol Type { get; }
 
-    public ValType      ElementType => ElementTypes[0];
+    public TypeSymbol   ElementType => Type.ElementType!;
     public IntegerValue Length      => new(_values.Count);
 
 
-    public ListValue(IEnumerable<LiteralValue> list, ValType? type = null)
+    public ListValue(IEnumerable<LiteralValue> list, TypeSymbol? type = null)
         : this (list.ToList(), type) { }
 
-    public ListValue(List<LiteralValue> list, ValType? type = null)
+    public ListValue(List<LiteralValue> list, TypeSymbol? type = null)
     {
-        _values      = list;
-        ElementTypes = new ValType[1] { type ?? ValType.Any };
+        _values = list;
+        Type    = GenericTypeSymbol.List(type ?? TypeSymbol.Any);
     }
 
-    public static TypeSymbol GetIndexReturn(ValType index) => index switch
+    public static TypeSymbol GetIndexReturn(TypeID index) => index switch
     {
-        ValType.Integer => TypeSymbol.Any,
-        ValType.Range   => GenericTypeSymbol.List(TypeSymbol.Any),
+        TypeID.Integer => TypeSymbol.Any,
+        TypeID.Range   => GenericTypeSymbol.List(TypeSymbol.Any),
         _ => TypeSymbol.Unknown,
     };
 

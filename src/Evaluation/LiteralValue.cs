@@ -1,29 +1,15 @@
+using SEx.Scoping.Symbols;
+
 namespace SEx.Evaluate.Values;
 
 internal abstract class LiteralValue
 {
-    public abstract object Value { get; }
-    public abstract ValType Type { get; }
+    public abstract object     Value { get; }
+    public abstract TypeSymbol Type { get; }
 
-    public bool IsKnown   => this is not UnknownValue;
+    public bool IsKnown   => Type.ID is TypeID.Unknown;
     public bool IsDefined => this is not UndefinedValue;
-    public bool IsGeneric => this is     GenericValue;
-
-    public ValType GetValueType() => this switch
-    {
-        VoidValue    => ValType.Void,
-        UnknownValue => ValType.Unknown,
-        NullValue    => ValType.Null,
-        BoolValue    => ValType.Boolean,
-        IntegerValue => ValType.Integer,
-        FloatValue   => ValType.Float,
-        CharValue    => ValType.Char,
-        StringValue  => ValType.String,
-        RangeValue   => ValType.Range,
-        ListValue    => ValType.List,
-        NumberValue  => ValType.Number,
-        _            => ValType.Any,
-    };
+    public bool IsGeneric => Type is GenericTypeSymbol;
 
     public abstract override string ToString();
     public abstract string str();

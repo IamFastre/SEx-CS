@@ -4,6 +4,7 @@ using SEx.Generic.Constants;
 using SEx.Generic.Logic;
 using SEx.Generic.Text;
 using SEx.Scoping;
+using SEx.Scoping.Symbols;
 using SEx.Semantics;
 
 namespace SEx.Evaluate;
@@ -72,7 +73,7 @@ internal class Evaluator
         LiteralValue value = VoidValue.Template;
         var conditionVal = EvaluateExpression(@is.Condition);
 
-        if (conditionVal.Type == ValType.Boolean)
+        if (conditionVal.Type == TypeSymbol.Boolean)
         {
             if ((bool) conditionVal.Value)
                 value = EvaluateStatement(@is.Then);
@@ -89,7 +90,7 @@ internal class Evaluator
         LiteralValue value = VoidValue.Template;
         var conditionVal = EvaluateExpression(ws.Condition);
 
-        if (conditionVal.Type == ValType.Boolean)
+        if (conditionVal.Type == TypeSymbol.Boolean)
         {
             if ((bool) conditionVal.Value)
                 while ((bool) EvaluateExpression(ws.Condition).Value)
@@ -107,7 +108,7 @@ internal class Evaluator
         LiteralValue value = VoidValue.Template;
         var expr           = EvaluateExpression(fs.Iterable);
 
-        if (ValType.Iterable.HasFlag(expr.Type))
+        if (expr.Type.IsIterable)
         {
             var iterableVal = (IIterableValue) expr;
             var len         = (double)(iterableVal.Length?.Value ?? 0);
@@ -178,25 +179,25 @@ internal class Evaluator
         switch (expr.Kind)
             {
                 case SemanticKind.Literal:
-                    if (expr.Type == ValType.Unknown)
+                    if (!expr.Type.IsKnown)
                         return UnknownValue.Template;
 
-                    if (expr.Type == ValType.Null)
+                    if (expr.Type == TypeSymbol.Null)
                         return ParseNull((SemanticLiteral) expr);
 
-                    if (expr.Type == ValType.Boolean)
+                    if (expr.Type == TypeSymbol.Boolean)
                         return ParseBool((SemanticLiteral) expr);
 
-                    if (expr.Type == ValType.Integer)
+                    if (expr.Type == TypeSymbol.Integer)
                         return ParseInt((SemanticLiteral) expr);
 
-                    if (expr.Type == ValType.Float)
+                    if (expr.Type == TypeSymbol.Float)
                         return ParseFloat((SemanticLiteral) expr);
 
-                    if (expr.Type == ValType.Char)
+                    if (expr.Type == TypeSymbol.Char)
                         return ParseChar((SemanticLiteral) expr);
 
-                    if (expr.Type == ValType.String)
+                    if (expr.Type == TypeSymbol.String)
                         return ParseString((SemanticLiteral) expr);
 
                     break;
@@ -255,9 +256,9 @@ internal class Evaluator
                   : EvaluateExpression(r.Step);
 
 
-        if (ValType.Number.HasFlag(start.Type)
-        &&  ValType.Number.HasFlag(end.Type)
-        &&  ValType.Number.HasFlag(step.Type))
+        if (TypeSymbol.Number.Matches(start.Type)
+        &&  TypeSymbol.Number.Matches(end.Type)
+        &&  TypeSymbol.Number.Matches(step.Type))
         {
             value = new RangeValue((NumberValue) start, (NumberValue) end, (NumberValue) step);
             if (((RangeValue) value).Length is null)
@@ -300,8 +301,8 @@ internal class Evaluator
         if (elem is null)
             Except($"Index is out of boundary", ie.Index.Span);
 
-        else if (elem.Type is ValType.Unknown)
-            Except($"Can't perform indexing on '{iterable.Type.str()}' with '{index.Type.str()}'", ie.Index.Span);
+        else if (!elem.Type.IsKnown)
+            Except($"Can't perform indexing on '{iterable.Type}' with '{index.Type}'", ie.Index.Span);
 
         return elem ?? UnknownValue.Template;
     }
@@ -320,7 +321,7 @@ internal class Evaluator
             case UnaryOperationKind.Negation:
                 _double = -(double) operand.Value;
 
-                if (operand.Type == ValType.Integer)
+                if (operand.Type == TypeSymbol.Integer)
                     return new IntegerValue(_double);
                 else
                     return new FloatValue(_double);
@@ -337,18 +338,27 @@ internal class Evaluator
         var name = EvaluateVariable(co.Name);
         var kind = co.OperationKind;
 
-        double _double
+        double _double = co.Name.Type == TypeSymbol.Char
+                       ? (char)   name.Value
+                       : (double) name.Value;
+
+        _double
             = kind is CountingKind.IncrementAfter or CountingKind.IncrementBefore
-            ? (double) name.Value + 1D
+            ? _double + 1D
 
             : kind is CountingKind.DecrementAfter or CountingKind.DecrementBefore
-            ? (double) name.Value - 1D
+            ? _double - 1D
 
             : throw new Exception("This shouldn't occur");
 
         LiteralValue value;
-        if (name.Type is ValType.Integer)
+
+        if (name.Type == TypeSymbol.Char)
+            value = new CharValue((char) _double);
+
+        else if (name.Type == TypeSymbol.Integer)
             value = new IntegerValue(_double);
+
         else
             value = new FloatValue(_double);
 
@@ -399,7 +409,7 @@ internal class Evaluator
             case BinaryOperationKind.OR:
             case BinaryOperationKind.XOR:
                 Int128 _i1, _i2;
-                if (left.Type is ValType.Integer && (double) left.Value > (double) Int128.MaxValue)
+                if (left.Type == TypeSymbol.Integer && (double) left.Value > (double) Int128.MaxValue)
                 {
                     Except($"Integer too big for bitwise {kind}", biop.Span, ExceptionType.OverflowError);
                     return UnknownValue.Template;
@@ -409,7 +419,7 @@ internal class Evaluator
                 else
                     _i1 = Int128.Parse(left.Value.ToString() ?? "");
 
-                if (right.Type is ValType.Integer && (double) right.Value > (double) Int128.MaxValue)
+                if (right.Type == TypeSymbol.Integer && (double) right.Value > (double) Int128.MaxValue)
                 {
                     Except($"Integer too big for bitwise {kind}", biop.Span, ExceptionType.OverflowError);
                     return UnknownValue.Template;
@@ -504,8 +514,8 @@ internal class Evaluator
 
             case BinaryOperationKind.CharAddition:
             case BinaryOperationKind.CharSubtraction:
-                var aos = (double) (left.Type == ValType.Integer ? left.Value : right.Value);
-                var cr1 = ( char ) (left.Type == ValType.Char    ? left.Value : right.Value);
+                var aos = (double) (left.Type == TypeSymbol.Integer ? left.Value : right.Value);
+                var cr1 = ( char ) (left.Type == TypeSymbol.Char    ? left.Value : right.Value);
 
                 _double = kind == BinaryOperationKind.CharAddition
                     ? aos + cr1
@@ -521,8 +531,8 @@ internal class Evaluator
                 return new StringValue(_string);
 
             case BinaryOperationKind.StringMultiplication:
-                var num = (double) (left.Type == ValType.Integer ? left.Value : right.Value);
-                var str = (string) (left.Type == ValType.String  ? left.Value : right.Value);
+                var num = (double) (left.Type == TypeSymbol.Integer ? left.Value : right.Value);
+                var str = (string) (left.Type == TypeSymbol.String  ? left.Value : right.Value);
 
                 _string = string.Empty;
 
@@ -544,9 +554,9 @@ internal class Evaluator
                 ListValue _l1, _l2;
                 (_l1, _l2) = ((ListValue) left, (ListValue) right);
 
-                if (!(_l1.ElementType, _l2.ElementType).IsAssignable(true))
+                if (!(_l1.ElementType, _l2.ElementType).IsAssignable())
                 {
-                    Except($"Cannot concatenate list of type '{_l1.ElementType.str()}' to '{_l2.ElementType.str()}'",
+                    Except($"Cannot concatenate list of type '{_l1.ElementType.ToString()}' to '{_l2.ElementType.ToString()}'",
                            biop.Span, ExceptionType.TypeError);
                     return UnknownValue.Template;
                 }
@@ -567,7 +577,7 @@ internal class Evaluator
         var trueExprVal  = EvaluateExpression(terop.TrueExpression);
         var falseExprVal = EvaluateExpression(terop.FalseExpression);
 
-        if (conditionVal.Type == ValType.Boolean)
+        if (conditionVal.Type == TypeSymbol.Boolean)
             return (bool) conditionVal.Value ? trueExprVal : falseExprVal;
 
         return UnknownValue.Template;
@@ -580,7 +590,7 @@ internal class Evaluator
         if (Scope.TryResolve(aseprx.Assignee, out var output) && (!aseprx.Assignee.IsConstant))
             Scope.Assign(aseprx.Assignee, val);
 
-        return val.Type is ValType.Unknown ? output : val;
+        return !output.Type.IsKnown ? val : output;
     }
 
     private LiteralValue EvaluateFailedExpression(SemanticFailedExpressions fe)
@@ -687,7 +697,7 @@ internal class Evaluator
 
     private LiteralValue UseOfUndefined(SemanticVariable n)
     {
-        Except($"Name '{n.Symbol.Name}' (of type '{n.Type.str()}') not assigned to yet", n.Span);
+        Except($"Name '{n.Symbol.Name}' (of type '{n.Type.ToString()}') not assigned to yet", n.Span);
         return UnknownValue.Template;
     }
 

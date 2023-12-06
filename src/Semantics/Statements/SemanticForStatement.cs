@@ -1,6 +1,6 @@
 using SEx.Generic.Text;
 using SEx.Lex;
-using SEx.Scoping;
+using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 

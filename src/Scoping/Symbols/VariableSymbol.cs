@@ -1,6 +1,4 @@
-using SEx.Evaluate.Values;
-
-namespace SEx.Scoping;
+namespace SEx.Scoping.Symbols;
 
 internal class VariableSymbol : Symbol
 {
@@ -23,7 +21,7 @@ internal class VariableSymbol : Symbol
 
     public bool TestType(TypeSymbol type)
     {
-        if ((Type, type).IsAssignable())
+        if ((type, Type).IsAssignable())
         {
             Type = type;
             return true;
