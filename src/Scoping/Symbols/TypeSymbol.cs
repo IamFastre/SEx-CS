@@ -4,7 +4,7 @@ namespace SEx.Scoping.Symbols;
 
 internal class TypeSymbol : Symbol
 {
-    public TypeID     ID          { get; }
+    public TypeID      ID          { get; }
     public TypeSymbol? ElementType { get; }
 
     public bool IsKnown    => ID is not TypeID.Unknown;
@@ -72,6 +72,8 @@ internal class TypeSymbol : Symbol
     public static readonly TypeSymbol Char    = new(CONSTS.CHAR,    TypeID.Char);
     public static readonly TypeSymbol String  = new(CONSTS.STRING,  TypeID.String, Char);
     public static readonly TypeSymbol Range   = new(CONSTS.RANGE,   TypeID.Range,  Number);
+
+    public static readonly GenericTypeSymbol List = new(CONSTS.LIST, $"{Any}[]", TypeID.List, Any, Any);
 }
 
 internal static class TypeExtension
@@ -93,6 +95,7 @@ internal static class TypeExtension
                 || types.value.Matches(types.hint);
 
         return types.hint.Matches(types.value)
-            || TypeSymbol.Nones.Matches(types.value);
+            || TypeSymbol.Nones.Matches(types.hint)
+            || TypeSymbol.Null.Matches(types.value);
     }
 }

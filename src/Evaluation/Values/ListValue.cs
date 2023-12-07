@@ -25,13 +25,13 @@ internal sealed class ListValue
     public ListValue(List<LiteralValue> list, TypeSymbol? type = null)
     {
         _values = list;
-        Type    = GenericTypeSymbol.List(type ?? TypeSymbol.Any);
+        Type    = GenericTypeSymbol.TypedList(type ?? TypeSymbol.Any);
     }
 
     public static TypeSymbol GetIndexReturn(TypeID index) => index switch
     {
         TypeID.Integer => TypeSymbol.Any,
-        TypeID.Range   => GenericTypeSymbol.List(TypeSymbol.Any),
+        TypeID.Range   => GenericTypeSymbol.TypedList(TypeSymbol.Any),
         _ => TypeSymbol.Unknown,
     };
 

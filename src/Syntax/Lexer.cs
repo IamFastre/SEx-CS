@@ -138,6 +138,8 @@ internal class Lexer
             case char when IsUpcoming("??"):
                 return FabricateToken(TokenKind.NullishCoalescing);
 
+            case char when IsUpcoming("->"):
+                return FabricateToken(TokenKind.RightArrow);
 
             case '=':
                 return FabricateToken(TokenKind.Equal);

@@ -130,8 +130,7 @@ internal sealed class Analyzer
     {
         var expr = ds.Expression is not null ? BindExpression(ds.Expression) : null;
         var hint = ds.TypeClause is not null ? GetType(ds.TypeClause) : TypeSymbol.Any;
-        var type = expr is not null && hint == TypeSymbol.Any ? expr.Type : hint;
-        var var  = new VariableSymbol(ds.Variable.Value, type, ds.IsConstant);
+        var var  = new VariableSymbol(ds.Variable.Value, hint, ds.IsConstant);
 
         if (ds.IsConstant && expr is null)
         {
@@ -193,7 +192,7 @@ internal sealed class Analyzer
         }
 
         for (int i = 0; i < tc.ListDimension; i++)
-            type = GenericTypeSymbol.List(type);
+            type = GenericTypeSymbol.TypedList(type);
         
         return type;
     }
@@ -419,7 +418,7 @@ internal sealed class Analyzer
             return BindName(aexpr.Assignee);
         }
 
-        if (name.TestType(expr.Type))
+        if ((name.Type, expr.Type).IsAssignable())
             Scope.Assign(name);
         else
         {

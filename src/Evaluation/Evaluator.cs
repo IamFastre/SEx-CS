@@ -552,14 +552,6 @@ internal class Evaluator
             case BinaryOperationKind.ListConcatenation:
                 ListValue _l1, _l2;
                 (_l1, _l2) = ((ListValue) left, (ListValue) right);
-
-                if (!(_l1.ElementType, _l2.ElementType).IsAssignable())
-                {
-                    Except($"Cannot concatenate list of type '{_l1.ElementType.ToString()}' to '{_l2.ElementType.ToString()}'",
-                           biop.Span, ExceptionType.TypeError);
-                    return UnknownValue.Template;
-                }
-
                 return _l1.Concat(_l2);
 
             case BinaryOperationKind.ListInclusion:

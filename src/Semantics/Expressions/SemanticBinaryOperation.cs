@@ -17,10 +17,10 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
     public SemanticBinaryOperation(SemanticExpression left, BinaryOperationKind kind, SemanticExpression right)
     {
         Left     = left;
-        Operator = SemanticBinaryOperator.GetSemanticOperator(left.Type.ID, kind, right.Type.ID)!;
+        Operator = SemanticBinaryOperator.GetSemanticOperator(left.Type, kind, right.Type)!;
         Right    = right;
 
-        Type = TypeSymbol.GetTypeByID(Operator.ResultType)!;
+        Type = Operator.ResultType;
         Span = new Span(left.Span.Start, right.Span.End);
     }
 
@@ -116,11 +116,11 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
 
 
 
-        if ((left, right).Match(GenericTypeSymbol.List(left.ElementType!)))
+        if ((left, right).Match(GenericTypeSymbol.TypedList(left.ElementType!)))
             if (op is TokenKind.Plus)
                 return BinaryOperationKind.ListConcatenation;
 
-        if ((left, right).Match(TypeSymbol.Any, GenericTypeSymbol.List(left.ElementType!)))
+        if ((left, right).Match(TypeSymbol.Any, GenericTypeSymbol.TypedList(left.ElementType!)))
             if (op is TokenKind.InOperator)
                 return BinaryOperationKind.ListInclusion;
 

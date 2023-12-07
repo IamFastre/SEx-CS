@@ -8,6 +8,7 @@ internal enum TypeID
     Void     = 1 << 0,
     Unknown  = 1 << 1,
     Null     = 1 << 2,
+
     Boolean  = 1 << 3,
     Integer  = 1 << 4,
     Float    = 1 << 5,

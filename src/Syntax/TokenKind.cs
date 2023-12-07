@@ -95,6 +95,7 @@ public enum TokenKind
     DollarSign,
     Hash,
     QuestionMark,
+    RightArrow,
 
     // Other kinds
     Separator,

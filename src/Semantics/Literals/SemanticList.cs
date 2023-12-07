@@ -16,7 +16,7 @@ internal sealed class SemanticList : SemanticExpression
     {
         Elements    = elements;
         ElementType = elementType;
-        Type        = GenericTypeSymbol.List(elementType); 
+        Type        = GenericTypeSymbol.TypedList(elementType); 
         Span        = span;
     }
 }
