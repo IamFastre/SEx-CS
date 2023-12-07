@@ -33,6 +33,18 @@ internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, Nu
     public override string ToString()
         => $"{Start}:{End}:{Step}";
 
+    public override bool Equals(object? obj)
+    {
+        if (obj is RangeValue rng)
+            return ((double) Start.Value) == ((double) rng.Start.Value)
+                && ((double) End.Value)   == ((double) rng.End.Value)
+                && ((double) Step.Value)  == ((double) rng.Step.Value);
+
+        return false;
+    }
+
+    public override int GetHashCode() => HashCode.Combine(Start, End, Step);
+
     public override string str()
         => $"{Start.str()}:{End.str()}:{Step.str()}";
 

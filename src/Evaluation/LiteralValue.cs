@@ -12,5 +12,8 @@ internal abstract class LiteralValue
     public bool IsGeneric => Type is GenericTypeSymbol;
 
     public abstract override string ToString();
+    public abstract override bool   Equals(object? obj);
+    public abstract override int    GetHashCode();
+
     public abstract string str();
 }

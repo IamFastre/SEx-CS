@@ -397,9 +397,9 @@ internal class Evaluator
             case BinaryOperationKind.Inequality:
                 _bool =
                       kind == BinaryOperationKind.Equality
-                    ?  Equals(left.Value, right.Value)
+                    ?  left.Equals(right)
                     : kind == BinaryOperationKind.Inequality
-                    ? !Equals(left.Value, right.Value)
+                    ? !left.Equals(right)
                     : throw new Exception("This shouldn't occur");
 
                 return new BoolValue(_bool);
@@ -555,7 +555,7 @@ internal class Evaluator
                 return _l1.Concat(_l2);
 
             case BinaryOperationKind.ListInclusion:
-                _bool = ((List<LiteralValue>) right.Value).Any((LiteralValue val) => Equals(val.Value, left.Value));
+                _bool = ((List<LiteralValue>) right.Value).Any(left.Equals);
                 return new BoolValue(_bool);
         }
 

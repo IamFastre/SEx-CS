@@ -16,7 +16,18 @@ internal sealed class BoolValue : LiteralValue
 
     public override string ToString()
         => C.VIOLET + str() + C.END;
-    
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is BoolValue @bool)
+            return _value == @bool._value;
+
+        return false;
+    }
+
+    public override int GetHashCode() => _value.GetHashCode();
+
     public override string str()
         => _value ? CONSTS.TRUE : CONSTS.FALSE;
+
 }

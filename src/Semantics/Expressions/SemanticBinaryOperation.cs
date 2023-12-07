@@ -120,7 +120,7 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
             if (op is TokenKind.Plus)
                 return BinaryOperationKind.ListConcatenation;
 
-        if ((left, right).Match(TypeSymbol.Any, GenericTypeSymbol.TypedList(left.ElementType!)))
+        if ((left, right).Match(TypeSymbol.Any, GenericTypeSymbol.TypedList(right.ElementType!)))
             if (op is TokenKind.InOperator)
                 return BinaryOperationKind.ListInclusion;
 

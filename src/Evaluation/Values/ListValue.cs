@@ -18,7 +18,6 @@ internal sealed class ListValue
     public TypeSymbol   ElementType => Type.ElementType!;
     public IntegerValue Length      => new(_values.Count);
 
-
     public ListValue(IEnumerable<LiteralValue> list, TypeSymbol? type = null)
         : this (list.ToList(), type) { }
 
@@ -51,6 +50,23 @@ internal sealed class ListValue
 
         return str;
     }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is ListValue list)
+        {
+            if (_values.Count != list._values.Count)
+                return false;
+            
+            for (int i = 0; i < _values.Count; i++)
+                if (!_values[i].Equals(list._values[i]))
+                    return false;
+            return true;
+        }
+        return false;
+    }
+
+    public override int GetHashCode() => HashCode.Combine(_values);
 
     public override string str()
     {

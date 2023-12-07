@@ -11,6 +11,10 @@ internal class NullValue : LiteralValue
     public override string ToString()
         => C.RED2 + str() + C.END;
 
+    public override bool Equals(object? obj) => obj is NullValue;
+
+    public override int GetHashCode() => 0;
+
     public override string str()
         => CONSTS.NULL;
 }
@@ -24,6 +28,10 @@ internal sealed class VoidValue : LiteralValue
 
     public override string ToString()
         => str();
+
+    public override bool Equals(object? obj) => obj is VoidValue;
+
+    public override int GetHashCode() => 0;
 
     public override string str()
         => "";
@@ -39,6 +47,10 @@ internal sealed class UnknownValue : LiteralValue
     public override string ToString()
         => C.RED2 + str() + C.END;
 
+    public override bool Equals(object? obj) => obj is UnknownValue;
+
+    public override int GetHashCode() => 0;
+
     public override string str()
         => CONSTS.UNKNOWN;
 }
@@ -53,6 +65,10 @@ internal sealed class UndefinedValue : LiteralValue
 
     public override string ToString()
         => C.RED2 + str() + C.END;
+
+    public override bool Equals(object? obj) => obj is UndefinedValue;
+
+    public override int GetHashCode() => 0;
 
     public override string str()
         => CONSTS.UNDEFINED;

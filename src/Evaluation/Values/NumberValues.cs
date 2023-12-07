@@ -9,6 +9,18 @@ internal abstract class NumberValue : LiteralValue
 
     public static NumberValue Get(double value)
         => IntegerValue.IsInt(value) ? new IntegerValue(value) : new FloatValue(value);
+
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is NumberValue num)
+            return (double) Value == (double) num.Value;
+
+        return false;
+    }
+
+    public override int GetHashCode() => ((double) Value).GetHashCode();
+
 }
 
 internal sealed class IntegerValue : NumberValue
