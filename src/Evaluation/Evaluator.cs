@@ -326,6 +326,9 @@ internal class Evaluator
                 else
                     return new FloatValue(_double);
             
+            case UnaryOperationKind.IntComplement:
+                return new IntegerValue(-(double) operand.Value - 1);
+
             case UnaryOperationKind.Complement:
                 return new BoolValue(!(bool) operand.Value);
         }
@@ -440,7 +443,9 @@ internal class Evaluator
 
                     : throw new Exception("This shouldn't occur"));
 
-                return new IntegerValue(_double);
+                if (left is IntegerValue || right is IntegerValue)
+                    return new IntegerValue(_double);
+                return new BoolValue(_double != 0D);
 
             case BinaryOperationKind.LAND:
             case BinaryOperationKind.LOR:
@@ -673,8 +678,11 @@ internal class Evaluator
         return UnknownValue.Template;
     }
 
+    //=====================================================================//
+    //=====================================================================//
+    //=====================================================================//
 
-    string? Prepare(SemanticLiteral node)
+    private string? Prepare(SemanticLiteral node)
     {
         try { return node.Value.Unescape()[1..^1]; }
         catch { Except($"Invalid escape sequence", node.Span!, ExceptionType.StringParseError); }
@@ -682,14 +690,9 @@ internal class Evaluator
         return null;
     }
 
-    //=====================================================================//
-    //=====================================================================//
-    //=====================================================================//
-
     private LiteralValue UseOfUndefined(SemanticVariable n)
     {
         Except($"Name '{n.Symbol.Name}' (of type '{n.Type.ToString()}') not assigned to yet", n.Span);
         return UnknownValue.Template;
     }
-
 }

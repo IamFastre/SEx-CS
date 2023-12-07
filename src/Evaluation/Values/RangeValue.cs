@@ -2,7 +2,9 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
-internal sealed class RangeValue : LiteralValue, IIterableValue<IntegerValue, NumberValue>
+public sealed class RangeValue
+    : LiteralValue,
+      IIterableValue<IntegerValue, NumberValue>
 {
     public override object Value => null!;
     public override TypeSymbol Type => TypeSymbol.Range;

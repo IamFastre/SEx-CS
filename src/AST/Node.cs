@@ -4,7 +4,7 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-internal abstract class Node
+public abstract class Node
 {
     public abstract Span     Span { get; }
     public abstract NodeKind Kind { get; }

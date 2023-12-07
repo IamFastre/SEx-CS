@@ -4,7 +4,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
-internal sealed class ListValue
+public sealed class ListValue
     : LiteralValue,
       IIterableValue<IntegerValue, LiteralValue>,
       IIterableValue<RangeValue, ListValue>

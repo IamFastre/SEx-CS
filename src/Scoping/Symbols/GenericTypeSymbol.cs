@@ -2,7 +2,7 @@ using SEx.Generic.Constants;
 
 namespace SEx.Scoping.Symbols;
 
-internal sealed class GenericTypeSymbol : TypeSymbol
+public sealed class GenericTypeSymbol : TypeSymbol
 {
     public string?      CustomName { get; }
     public TypeSymbol[] Parameters { get; private set; }

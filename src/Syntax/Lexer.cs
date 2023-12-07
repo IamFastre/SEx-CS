@@ -120,10 +120,10 @@ internal class Lexer
                 return FabricateToken(TokenKind.EqualEqual);
             case char when IsUpcoming("!="):
                 return FabricateToken(TokenKind.NotEqual);
-            case char when IsUpcoming(">="):
-                return FabricateToken(TokenKind.GreaterEqual);
             case char when IsUpcoming("<="):
                 return FabricateToken(TokenKind.LessEqual);
+            case char when IsUpcoming(">="):
+                return FabricateToken(TokenKind.GreaterEqual);
 
             case char when IsUpcoming("**"):
                 return FabricateToken(TokenKind.Power);
@@ -155,17 +155,19 @@ internal class Lexer
                 return FabricateToken(TokenKind.Percent);
             case '!':
                 return FabricateToken(TokenKind.ExclamationMark);
+            case '~':
+                return FabricateToken(TokenKind.Tilde);
             case '&':
-                return FabricateToken(TokenKind.AND);
+                return FabricateToken(TokenKind.Ampersand);
             case '|':
-                return FabricateToken(TokenKind.OR);
+                return FabricateToken(TokenKind.Pipe);
             case '^':
-                return FabricateToken(TokenKind.XOR);
+                return FabricateToken(TokenKind.Caret);
 
-            case '>':
-                return FabricateToken(TokenKind.Greater);
             case '<':
                 return FabricateToken(TokenKind.Less);
+            case '>':
+                return FabricateToken(TokenKind.Greater);
 
             case '.' when !char.IsDigit(Peek()):
                 return FabricateToken(TokenKind.Dot);

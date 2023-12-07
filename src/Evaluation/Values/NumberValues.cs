@@ -3,7 +3,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
-internal abstract class NumberValue : LiteralValue
+public abstract class NumberValue : LiteralValue
 {
     public override TypeSymbol Type => TypeSymbol.Number;
 
@@ -23,7 +23,7 @@ internal abstract class NumberValue : LiteralValue
 
 }
 
-internal sealed class IntegerValue : NumberValue
+public sealed class IntegerValue : NumberValue
 {
 
     private readonly double _value;
@@ -47,7 +47,7 @@ internal sealed class IntegerValue : NumberValue
         => _value.ToString().Replace('E', 'e');
 }
 
-internal sealed class FloatValue : NumberValue
+public sealed class FloatValue : NumberValue
 {
 
     private readonly double _value;

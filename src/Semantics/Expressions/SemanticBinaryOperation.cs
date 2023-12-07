@@ -37,24 +37,24 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
                 return BinaryOperationKind.Inequality;
         }
 
-        if ((left, right).Match(TypeSymbol.Integer))
+        if ((left, right).Match(TypeSymbol.Integer)
+        ||  (left, right).Match(TypeSymbol.Boolean)
+        ||  (left, right).Match(TypeSymbol.Integer, TypeSymbol.Boolean, true))
         {
-            if (op is TokenKind.AND)
+            if (op is TokenKind.Ampersand)
                 return BinaryOperationKind.AND;
-            if (op is TokenKind.OR)
+            if (op is TokenKind.Pipe)
                 return BinaryOperationKind.OR;
-            if (op is TokenKind.XOR)
+            if (op is TokenKind.Caret)
                 return BinaryOperationKind.XOR;
         }
 
         if ((left, right).Match(TypeSymbol.Boolean))
         {
-            if (op is TokenKind.LogicalAND or TokenKind.AND)
+            if (op is TokenKind.LogicalAND or TokenKind.Ampersand)
                 return BinaryOperationKind.LAND;
-            if (op is TokenKind.LogicalOR or TokenKind.OR)
+            if (op is TokenKind.LogicalOR or TokenKind.Pipe)
                 return BinaryOperationKind.LOR;
-            if (op is TokenKind.XOR)
-                return BinaryOperationKind.XOR;
         }
 
         if ((left, right).Match(TypeSymbol.Number))

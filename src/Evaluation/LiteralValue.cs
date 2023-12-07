@@ -2,7 +2,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
-internal abstract class LiteralValue
+public abstract class LiteralValue
 {
     public abstract object     Value { get; }
     public abstract TypeSymbol Type  { get; }

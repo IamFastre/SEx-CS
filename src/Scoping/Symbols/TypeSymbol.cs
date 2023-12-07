@@ -2,7 +2,7 @@ using SEx.Generic.Constants;
 
 namespace SEx.Scoping.Symbols;
 
-internal class TypeSymbol : Symbol
+public class TypeSymbol : Symbol
 {
     public TypeID      ID          { get; }
     public TypeSymbol? ElementType { get; }
@@ -76,7 +76,7 @@ internal class TypeSymbol : Symbol
     public static readonly GenericTypeSymbol List = new(CONSTS.LIST, $"{Any}[]", TypeID.List, Any, Any);
 }
 
-internal static class TypeExtension
+public static class TypeExtension
 {
     public static bool Match(this (TypeSymbol L, TypeSymbol R) Ns, TypeSymbol left, TypeSymbol? right = null, bool interchangeable = false)
     {

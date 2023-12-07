@@ -3,7 +3,7 @@ using SEx.Generic.Constants;
 namespace SEx.Scoping.Symbols;
 
 [Flags]
-internal enum TypeID
+public enum TypeID
 {
     Void     = 1 << 0,
     Unknown  = 1 << 1,
@@ -26,7 +26,7 @@ internal enum TypeID
     UAVTs    = Void    | Unknown, // Un-assignable value types
 }
 
-internal static class TypeIDExtension
+public static class TypeIDExtension
 {
     public static bool Match(this (TypeID L, TypeID R) Ns, TypeID left, TypeID? right = null, bool interchangeable = false)
     {

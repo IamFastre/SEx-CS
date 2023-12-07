@@ -4,7 +4,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
-internal sealed class StringValue
+public sealed class StringValue
     : LiteralValue,
       IIterableValue<IntegerValue, CharValue>,
       IIterableValue<RangeValue, StringValue>

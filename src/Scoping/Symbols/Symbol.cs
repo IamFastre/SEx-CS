@@ -1,13 +1,13 @@
 namespace SEx.Scoping.Symbols;
 
-internal enum SymbolKind
+public enum SymbolKind
 {
     Type,
     GenericType,
     Variable,
 }
 
-internal abstract class Symbol
+public abstract class Symbol
 {
 
     public          string     Name    { get; }

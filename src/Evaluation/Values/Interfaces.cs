@@ -2,7 +2,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
-internal interface IIterableValue
+public interface IIterableValue
 {
     public abstract IntegerValue? Length { get; }
     public abstract static TypeSymbol GetIndexReturn(TypeID index);
@@ -34,7 +34,7 @@ internal interface IIterableValue
     }
 }
 
-internal interface IIterableValue<Input, Output> : IIterableValue
+public interface IIterableValue<Input, Output> : IIterableValue
     where Input  : LiteralValue
     where Output : LiteralValue
 {

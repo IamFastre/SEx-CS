@@ -10,6 +10,7 @@ internal enum UnaryOperationKind
     Identity,
     Negation,
     Complement,
+    IntComplement,
 }
 
 internal sealed class SemanticUnaryOperation : SemanticExpression
@@ -40,10 +41,18 @@ internal sealed class SemanticUnaryOperation : SemanticExpression
                 _ => null,
             };
 
+        if (operand is TypeID.Integer)
+            return kind switch
+            {
+                TokenKind.Tilde => UnaryOperationKind.IntComplement,
+                _ => null,
+            };
+
         if (operand is TypeID.Boolean)
             return kind switch
             {
                 TokenKind.ExclamationMark  => UnaryOperationKind.Complement,
+                TokenKind.Tilde            => UnaryOperationKind.Complement,
                 _ => null,
             };
 

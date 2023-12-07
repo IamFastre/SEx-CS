@@ -3,7 +3,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
-internal sealed class BoolValue : LiteralValue
+public sealed class BoolValue : LiteralValue
 {
     private readonly bool _value;
     public override object Value => _value;

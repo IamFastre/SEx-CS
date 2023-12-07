@@ -38,9 +38,10 @@ public enum TokenKind
     Percent,
     Power,
 
-    AND,
-    OR,
-    XOR,
+    Tilde,
+    Ampersand,
+    Pipe,
+    Caret,
 
     __COMPARATIVE_START__,
     EqualEqual,
@@ -105,8 +106,8 @@ internal static class TokenKindExtension
 {
     // private static readonly TokenKind[]  = {  };
 
-    private static readonly TokenKind[] or              = { TokenKind.OR, TokenKind.XOR, TokenKind.LogicalOR };
-    private static readonly TokenKind[] and             = { TokenKind.AND, TokenKind.LogicalAND };
+    private static readonly TokenKind[] or              = { TokenKind.Pipe, TokenKind.Caret, TokenKind.LogicalOR };
+    private static readonly TokenKind[] and             = { TokenKind.Ampersand, TokenKind.LogicalAND };
     private static readonly TokenKind[] additives       = { TokenKind.Plus, TokenKind.Minus };
     private static readonly TokenKind[] multiplicatives = { TokenKind.Asterisk, TokenKind.ForwardSlash, TokenKind.Percent, TokenKind.Power };
     private static readonly TokenKind[] eos             = { TokenKind.Semicolon, TokenKind.EOF };
@@ -140,6 +141,7 @@ internal static class TokenKindExtension
 
             TokenKind.Plus      or
             TokenKind.Minus     or
+            TokenKind.Tilde     or
             TokenKind.ExclamationMark => 6,
 
             _ => 0,

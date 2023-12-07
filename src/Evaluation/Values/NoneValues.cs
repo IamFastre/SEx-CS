@@ -3,7 +3,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
-internal class NullValue : LiteralValue
+public class NullValue : LiteralValue
 {
     public override object Value => null!;
     public override TypeSymbol Type => TypeSymbol.Null;
@@ -19,7 +19,7 @@ internal class NullValue : LiteralValue
         => CONSTS.NULL;
 }
 
-internal sealed class VoidValue : LiteralValue
+public sealed class VoidValue : LiteralValue
 {
     public static readonly VoidValue Template = new();
 
@@ -37,7 +37,7 @@ internal sealed class VoidValue : LiteralValue
         => "";
 }
 
-internal sealed class UnknownValue : LiteralValue
+public sealed class UnknownValue : LiteralValue
 {
     public static readonly UnknownValue Template = new();
 
@@ -55,7 +55,7 @@ internal sealed class UnknownValue : LiteralValue
         => CONSTS.UNKNOWN;
 }
 
-internal sealed class UndefinedValue : LiteralValue
+public sealed class UndefinedValue : LiteralValue
 {
     private TypeSymbol _type = TypeSymbol.Null;
     public static UndefinedValue New(TypeSymbol? type = null) => new() {_type = type ?? TypeSymbol.Null};

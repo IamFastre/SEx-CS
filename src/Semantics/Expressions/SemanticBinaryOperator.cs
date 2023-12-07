@@ -91,19 +91,22 @@ internal class SemanticBinaryOperator
         new(TokenKind.LogicalAND, BinaryOperationKind.LAND, TypeSymbol.Boolean),
         new(TokenKind.LogicalOR, BinaryOperationKind.LOR, TypeSymbol.Boolean),
 
-        new(TokenKind.AND, BinaryOperationKind.AND, TypeSymbol.Boolean),
-        new(TokenKind.OR, BinaryOperationKind.OR, TypeSymbol.Boolean),
-        new(TokenKind.XOR, BinaryOperationKind.XOR, TypeSymbol.Boolean),
+        new(TokenKind.Ampersand, BinaryOperationKind.AND, TypeSymbol.Boolean),
+        new(TokenKind.Pipe, BinaryOperationKind.OR, TypeSymbol.Boolean),
+        new(TokenKind.Caret, BinaryOperationKind.XOR, TypeSymbol.Boolean),
 
+        new(TokenKind.Caret, BinaryOperationKind.XOR, TypeSymbol.Boolean, TypeSymbol.Integer, TypeSymbol.Integer),
+        new(TokenKind.Caret, BinaryOperationKind.XOR, TypeSymbol.Integer, TypeSymbol.Boolean, TypeSymbol.Integer),
+
+        new(TokenKind.Ampersand, BinaryOperationKind.AND, TypeSymbol.Integer),
+        new(TokenKind.Pipe, BinaryOperationKind.OR, TypeSymbol.Integer),
+        new(TokenKind.Caret, BinaryOperationKind.XOR, TypeSymbol.Integer),
 
         new(TokenKind.Greater, BinaryOperationKind.Greater, TypeSymbol.Number, TypeSymbol.Boolean),
         new(TokenKind.Less, BinaryOperationKind.Less, TypeSymbol.Number, TypeSymbol.Boolean),
         new(TokenKind.GreaterEqual, BinaryOperationKind.GreaterEqual, TypeSymbol.Number, TypeSymbol.Boolean),
         new(TokenKind.LessEqual, BinaryOperationKind.LessEqual, TypeSymbol.Number, TypeSymbol.Boolean),
 
-        new(TokenKind.AND, BinaryOperationKind.AND, TypeSymbol.Integer),
-        new(TokenKind.OR, BinaryOperationKind.OR, TypeSymbol.Integer),
-        new(TokenKind.XOR, BinaryOperationKind.XOR, TypeSymbol.Integer),
 
         new(TokenKind.Plus, BinaryOperationKind.Addition, TypeSymbol.Integer),
         new(TokenKind.Plus, BinaryOperationKind.Addition, TypeSymbol.Float),

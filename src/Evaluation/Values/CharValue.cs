@@ -4,7 +4,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Evaluate.Values;
 
-internal sealed class CharValue : LiteralValue
+public sealed class CharValue : LiteralValue
 {
 
     private readonly char _value;
