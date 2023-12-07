@@ -134,17 +134,26 @@ internal class REPL
                 var analyzer  = new Analyzer(parser.Tree!, SemanticScope, Diagnostics);
                 SemanticTree  = analyzer.Analyze();
 
-                var evaluator = new Evaluator(SemanticTree, Scope, Diagnostics);
-                Value         = evaluator.Evaluate();
+                if (!Diagnostics.Exceptions.Any())
+                {
+                    var evaluator = new Evaluator(SemanticTree, Scope, Diagnostics);
+                    Value         = evaluator.Evaluate();
+                }
 
                 Throw();
 
                 if (!(Value.Type == TypeSymbol.Void)) 
                     PrintValue();
 
-                Script.Clear();
+                Reset();
             }
         }
+    }
+
+    private void Reset()
+    {
+        Script.Clear();
+        Value = UnknownValue.Template;
     }
 
     private void PrintDebugs()
