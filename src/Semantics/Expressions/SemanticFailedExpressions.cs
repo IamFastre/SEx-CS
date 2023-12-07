@@ -5,9 +5,9 @@ namespace SEx.Semantics;
 
 internal sealed class SemanticFailedExpressions : SemanticExpression
 {
-
     public SemanticExpression[] Expressions { get; }
-    public override Span Span               { get; }
+
+    public override Span         Span       { get; }
     public override TypeSymbol   Type => TypeSymbol.Unknown;
     public override SemanticKind Kind => SemanticKind.FailedExpressions;
 
@@ -16,6 +16,8 @@ internal sealed class SemanticFailedExpressions : SemanticExpression
         Expressions = expressions;
         Span = new Span(expressions[0].Span.Start, expressions[^1].Span.End);
     }
+
+    public override IEnumerable<SemanticNode> GetChildren() => Expressions;
 }
 
 internal sealed class SemanticFailedExpression : SemanticExpression
@@ -27,4 +29,5 @@ internal sealed class SemanticFailedExpression : SemanticExpression
 
     public SemanticFailedExpression(Span span) => Span = span;
 
+    public override IEnumerable<SemanticNode> GetChildren() => Enumerable.Empty<SemanticNode>();
 }

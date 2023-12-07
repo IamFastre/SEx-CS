@@ -21,6 +21,8 @@ internal abstract class SemanticNode
 
         _ => throw new Exception("Unknown literal kind"),
     };
+
+    public abstract IEnumerable<SemanticNode> GetChildren();
 }
 
 internal abstract class SemanticStatement  : SemanticNode {}

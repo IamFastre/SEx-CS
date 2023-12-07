@@ -19,4 +19,6 @@ internal sealed class SemanticList : SemanticExpression
         Type        = GenericTypeSymbol.TypedList(elementType); 
         Span        = span;
     }
+
+    public override IEnumerable<SemanticNode> GetChildren() => Elements;
 }

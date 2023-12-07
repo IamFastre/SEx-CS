@@ -30,4 +30,11 @@ internal sealed class SemanticIndexingExpression : SemanticExpression
 
         _ => null,
     };
+
+    public override IEnumerable<object> GetChildren()
+    {
+        yield return Iterable;
+        yield return Index;
+    }
+
 }

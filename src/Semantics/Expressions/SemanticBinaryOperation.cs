@@ -10,8 +10,8 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
     public SemanticBinaryOperator Operator { get; }
     public SemanticExpression     Right    { get; }
 
-    public override TypeSymbol Type { get; }
-    public override Span       Span { get; }
+    public override Span         Span { get; }
+    public override TypeSymbol   Type { get; }
     public override SemanticKind Kind => SemanticKind.BinaryOperation;
 
     public SemanticBinaryOperation(SemanticExpression left, BinaryOperationKind kind, SemanticExpression right)
@@ -125,5 +125,11 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
                 return BinaryOperationKind.ListInclusion;
 
         return null;
+    }
+
+    public override IEnumerable<SemanticNode> GetChildren()
+    {
+        yield return Left;
+        yield return Right;
     }
 }

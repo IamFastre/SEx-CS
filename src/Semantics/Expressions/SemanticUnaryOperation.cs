@@ -58,4 +58,9 @@ internal sealed class SemanticUnaryOperation : SemanticExpression
 
         return null;
     }
+
+    public override IEnumerable<SemanticNode> GetChildren()
+    {
+        yield return Operand;
+    }
 }

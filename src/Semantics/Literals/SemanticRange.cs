@@ -22,4 +22,12 @@ internal sealed class SemanticRange : SemanticExpression
                               ? step.Span
                               : end.Span);
     }
+
+    public override IEnumerable<SemanticNode> GetChildren()
+    {
+        yield return Start;
+        yield return End;
+        if (Step is not null)
+            yield return Step;
+    }
 }

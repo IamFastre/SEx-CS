@@ -153,7 +153,7 @@ internal sealed class Analyzer
         else if (!Scope.TryDeclare(var))
             Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
 
-        return new(var, ds.Variable.Span, ds, expr);
+        return new(var, expr, ds);
     }
 
     private SemanticExpressionStatement BindExpressionStatement(ExpressionStatement es)
@@ -321,10 +321,13 @@ internal sealed class Analyzer
         return new(Array.Empty<SemanticExpression>(), TypeSymbol.Any, ll.Span);
     }
 
-    private SemanticParenExpression BindParenExpression(ParenthesizedExpression pe)
+    private SemanticExpression BindParenExpression(ParenthesizedExpression pe)
     {
-        var expr = pe.Expression is null ? null : BindExpression(pe.Expression);
-        return new(pe.OpenParen, expr, pe.CloseParen);
+        var expr = pe.Expression is null
+                 ? new SemanticFailedExpression(pe.Span)
+                 : BindExpression(pe.Expression);
+
+        return expr;
     }
 
     private SemanticExpression BindIndexingExpression(IndexingExpression ie)
@@ -407,25 +410,27 @@ internal sealed class Analyzer
                  ? BindExpression(aexpr.Expression)
                  : BindBinaryOperation(new(aexpr.Assignee, aexpr.Operation, aexpr.Expression));
 
-        var name = GetVariable(aexpr.Assignee);
+        var name = BindName(aexpr.Assignee);
 
-        if (name is null)
-            return expr;
-
-        if (name.IsConstant)
+        if (name is SemanticVariable var)
         {
-            Diagnostics.Report.CannotAssignToConst(name.Name, aexpr.Assignee.Span);
-            return BindName(aexpr.Assignee);
+            if (var.Symbol.IsConstant)
+            {
+                Diagnostics.Report.CannotAssignToConst(var.Symbol.Name, aexpr.Assignee.Span);
+                return BindName(aexpr.Assignee);
+            }
+
+            if ((var.Symbol.Type, expr.Type).IsAssignable())
+                Scope.Assign(var.Symbol);
+            else
+            {
+                Diagnostics.Report.TypesDoNotMatch(var.Symbol.Type.ToString(), expr.Type.ToString(), aexpr.Span);
+                return BindName(aexpr.Assignee);
+            }
+            
+            return new SemanticAssignment(var, expr, aexpr.Span);
         }
 
-        if ((name.Type, expr.Type).IsAssignable())
-            Scope.Assign(name);
-        else
-        {
-            Diagnostics.Report.TypesDoNotMatch(name.Type.ToString(), expr.Type.ToString(), aexpr.Span);
-            return BindName(aexpr.Assignee);
-        }
-        
-        return new SemanticAssignment(name, expr, aexpr.Span);
+        return expr;
     }
 }

@@ -10,8 +10,8 @@ internal class SemanticTernaryOperation : SemanticExpression
     public SemanticExpression TrueExpression  { get; }
     public SemanticExpression FalseExpression { get; }
 
-    public override Span       Span { get; }
-    public override TypeSymbol Type { get; }
+    public override Span         Span         { get; }
+    public override TypeSymbol   Type         { get; }
     public override SemanticKind Kind => SemanticKind.TernaryOperation;
 
     public SemanticTernaryOperation(SemanticExpression condition, SemanticExpression trueExpr, SemanticExpression falseExpr)
@@ -24,5 +24,12 @@ internal class SemanticTernaryOperation : SemanticExpression
                         ? TrueExpression.Type
                         : TypeSymbol.Unknown;
         Span            = new(condition.Span, falseExpr.Span);
+    }
+
+    public override IEnumerable<SemanticNode> GetChildren()
+    {
+        yield return Condition;
+        yield return TrueExpression;
+        yield return FalseExpression;
     }
 }

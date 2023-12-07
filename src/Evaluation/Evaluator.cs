@@ -214,9 +214,6 @@ internal class Evaluator
                 case SemanticKind.IndexingExpression:
                     return EvaluateIndexingExpression((SemanticIndexingExpression) expr);
 
-                case SemanticKind.ParenExpression:
-                    return EvaluateParenExpression((SemanticParenExpression) expr);
-
                 case SemanticKind.UnaryOperation:
                     return EvaluateUnaryOperation((SemanticUnaryOperation) expr);
 
@@ -241,9 +238,6 @@ internal class Evaluator
 
         throw new Exception($"Unexpected expression type {expr?.Kind}");
     }
-
-    private LiteralValue EvaluateParenExpression(SemanticParenExpression pe)
-        => EvaluateExpression(pe.Expression);
 
     private LiteralValue EvaluateRange(SemanticRange r)
     {
@@ -583,8 +577,8 @@ internal class Evaluator
     {
         var val = EvaluateExpression(aseprx.Expression);
 
-        if (Scope.TryResolve(aseprx.Assignee, out var output) && (!aseprx.Assignee.IsConstant))
-            Scope.Assign(aseprx.Assignee, output = val);
+        if (Scope.TryResolve(aseprx.Assignee.Symbol, out var output) && (!aseprx.Assignee.Symbol.IsConstant))
+            Scope.Assign(aseprx.Assignee.Symbol, output = val);
 
         return output.Type.IsKnown ? output : val;
     }

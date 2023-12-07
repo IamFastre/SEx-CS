@@ -20,4 +20,6 @@ internal sealed class SemanticBlockStatement : SemanticStatement
 
         Span =new(openBrace.Span, closeBrace.Span);
     }
+
+    public override IEnumerable<SemanticNode> GetChildren() => Body;
 }

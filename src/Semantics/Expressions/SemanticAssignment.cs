@@ -5,14 +5,14 @@ namespace SEx.Semantics;
 
 internal sealed class SemanticAssignment : SemanticExpression
 {
-    public VariableSymbol        Assignee   { get; }
+    public SemanticVariable      Assignee   { get; }
     public SemanticExpression    Expression { get; }
 
-    public override TypeSymbol   Type       { get; }
     public override Span         Span       { get; }
+    public override TypeSymbol   Type       { get; }
     public override SemanticKind Kind => SemanticKind.AssignExpression;
 
-    public SemanticAssignment(VariableSymbol assignee, SemanticExpression expr, Span span)
+    public SemanticAssignment(SemanticVariable assignee, SemanticExpression expr, Span span)
     {
         Assignee   = assignee;
         Expression = expr;
@@ -21,4 +21,9 @@ internal sealed class SemanticAssignment : SemanticExpression
         Span = span;
     }
 
+    public override IEnumerable<SemanticNode> GetChildren()
+    {
+        yield return Assignee;
+        yield return Expression;
+    }
 }
