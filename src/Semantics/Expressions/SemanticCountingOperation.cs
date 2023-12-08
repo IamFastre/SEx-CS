@@ -19,7 +19,7 @@ internal class SemanticCountingOperation : SemanticExpression
     public SemanticVariable Name          { get; }
     public CountingKind     OperationKind { get; }
 
-    public override Span         Span   { get; }
+    public override Span         Span     { get; }
     public override TypeSymbol   Type => Name.Type;
     public override SemanticKind Kind => SemanticKind.CountingOperation;
 
@@ -41,4 +41,9 @@ internal class SemanticCountingOperation : SemanticExpression
 
         _ => null,
     };
+
+    public override IEnumerable<SemanticNode> GetChildren()
+    {
+        yield return Name;
+    }
 }
