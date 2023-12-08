@@ -14,4 +14,9 @@ internal sealed class SemanticExpressionStatement : SemanticStatement
         Expression = expression;
         Span       = expression.Span;
     }
+
+    public override IEnumerable<SemanticNode> GetChildren()
+    {
+        yield return Expression;
+    }
 }

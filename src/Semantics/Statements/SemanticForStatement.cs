@@ -23,4 +23,10 @@ internal sealed class SemanticForStatement : SemanticStatement
 
         Span     = new(@for.Span, body.Span);
     }
+
+    public override IEnumerable<SemanticNode> GetChildren()
+    {
+        yield return Iterable;
+        yield return Body;
+    }
 }

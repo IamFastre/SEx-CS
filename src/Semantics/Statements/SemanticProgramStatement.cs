@@ -15,5 +15,7 @@ internal sealed class SemanticProgramStatement : SemanticStatement
         Span = Body.Length > 0 ? new(Body.First().Span, Body.Last().Span) : new();
     }
 
-    public static readonly SemanticProgramStatement Empty = new(Array.Empty<SemanticStatement>()); 
+    public static readonly SemanticProgramStatement Empty = new(Array.Empty<SemanticStatement>());
+
+    public override IEnumerable<SemanticNode> GetChildren() => Body;
 }

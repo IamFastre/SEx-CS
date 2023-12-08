@@ -17,4 +17,9 @@ internal sealed class SemanticElseClause : SemanticClause
         Body = body;
         Span = new(@else.Span, body.Span);
     }
+
+    public override IEnumerable<SemanticNode> GetChildren()
+    {
+        yield return Body;
+    }
 }
