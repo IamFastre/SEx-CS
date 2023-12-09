@@ -11,10 +11,10 @@ internal sealed class SemanticFailedOperation : SemanticExpression
     public override TypeSymbol   Type => TypeSymbol.Unknown;
     public override SemanticKind Kind => SemanticKind.FailedOperation;
 
-    public SemanticFailedOperation(SemanticExpression[] expressions)
+    public SemanticFailedOperation(SemanticExpression[] expressions, Span? span = null)
     {
         Expressions = expressions;
-        Span = new Span(expressions[0].Span.Start, expressions[^1].Span.End);
+        Span        = span ?? new(expressions[0].Span.Start, expressions[^1].Span.End);
     }
 
     public override IEnumerable<SemanticNode> GetChildren() => Expressions;

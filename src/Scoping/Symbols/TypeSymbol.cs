@@ -22,6 +22,8 @@ public class TypeSymbol : Symbol
     public override int  GetHashCode()       => ToString().GetHashCode();
     public override bool Equals(object? obj) => obj?.ToString() == ToString();
 
+    public static bool operator ==(TypeSymbol left, TypeSymbol right) =>  left.Equals(right);
+    public static bool operator !=(TypeSymbol left, TypeSymbol right) => !left.Equals(right);
 
     public virtual bool Matches(TypeSymbol other)
         => ID.HasFlag(other.ID);

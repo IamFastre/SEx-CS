@@ -220,11 +220,9 @@ internal sealed class Analyzer
     {
         var val = BindExpression(expr);
         if (!expected.Matches(val.Type))
-        {
-            if (!expected.IsKnown)
-            Except($"Expected an expression of type '{expected}'", expr.Span);
-        }
-        
+            if (expected.IsKnown)
+                Diagnostics.Report.ExpectedType(expected.ToString(), val.Type.ToString(), expr.Span);
+
         return val;
     }
 
@@ -297,28 +295,37 @@ internal sealed class Analyzer
         return new SemanticVariable(symbol, n.Span);
     }
 
-    private SemanticList BindList(ListLiteral ll)
+    private SemanticExpression BindList(ListLiteral ll)
     {
         if (ll.Elements.Length > 0)
         {
             List<SemanticExpression> expressions = new();
             var arRef = BindExpression(ll.Elements.First());
+            TypeSymbol type = arRef.Type;
             expressions.Add(arRef);
 
             foreach (var elem in ll.Elements[1..])
             {
                 var expr = BindExpression(elem);
 
-                if (expr.Type == arRef.Type)
+                if (type.Matches(expr.Type))
                     expressions.Add(expr);
+                else if (expr.Type.Matches(type))
+                {
+                    type = expr.Type;
+                    expressions.Add(expr);
+                }
                 else
-                    Except($"list of type '{arRef.Type}' can't have a '{expr.Type}' element", ll.Span);
+                    Diagnostics.Report.HeteroList(type.ToString(), expr.Type.ToString(), ll.Span);
             }
 
-            return new(expressions.ToArray(), arRef.Type, ll.Span);
+            if (ll.Elements.Length != expressions.Count)
+                return new SemanticFailedOperation(expressions.ToArray(), ll.Span);
+
+            return new SemanticList(expressions.ToArray(), type, ll.Span);
         }
 
-        return new(Array.Empty<SemanticExpression>(), TypeSymbol.Any, ll.Span);
+        return new SemanticList(Array.Empty<SemanticExpression>(), TypeSymbol.Any, ll.Span);
     }
 
     private SemanticExpression BindParenExpression(ParenthesizedExpression pe)

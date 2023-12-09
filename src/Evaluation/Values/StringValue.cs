@@ -6,8 +6,9 @@ namespace SEx.Evaluate.Values;
 
 public sealed class StringValue
     : LiteralValue,
-      IIterableValue<IntegerValue, CharValue>,
-      IIterableValue<RangeValue, StringValue>
+      IEnumerableValue<CharValue>,
+      IIndexableValue<IntegerValue, CharValue>,
+      IIndexableValue<RangeValue, StringValue>
 {
     private readonly string _value;
     public override object Value => _value;
@@ -34,7 +35,10 @@ public sealed class StringValue
     public override string str()
         => _value.Escape();
 
-    public bool Contains(LiteralValue value)
+    public bool Contains(StringValue value)
+        => _value.Contains(value.Value.ToString()!);
+
+    public bool Contains(CharValue value)
         => _value.Contains(value.Value.ToString()!);
 
     public static TypeSymbol GetIndexReturn(TypeID index) => index switch
@@ -44,7 +48,7 @@ public sealed class StringValue
         _               => TypeSymbol.Unknown,
     };
 
-    public CharValue? GetElement(IntegerValue index)
+    public CharValue? GetIndexed(IntegerValue index)
     {
         var i = double.IsNegative((double) index.Value)
                 ? (_value.Length + ((double) index.Value))
@@ -57,7 +61,7 @@ public sealed class StringValue
             :  null;
     }
 
-    public StringValue? GetElement(RangeValue index)
+    public StringValue? GetIndexed(RangeValue index)
     {
             string slice;
             Range range = index.GetSystemRange();
@@ -67,5 +71,11 @@ public sealed class StringValue
 
             string _ = new(index.GetSlice(slice.ToArray()));
             return new(_);
+    }
+
+    public IEnumerable<CharValue> GetEnumerator()
+    {
+        foreach (var c in _value)
+            yield return new(c);
     }
 }

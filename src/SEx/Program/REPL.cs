@@ -76,7 +76,7 @@ internal class REPL
             ToggleAll();
 
         if (AreArgs("--showTokens", "-stks"))
-            ToggleTree();
+            ToggleTokens();
 
         if (AreArgs("--showAST", "-sast"))
             ToggleTree();
@@ -129,7 +129,7 @@ internal class REPL
 
             else
             {
-                Script.Append(Line + '\n');
+                Script.Append(Line);
 
                 var lexer  = new Lexer(Source, Diagnostics);
                 Tokens     = lexer.Lex();
@@ -141,6 +141,7 @@ internal class REPL
                 &&  !string.IsNullOrWhiteSpace(Line))
                 {
                     Diagnostics.Flush();
+                    Script.Append('\n');
                     continue;
                 }
 

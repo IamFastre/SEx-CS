@@ -73,7 +73,7 @@ internal class Evaluator
         LiteralValue value = VoidValue.Template;
         var conditionVal = EvaluateExpression(@is.Condition);
 
-        if (conditionVal.Type == TypeSymbol.Boolean)
+        if (TypeSymbol.Boolean.Matches(conditionVal.Type))
         {
             if ((bool) conditionVal.Value)
                 value = EvaluateStatement(@is.Then);
@@ -90,7 +90,7 @@ internal class Evaluator
         LiteralValue value = VoidValue.Template;
         var conditionVal = EvaluateExpression(ws.Condition);
 
-        if (conditionVal.Type == TypeSymbol.Boolean)
+        if (TypeSymbol.Boolean.Matches(conditionVal.Type))
         {
             if ((bool) conditionVal.Value)
                 while ((bool) EvaluateExpression(ws.Condition).Value)
@@ -110,23 +110,17 @@ internal class Evaluator
 
         if (expr.Type.IsIterable)
         {
-            var iterableVal = (IIterableValue) expr;
-            var len         = (double)(iterableVal.Length?.Value ?? 0);
+            var iterator = IEnumerableValue.GetIterator(expr);
+
+            if (iterator is null)
+                return value;
 
             Scope = new(Scope);
 
-            for (int i = 0; i < len; i++)
+            foreach (var elem in iterator)
             {
-                var elem = IIterableValue.GetElement((LiteralValue) iterableVal, new IntegerValue(i));
 
-                if (elem is null)
-                    break;
-
-                if (i == 0)
-                    Scope.Declare(fs.Variable, elem);
-                else
-                    Scope.Assign(fs.Variable, elem);
-
+                Scope.Assign(fs.Variable, elem, true);
                 value = EvaluateStatement(fs.Body);
             }
 
@@ -182,22 +176,22 @@ internal class Evaluator
                     if (!expr.Type.IsKnown)
                         return UnknownValue.Template;
 
-                    if (expr.Type == TypeSymbol.Null)
+                    if (TypeSymbol.Null.Matches(expr.Type))
                         return ParseNull((SemanticLiteral) expr);
 
-                    if (expr.Type == TypeSymbol.Boolean)
+                    if (TypeSymbol.Boolean.Matches(expr.Type))
                         return ParseBool((SemanticLiteral) expr);
 
-                    if (expr.Type == TypeSymbol.Integer)
+                    if (TypeSymbol.Integer.Matches(expr.Type))
                         return ParseInt((SemanticLiteral) expr);
 
-                    if (expr.Type == TypeSymbol.Float)
+                    if (TypeSymbol.Float.Matches(expr.Type))
                         return ParseFloat((SemanticLiteral) expr);
 
-                    if (expr.Type == TypeSymbol.Char)
+                    if (TypeSymbol.Char.Matches(expr.Type))
                         return ParseChar((SemanticLiteral) expr);
 
-                    if (expr.Type == TypeSymbol.String)
+                    if (TypeSymbol.String.Matches(expr.Type))
                         return ParseString((SemanticLiteral) expr);
 
                     break;
@@ -290,7 +284,7 @@ internal class Evaluator
     {
         var iterable = EvaluateExpression(ie.Iterable);
         var index    = EvaluateExpression(ie.Index);
-        var elem     = IIterableValue.GetElement(iterable, index);
+        var elem     = IIndexableValue.GetIndexed(iterable, index);
 
         if (elem is null)
             Diagnostics.Report.IndexOutOfBoundary(ie.Index.Span);
@@ -312,7 +306,7 @@ internal class Evaluator
             case UnaryOperationKind.Negation:
                 _double = -(double) operand.Value;
 
-                if (operand.Type == TypeSymbol.Integer)
+                if (TypeSymbol.Integer.Matches(operand.Type))
                     return new IntegerValue(_double);
                 else
                     return new FloatValue(_double);
@@ -332,7 +326,7 @@ internal class Evaluator
         var name = EvaluateVariable(co.Name);
         var kind = co.OperationKind;
 
-        double _double = co.Name.Type == TypeSymbol.Char
+        double _double = TypeSymbol.Char.Matches(co.Name.Type)
                        ? (char)   name.Value
                        : (double) name.Value;
 
@@ -347,10 +341,10 @@ internal class Evaluator
 
         LiteralValue value;
 
-        if (name.Type == TypeSymbol.Char)
+        if (TypeSymbol.Char.Matches(name.Type))
             value = new CharValue((char) _double);
 
-        else if (name.Type == TypeSymbol.Integer)
+        else if (TypeSymbol.Integer.Matches(name.Type))
             value = new IntegerValue(_double);
 
         else
@@ -402,7 +396,7 @@ internal class Evaluator
             case BinaryOperationKind.BitwiseOR:
             case BinaryOperationKind.BitwiseXOR:
                 Int128 _i1, _i2;
-                if (left.Type == TypeSymbol.Integer && (double) left.Value > (double) Int128.MaxValue)
+                if (TypeSymbol.Integer.Matches(left.Type) && (double) left.Value > (double) Int128.MaxValue)
                 {
                     Except($"Integer too big for bitwise {kind}", biop.Span, ExceptionType.OverflowError);
                     return UnknownValue.Template;
@@ -412,7 +406,7 @@ internal class Evaluator
                 else
                     _i1 = Int128.Parse(left.Value.ToString() ?? "");
 
-                if (right.Type == TypeSymbol.Integer && (double) right.Value > (double) Int128.MaxValue)
+                if (TypeSymbol.Integer.Matches(right.Type) && (double) right.Value > (double) Int128.MaxValue)
                 {
                     Except($"Integer too big for bitwise {kind}", biop.Span, ExceptionType.OverflowError);
                     return UnknownValue.Template;
@@ -494,7 +488,7 @@ internal class Evaluator
             
                     : throw new Exception("This shouldn't occur");
 
-                if (biop.Type == TypeSymbol.Integer)
+                if (TypeSymbol.Integer.Matches(biop.Type))
                     return new IntegerValue(_double);
                 else
                     return new FloatValue(_double);
@@ -502,15 +496,15 @@ internal class Evaluator
             //=====================================================================//
 
             case BinaryOperationKind.RangeInclusion:
-                _bool = ((RangeValue) right).Contains(left);
+                _bool = ((RangeValue) right).Contains((NumberValue) left);
                 return new BoolValue(_bool);
 
             //=====================================================================//
 
             case BinaryOperationKind.CharAddition:
             case BinaryOperationKind.CharSubtraction:
-                var aos = (double) (left.Type == TypeSymbol.Integer ? left.Value : right.Value);
-                var cr1 = ( char ) (left.Type == TypeSymbol.Char    ? left.Value : right.Value);
+                var aos = (double) (TypeSymbol.Integer.Matches(left.Type) ? left.Value : right.Value);
+                var cr1 = ( char ) (TypeSymbol.Char.Matches(left.Type)    ? left.Value : right.Value);
 
                 _double = kind == BinaryOperationKind.CharAddition
                     ? aos + cr1
@@ -526,8 +520,8 @@ internal class Evaluator
                 return new StringValue(_string);
 
             case BinaryOperationKind.StringMultiplication:
-                var num = (double) (left.Type == TypeSymbol.Integer ? left.Value : right.Value);
-                var str = (string) (left.Type == TypeSymbol.String  ? left.Value : right.Value);
+                var num = (double) (TypeSymbol.Integer.Matches(left.Type) ? left.Value : right.Value);
+                var str = (string) (TypeSymbol.String.Matches(left.Type)  ? left.Value : right.Value);
 
                 _string = string.Empty;
 
@@ -540,7 +534,11 @@ internal class Evaluator
                 return new StringValue(_string);
 
             case BinaryOperationKind.StringInclusion:
-                _bool = ((StringValue) right).Contains(left);
+                if (left.Type.ID == TypeID.String)
+                    _bool = ((StringValue) right).Contains((StringValue) left);
+                else
+                    _bool = ((StringValue) right).Contains((CharValue) left);
+    
                 return new BoolValue(_bool);
 
             //=====================================================================//
@@ -564,7 +562,7 @@ internal class Evaluator
         var trueExprVal  = EvaluateExpression(terop.TrueExpression);
         var falseExprVal = EvaluateExpression(terop.FalseExpression);
 
-        if (conditionVal.Type == TypeSymbol.Boolean)
+        if (TypeSymbol.Boolean.Matches(conditionVal.Type))
             return (bool) conditionVal.Value ? trueExprVal : falseExprVal;
 
         return UnknownValue.Template;

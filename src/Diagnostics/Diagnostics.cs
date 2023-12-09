@@ -37,7 +37,7 @@ public class Report
     }
 
     private void Except(ExceptionType type, string message, Span span, bool rereadLine = false)
-        => Diagnostics.Add(type, message, span);
+        => Diagnostics.Add(type, message, span, rereadLine);
 
 
     internal void ValuelessConstant(string name, Span span)
@@ -46,8 +46,14 @@ public class Report
     internal void UselessTypeAdded(string type, Span span)
         => Except(ExceptionType.SyntaxError, $"No need for added type '{type}'", span);
 
+    internal void ExpectedType(string type1, string type2, Span span)
+        => Except(ExceptionType.TypeError, $"Expected {("aeiou".Contains(type1[0]) ? "an" : "a")} '{type1}' got {("aeiou".Contains(type2[0]) ? "an" : "a")} '{type2}'", span);
+
     internal void TypesDoNotMatch(string type1, string type2, Span span)
         => Except(ExceptionType.TypeError, $"Types '{type1}' and '{type2}' do not match", span);
+
+    internal void HeteroList(string type1, string type2, Span span)
+        => Except(ExceptionType.TypeError, $"Typed list can't have '{type1}' and '{type2}'", span);
 
     internal void CannotIterate(string type, Span span)
         => Except(ExceptionType.TypeError, $"Type '{type}' is not iterable", span);

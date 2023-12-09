@@ -105,8 +105,11 @@ internal class Scope
                 sym.MakeConstant();
     }
 
-    public void Assign(VariableSymbol variable, LiteralValue value)
+    public void Assign(VariableSymbol variable, LiteralValue value, bool skipDeclaration = false)
     {
+        if (skipDeclaration)
+            Variables[variable] = value;
+
         if (Variables.ContainsKey(variable))
                 EditVariable(variable, value);
 

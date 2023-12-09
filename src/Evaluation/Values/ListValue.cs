@@ -6,8 +6,9 @@ namespace SEx.Evaluate.Values;
 
 public sealed class ListValue
     : LiteralValue,
-      IIterableValue<IntegerValue, LiteralValue>,
-      IIterableValue<RangeValue, ListValue>
+      IEnumerableValue<LiteralValue>,
+      IIndexableValue<IntegerValue, LiteralValue>,
+      IIndexableValue<RangeValue, ListValue>
 {
 
     private readonly List<LiteralValue> _values;
@@ -81,7 +82,7 @@ public sealed class ListValue
     public bool Contains(LiteralValue value)
         => _values.Contains(value);
 
-    public LiteralValue? GetElement(IntegerValue index)
+    public LiteralValue? GetIndexed(IntegerValue index)
     {
         var i = double.IsNegative((double) index.Value)
                 ? (_values.Count + ((double) index.Value))
@@ -94,7 +95,7 @@ public sealed class ListValue
             :  null;
     }
 
-    public ListValue? GetElement(RangeValue index)
+    public ListValue? GetIndexed(RangeValue index)
     {
             List<LiteralValue> slice;
             Range range = index.GetSystemRange();
@@ -108,4 +109,6 @@ public sealed class ListValue
 
     public ListValue Concat(ListValue other)
         => new(_values.Concat(other._values));
+
+    public IEnumerable<LiteralValue> GetEnumerator() => _values;
 }

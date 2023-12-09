@@ -4,7 +4,8 @@ namespace SEx.Evaluate.Values;
 
 public sealed class RangeValue
     : LiteralValue,
-      IIterableValue<IntegerValue, NumberValue>
+      IEnumerableValue<NumberValue>,
+      IIndexableValue<IntegerValue, NumberValue>
 {
     public override object Value => null!;
     public override TypeSymbol Type => TypeSymbol.Range;
@@ -50,13 +51,13 @@ public sealed class RangeValue
     public override string str()
         => $"{Start.str()}:{End.str()}:{Step.str()}";
 
-    public NumberValue? GetElement(IntegerValue index)
+    public NumberValue? GetIndexed(IntegerValue index)
     {
         var val = NumberValue.Get((double) index.Value * (double) Step.Value + (double) Start.Value);
         return Contains(val) ? val : null;
     }
 
-    public bool Contains(LiteralValue value)
+    public bool Contains(NumberValue value)
     {
         var bigger  = ((double) Start.Value) > ((double) End.Value)
                     ? ((double) Start.Value)
@@ -67,6 +68,12 @@ public sealed class RangeValue
                     : ((double) End.Value);
 
         return (smaller <= ((double) value.Value)) && (bigger >= ((double) value.Value));
+    }
+
+    public IEnumerable<NumberValue> GetEnumerator()
+    {
+        for (int i = 0; i < (double)Length!.Value; i++)
+            yield return GetIndexed(new(i))!;
     }
 
     public Range GetSystemRange()

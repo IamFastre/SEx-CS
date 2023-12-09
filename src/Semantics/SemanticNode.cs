@@ -35,7 +35,11 @@ internal abstract class SemanticNode
         string last     = C.DIM + "└──" + C.END;
         string space    = C.DIM + "   " + C.END;
 
-        string PINK = C.RGB(252, 88, 217);
+        if (this is SemanticExpressionStatement es)
+        {
+            es.Expression.WriteTree(writer, indent);
+            return;
+        }
 
         var children  = GetChildren().ToArray();
         string header = this switch
