@@ -9,7 +9,6 @@ public abstract class Node
     public abstract Span     Span { get; }
     public abstract NodeKind Kind { get; }
 
-    public abstract override string ToString();
     public abstract IEnumerable<Node> GetChildren();
 
     public void LogTree(string source = "")
@@ -45,11 +44,8 @@ public abstract class Node
         string last     = C.DIM + "└──" + C.END;
         string space    = C.DIM + "   " + C.END;
 
-        // string PINK = C.RGB(252, 88, 217);
-
         static string leaf(string a, string b)
             => $"<{C.YELLOW2}{a}: {C.GREEN2}'{b}'{C.END}>";
-
 
         var children = GetChildren().ToArray();
         if (this is Literal LT)
@@ -58,7 +54,7 @@ public abstract class Node
             return;
         }
 
-        writer.WriteLine($"[{C.BLUE2}{C.BLINK}{Kind}{C.END}]");
+        writer.WriteLine($"[{C.BLUE2}{Kind}{C.END}]");
 
         for (int i = 0; i < children.Length; i++)
         {

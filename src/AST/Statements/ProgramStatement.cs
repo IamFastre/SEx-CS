@@ -19,6 +19,5 @@ internal sealed class ProgramStatement : Statement
              : new();
     }
 
-    public override string ToString() => $"<{C.BLUE2}ProgramStatement{C.GREEN2}[{Body.Length}]{C.END}>";
     public override IEnumerable<Node> GetChildren() => Body;
 }

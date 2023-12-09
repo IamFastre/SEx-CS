@@ -19,8 +19,6 @@ internal class TypeClause : Clause
         Span          = new(type.Span, end);
     }
 
-    public override string ToString() => $"<{Type.Value}>";
-
     public override IEnumerable<Node> GetChildren()
     {
         yield return Type.Node;

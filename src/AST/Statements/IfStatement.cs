@@ -26,9 +26,6 @@ internal sealed class IfStatement : Statement
                            : body.Span);
     }
 
-    public override string ToString()
-        => $"<{C.BLUE2}IfStatement{C.GREEN2}[{Then}]{(ElseClause is not null ? $"[{ElseClause}]" : "")}{C.END}>";
-
     public override IEnumerable<Node> GetChildren()
     {
         yield return If.Node;

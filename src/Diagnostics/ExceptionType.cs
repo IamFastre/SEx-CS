@@ -11,6 +11,7 @@ public enum ExceptionType
     InternalError,
     ParsingException,
     SymbolError,
+    IndexError,
 }
 
 public enum Sender

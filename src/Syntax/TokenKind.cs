@@ -59,7 +59,7 @@ public enum TokenKind
     // Unary
     Increment,
     Decrement,
-    ExclamationMark,
+    BangMark,
 
     Delete,
 
@@ -142,7 +142,7 @@ internal static class TokenKindExtension
             TokenKind.Plus      or
             TokenKind.Minus     or
             TokenKind.Tilde     or
-            TokenKind.ExclamationMark => 6,
+            TokenKind.BangMark => 6,
 
             _ => 0,
     };

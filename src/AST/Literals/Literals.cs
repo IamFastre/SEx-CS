@@ -20,7 +20,6 @@ internal sealed class Literal : Expression
         Kind  = kind;
     }
 
-    public sealed override string ToString() => $"<{C.YELLOW2}{Kind}{C.END}: {C.GREEN2}{Value}{C.END}>";
     public static Literal Unknown(Span? span = null) => new(Token.Unknown(span), NodeKind.Unknown);
 
     public sealed override IEnumerable<Node> GetChildren()

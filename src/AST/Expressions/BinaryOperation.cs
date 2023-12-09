@@ -22,9 +22,6 @@ internal sealed class BinaryOperation : Expression
         Span     = new Span(LHS.Span.Start, RHS.Span.End);
     }
 
-    public override string ToString()
-        => $"<{C.BLUE2}BinaryOperation{C.END}: {LHS} {C.GREEN2}{Operator.Value}{C.END} {RHS}>";
-
     public override IEnumerable<Node> GetChildren()
     {
         yield return LHS;

@@ -334,15 +334,21 @@ internal sealed class Analyzer
     {
         var iterable    = BindExpression(ie.Iterable);
         var index       = BindExpression(ie.Index);
-        var elementType = iterable.Type.ElementType;
+        var elementType = iterable.Type.GetIndexReturn(index.Type);
 
         if (elementType is null)
         {
-            Except($"Can't perform indexing on '{iterable.Type}'", ie.Iterable.Span);
-            return new SemanticFailedExpressions(new[] { iterable, index });
+            Diagnostics.Report.CannotIndex(iterable.Type.ToString(), ie.Iterable.Span);
+            return new SemanticFailedOperation(new[] { iterable, index });
         }
 
-        return new SemanticIndexingExpression(iterable, index, elementType ?? TypeSymbol.Unknown, ie.Span);
+        if (!elementType.IsKnown)
+        {
+            Diagnostics.Report.CannotIndexWithType(iterable.Type.ToString(), index.Type.ToString(), ie.Iterable.Span);
+            return new SemanticFailedOperation(new[] { iterable, index });
+        }
+
+        return new SemanticIndexingExpression(iterable, index, elementType, ie.Span);
     }
 
     private SemanticExpression BindUnaryOperation(UnaryOperation uop)
@@ -353,7 +359,7 @@ internal sealed class Analyzer
         if (opKind is null)
         {
             Except($"Cannot apply operator '{uop.Operator.Value}' on type '{operand.Type}'", uop.Span);
-            return new SemanticFailedExpressions(new[] { operand });
+            return new SemanticFailedOperation(new[] { operand });
         }
 
         return new SemanticUnaryOperation(operand, opKind.Value, uop.Span);
@@ -386,7 +392,7 @@ internal sealed class Analyzer
         if (opKind is null)
         {
             Except($"Cannot apply operator '{biop.Operator.Value}' on types: '{left.Type}' and '{right.Type}'", biop.Span);
-            return new SemanticFailedExpressions(new[] { left, right });
+            return new SemanticFailedOperation(new[] { left, right });
         }
 
         return new SemanticBinaryOperation(left, opKind.Value, right);
@@ -428,7 +434,7 @@ internal sealed class Analyzer
                 return BindName(aexpr.Assignee);
             }
             
-            return new SemanticAssignment(var, expr, aexpr.Span);
+            return new SemanticAssignment(var, expr, aexpr.Operation, aexpr.Span);
         }
 
         return expr;

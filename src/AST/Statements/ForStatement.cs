@@ -25,9 +25,6 @@ internal class ForStatement : Statement
         Span     = new(@for.Span, body.Span);
     }
 
-    public override string ToString()
-        => $"<{C.BLUE2}ForStatement{C.GREEN2}[{Body}]{C.END}>";
-
     public override IEnumerable<Node> GetChildren()
     {
         yield return For.Node;

@@ -19,7 +19,6 @@ internal sealed class NameLiteral : Expression
         Span  = Token.Span;
     }
 
-    public sealed override string ToString() => $"<{C.YELLOW2}{Kind}{C.END}: {C.GREEN2}{Value}{C.END}>";
     public sealed override IEnumerable<Node> GetChildren()
     {
         yield return Token.Node;

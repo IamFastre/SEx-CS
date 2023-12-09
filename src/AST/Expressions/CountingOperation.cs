@@ -25,11 +25,6 @@ internal class CountingOperation : Expression
                     : new(op.Span, name.Span);
     }
 
-    public override string ToString()
-        => ReturnAfter
-         ? $"<{Name} {C.GREEN2}{Operator.Value}{C.END}>"
-         : $"<{C.GREEN2}{Operator.Value}{C.END} {Name}>";
-
     public override IEnumerable<Node> GetChildren()
     {
         if (ReturnAfter)

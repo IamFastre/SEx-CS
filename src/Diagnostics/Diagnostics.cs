@@ -50,7 +50,16 @@ public class Report
         => Except(ExceptionType.TypeError, $"Types '{type1}' and '{type2}' do not match", span);
 
     internal void CannotIterate(string type, Span span)
-        => Except(ExceptionType.TypeError, $"Cannot iterate type '{type}'", span);
+        => Except(ExceptionType.TypeError, $"Type '{type}' is not iterable", span);
+
+    internal void CannotIndex(string type, Span span)
+        => Except(ExceptionType.IndexError, $"Cannot perform indexing on '{type}'", span);
+
+    internal void CannotIndexWithType(string type1, string type2, Span span)
+        => Except(ExceptionType.IndexError, $"Cannot perform indexing on '{type1}' with type '{type2}'", span);
+
+    internal void IndexOutOfBoundary(Span span)
+        => Except(ExceptionType.IndexError, $"Index is out of boundary", span);
 
     internal void CannotAssignToConst(string name, Span span)
         => Except(ExceptionType.SymbolError, $"Cannot assign to constant '{name}'", span);

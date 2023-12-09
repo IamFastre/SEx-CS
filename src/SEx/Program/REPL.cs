@@ -19,8 +19,8 @@ internal class REPL
     private bool DebugShown     = false;
     private bool TokensShown    = false;
     private bool TreeShown      = false;
+    private bool ProgramShown   = false;
     private bool TreeLogged     = false;
-    private bool TreeLineShown  = false;
     private bool TypeShown      = false;
     private bool UnescapedShown = false;
     private bool IsMonochrome   = false;
@@ -39,8 +39,6 @@ internal class REPL
     public REPL(string[] args)
     {
         Args = args;
-
-        ParseArguments();
 
         Line          = "";
         Script        = new();
@@ -73,12 +71,27 @@ internal class REPL
 
         if (AreArgs("--monochrome", "-mch"))
             C.ToMono();
+
+        if (AreArgs("--debug", "-d"))
+            ToggleAll();
+
+        if (AreArgs("--showTokens", "-stks"))
+            ToggleTree();
+
+        if (AreArgs("--showAST", "-sast"))
+            ToggleTree();
+
+        if (AreArgs("--showProgram", "-sprgm"))
+            ToggleProgram();
+
+        if (AreArgs("--showEscaped", "-esc"))
+            ToggleEsc();
     }
 
     public static string[] commands =
     {
         "DEBUG", "CLEAR",    "TOKENS",
-        "TREE",  "TREELINE", "LOGTREE",
+        "TREE",  "PROGRAM",  "LOGTREE",
         "TYPE",  "ESCAPED",  "COLOR",
         "EXIT",  "RESET",
     };
@@ -96,6 +109,8 @@ internal class REPL
     {
         Console.WriteLine($"{C.BLUE2}SEx-{CONSTS._VERSION_} ({C.YELLOW2}{Environment.UserName} {C.BLUE2}on {C.RED2}{Environment.OSVersion.Platform}{C.BLUE2}){C.END}");
         Console.WriteLine($"{C.BLUE2}{C.DIM}{C.ITALIC}Type: {C.GREEN2}'help' {C.BLUE2}for more info.{C.END}");
+
+        ParseArguments();
 
         bool NewInput() => Script.Length == 0;
         while (true)
@@ -129,10 +144,10 @@ internal class REPL
                     continue;
                 }
 
-                PrintDebugs();
-
                 var analyzer  = new Analyzer(parser.Tree!, SemanticScope, Diagnostics);
                 SemanticTree  = analyzer.Analyze();
+
+                PrintDebugs();
 
                 if (!Diagnostics.Exceptions.Any())
                 {
@@ -173,10 +188,10 @@ internal class REPL
             Console.WriteLine();
         }
 
-        if (TreeLineShown)
+        if (ProgramShown)
         {
-            Console.WriteLine($"• {C.GREEN2}Tree Line{C.END} ↴"); //↓
-            Console.WriteLine(SimpleTree!.ToString());
+            Console.WriteLine($"• {C.GREEN2}Program{C.END} ↴"); //↓
+            SemanticTree?.PrintTree();
             Console.WriteLine();
         }
 
@@ -202,8 +217,8 @@ internal class REPL
                 ToggleTree();
                 break;
 
-            case "TREELINE":
-                ToggleTreeLine();
+            case "PROGRAM":
+                ToggleProgram();
                 break;
 
             case "LOGTREE":
@@ -254,7 +269,7 @@ internal class REPL
 
         ToggleTokens(DebugShown);
         ToggleTree(DebugShown);
-        ToggleTreeLine(DebugShown);
+        ToggleProgram(DebugShown);
         ToggleType(DebugShown);
         ToggleEsc(DebugShown);
     }
@@ -283,10 +298,10 @@ internal class REPL
         Console.WriteLine($"Show AST set to: {TreeShown}");
     }
 
-    private void ToggleTreeLine(bool _ = false)
+    private void ToggleProgram(bool _ = false)
     {
-        TreeLineShown = !TreeLineShown || _;
-        Console.WriteLine($"Show ASTL set to: {TreeLineShown}");
+        ProgramShown = !ProgramShown || _;
+        Console.WriteLine($"Show Program set to: {ProgramShown}");
     }
 
     private void ToggleLogTree(bool _ = false)

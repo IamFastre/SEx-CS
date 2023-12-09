@@ -43,9 +43,6 @@ internal sealed class AssignmentExpression : Expression
         _ => throw new Exception("if this happens imma kms"),
     };
 
-    public override string ToString()
-        => $"<{C.BLUE2}Assignment{C.END}: {Assignee} {C.GREEN2}{Equal.Value}{C.END} {Expression}>";
-
     public override IEnumerable<Node> GetChildren()
     {
         yield return Assignee;

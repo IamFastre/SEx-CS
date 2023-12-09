@@ -26,9 +26,6 @@ internal sealed class WhileStatement : Statement
                               : body.Span);
     }
 
-    public override string ToString()
-        => $"<{C.BLUE2}WhileStatement{C.GREEN2}[{Body}]{(ElseClause is not null ? $"[{ElseClause}]" : "")}{C.END}>";
-
     public override IEnumerable<Node> GetChildren()
     {
         yield return While.Node;

@@ -42,19 +42,19 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
         ||  (left, right).Match(TypeSymbol.Integer, TypeSymbol.Boolean, true))
         {
             if (op is TokenKind.Ampersand)
-                return BinaryOperationKind.AND;
+                return BinaryOperationKind.BitwiseAND;
             if (op is TokenKind.Pipe)
-                return BinaryOperationKind.OR;
+                return BinaryOperationKind.BitwiseOR;
             if (op is TokenKind.Caret)
-                return BinaryOperationKind.XOR;
+                return BinaryOperationKind.BitwiseXOR;
         }
 
         if ((left, right).Match(TypeSymbol.Boolean))
         {
             if (op is TokenKind.LogicalAND or TokenKind.Ampersand)
-                return BinaryOperationKind.LAND;
+                return BinaryOperationKind.LogicalAND;
             if (op is TokenKind.LogicalOR or TokenKind.Pipe)
-                return BinaryOperationKind.LOR;
+                return BinaryOperationKind.LogicalOR;
         }
 
         if ((left, right).Match(TypeSymbol.Number))

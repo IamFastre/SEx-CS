@@ -205,7 +205,7 @@ internal class Evaluator
                 case SemanticKind.Range:
                     return EvaluateRange((SemanticRange) expr);
 
-                case SemanticKind.Name:
+                case SemanticKind.Variable:
                     return EvaluateVariable((SemanticVariable) expr);
 
                 case SemanticKind.List:
@@ -232,8 +232,8 @@ internal class Evaluator
                 case SemanticKind.FailedExpression:
                     return UnknownValue.Template;
 
-                case SemanticKind.FailedExpressions:
-                    return EvaluateFailedExpression((SemanticFailedExpressions) expr);
+                case SemanticKind.FailedOperation:
+                    return EvaluateFailedExpression((SemanticFailedOperation) expr);
         }
 
         throw new Exception($"Unexpected expression type {expr?.Kind}");
@@ -293,10 +293,7 @@ internal class Evaluator
         var elem     = IIterableValue.GetElement(iterable, index);
 
         if (elem is null)
-            Except($"Index is out of boundary", ie.Index.Span);
-
-        else if (!elem.Type.IsKnown)
-            Except($"Can't perform indexing on '{iterable.Type}' with '{index.Type}'", ie.Index.Span);
+            Diagnostics.Report.IndexOutOfBoundary(ie.Index.Span);
 
         return elem ?? UnknownValue.Template;
     }
@@ -320,7 +317,7 @@ internal class Evaluator
                 else
                     return new FloatValue(_double);
             
-            case UnaryOperationKind.IntComplement:
+            case UnaryOperationKind.BitwiseComplement:
                 return new IntegerValue(-(double) operand.Value - 1);
 
             case UnaryOperationKind.Complement:
@@ -401,9 +398,9 @@ internal class Evaluator
 
                 return new BoolValue(_bool);
 
-            case BinaryOperationKind.AND:
-            case BinaryOperationKind.OR:
-            case BinaryOperationKind.XOR:
+            case BinaryOperationKind.BitwiseAND:
+            case BinaryOperationKind.BitwiseOR:
+            case BinaryOperationKind.BitwiseXOR:
                 Int128 _i1, _i2;
                 if (left.Type == TypeSymbol.Integer && (double) left.Value > (double) Int128.MaxValue)
                 {
@@ -426,13 +423,13 @@ internal class Evaluator
                     _i2 = Int128.Parse(right.Value.ToString() ?? "");
 
                 _double = (double)
-                    ( kind == BinaryOperationKind.AND
+                    ( kind == BinaryOperationKind.BitwiseAND
                     ?  _i1 & _i2
 
-                    : kind == BinaryOperationKind.OR
+                    : kind == BinaryOperationKind.BitwiseOR
                     ?  _i1 | _i2
 
-                    : kind == BinaryOperationKind.XOR
+                    : kind == BinaryOperationKind.BitwiseXOR
                     ?  _i1 ^  _i2
 
                     : throw new Exception("This shouldn't occur"));
@@ -441,17 +438,17 @@ internal class Evaluator
                     return new IntegerValue(_double);
                 return new BoolValue(_double != 0D);
 
-            case BinaryOperationKind.LAND:
-            case BinaryOperationKind.LOR:
+            case BinaryOperationKind.LogicalAND:
+            case BinaryOperationKind.LogicalOR:
             case BinaryOperationKind.Greater:
             case BinaryOperationKind.GreaterEqual:
             case BinaryOperationKind.Less:
             case BinaryOperationKind.LessEqual:
                 _bool =
-                      kind == BinaryOperationKind.LAND
+                      kind == BinaryOperationKind.LogicalAND
                     ? (bool) left.Value && (bool) right.Value
 
-                    : kind == BinaryOperationKind.LOR
+                    : kind == BinaryOperationKind.LogicalOR
                     ? (bool) left.Value || (bool) right.Value
 
 
@@ -497,7 +494,7 @@ internal class Evaluator
             
                     : throw new Exception("This shouldn't occur");
 
-                if (double.IsInteger(_double) || double.IsInfinity(_double) || double.IsNaN(_double))
+                if (biop.Type == TypeSymbol.Integer)
                     return new IntegerValue(_double);
                 else
                     return new FloatValue(_double);
@@ -583,7 +580,7 @@ internal class Evaluator
         return output.Type.IsKnown ? output : val;
     }
 
-    private LiteralValue EvaluateFailedExpression(SemanticFailedExpressions fe)
+    private LiteralValue EvaluateFailedExpression(SemanticFailedOperation fe)
     {
         foreach (var expr in fe.Expressions)
             EvaluateExpression(expr);

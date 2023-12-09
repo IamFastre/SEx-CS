@@ -10,7 +10,7 @@ internal enum UnaryOperationKind
     Identity,
     Negation,
     Complement,
-    IntComplement,
+    BitwiseComplement,
 }
 
 internal sealed class SemanticUnaryOperation : SemanticExpression
@@ -34,27 +34,26 @@ internal sealed class SemanticUnaryOperation : SemanticExpression
     {
 
         if (operand is TypeID.Integer || operand is TypeID.Float)
-            return kind switch
-            {
-                TokenKind.Plus  => UnaryOperationKind.Identity,
-                TokenKind.Minus => UnaryOperationKind.Negation,
-                _ => null,
-            };
+        {
+            if (kind is TokenKind.Plus)
+                return UnaryOperationKind.Identity;
+            if (kind is TokenKind.Minus)
+                return UnaryOperationKind.Negation;
+        }
 
         if (operand is TypeID.Integer)
-            return kind switch
-            {
-                TokenKind.Tilde => UnaryOperationKind.IntComplement,
-                _ => null,
-            };
+        {
+            if (kind is TokenKind.Tilde)
+                return UnaryOperationKind.BitwiseComplement;
+        }
 
         if (operand is TypeID.Boolean)
-            return kind switch
-            {
-                TokenKind.ExclamationMark  => UnaryOperationKind.Complement,
-                TokenKind.Tilde            => UnaryOperationKind.Complement,
-                _ => null,
-            };
+        {
+            if (kind is TokenKind.BangMark or TokenKind.Tilde)
+                return UnaryOperationKind.Complement;
+            if (kind is TokenKind.Minus)
+                return UnaryOperationKind.Negation;
+        }
 
         return null;
     }

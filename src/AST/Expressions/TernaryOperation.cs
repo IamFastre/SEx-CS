@@ -21,9 +21,6 @@ internal class TernaryOperation : Expression
         Span            = new(condition.Span, falseExpr.Span);
     }
 
-    public override string ToString()
-        => $"<{C.BLUE2}TernaryOperation{C.END}: {Condition} {C.GREEN2}?{C.END} {TrueExpression} {C.GREEN2}:{C.END} {FalseExpression}>";
-
     public override IEnumerable<Node> GetChildren()
     {
         yield return Condition;

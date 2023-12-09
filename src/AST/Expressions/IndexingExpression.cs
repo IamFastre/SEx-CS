@@ -24,10 +24,6 @@ internal sealed class IndexingExpression : Expression
         Span         = new(Iterable.Span.Start, CloseBracket.Span.End);
     }
 
-
-    public override string ToString()
-        => $"<{Iterable}{C.RED}[{C.END}{Index}{C.RED}]{C.END}>";
-
     public override IEnumerable<Node> GetChildren()
     {
         yield return Iterable;

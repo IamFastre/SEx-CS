@@ -27,6 +27,23 @@ public class TypeSymbol : Symbol
         => ID.HasFlag(other.ID);
 
 
+    public TypeSymbol? GetIndexReturn(TypeSymbol index)
+        => GetIndexReturn(this, index);
+
+    public static TypeSymbol? GetIndexReturn(TypeSymbol parent, TypeSymbol index)
+    {
+        if (parent.ElementType is null)
+            return null;
+
+        return index.ID switch
+        {
+            TypeID.Integer => parent.ElementType!,
+            TypeID.Range   => parent,
+            _ => Unknown,
+        };
+    }
+
+
     public static TypeSymbol? GetTypeByID(TypeID type) => type switch
     {
         TypeID.Any     => Any,

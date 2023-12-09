@@ -24,6 +24,4 @@ internal sealed class ElseClause : Clause
         yield return Else.Node;
         yield return Body;
     }
-
-    public override string ToString() => $"<{C.BLUE2}ElseClause{C.GREEN2}[{Body}]{C.END}>";
 }

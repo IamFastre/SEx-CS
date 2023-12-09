@@ -16,7 +16,7 @@ public enum SemanticKind
     // Literals
     Literal,
     Range,
-    Name,
+    Variable,
     List,
 
     // Expressions
@@ -28,6 +28,6 @@ public enum SemanticKind
     BinaryOperation,
     TernaryOperation,
 
-    FailedExpressions,
+    FailedOperation,
     FailedExpression,
 }

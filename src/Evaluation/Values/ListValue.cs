@@ -27,13 +27,6 @@ public sealed class ListValue
         Type    = GenericTypeSymbol.TypedList(type ?? TypeSymbol.Any);
     }
 
-    public static TypeSymbol GetIndexReturn(TypeID index) => index switch
-    {
-        TypeID.Integer => TypeSymbol.Any,
-        TypeID.Range   => GenericTypeSymbol.TypedList(TypeSymbol.Any),
-        _ => TypeSymbol.Unknown,
-    };
-
     public override string ToString()
     {
         var str = C.GREEN2 + "[" + C.END;

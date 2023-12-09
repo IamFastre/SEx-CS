@@ -23,9 +23,6 @@ internal sealed class ListLiteral : Expression
         Span         = new(open.Span, close.Span);
     }
 
-    public override string ToString()
-        => $"<{C.RED}[{C.GREEN2}{Elements.Length}{C.RED}]{C.END}>";
-
     public override IEnumerable<Node> GetChildren()
     {
         yield return OpenBracket.Node;

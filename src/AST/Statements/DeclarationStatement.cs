@@ -36,7 +36,4 @@ internal sealed class DeclarationStatement : Statement
         if (Expression != null)
             yield return Expression;
     }
-
-    public override string ToString()
-        => $"<{C.BLUE2}Declaration: {C.GREEN2}{Variable} {C.BLUE2}=>{C.END} {Expression?.ToString() ?? CONSTS.NULL}{C.END}>";
 }

@@ -10,12 +10,12 @@ internal enum BinaryOperationKind
     Equality,
     Inequality,
 
-    LAND,
-    LOR,
+    LogicalAND,
+    LogicalOR,
 
-    AND,
-    OR,
-    XOR,
+    BitwiseAND,
+    BitwiseOR,
+    BitwiseXOR,
 
     Addition,
     Subtraction,
@@ -88,19 +88,19 @@ internal class SemanticBinaryOperator
         new(TokenKind.NotEqual, BinaryOperationKind.Inequality, TypeSymbol.Any, TypeSymbol.Boolean),
 
 
-        new(TokenKind.LogicalAND, BinaryOperationKind.LAND, TypeSymbol.Boolean),
-        new(TokenKind.LogicalOR, BinaryOperationKind.LOR, TypeSymbol.Boolean),
+        new(TokenKind.LogicalAND, BinaryOperationKind.LogicalAND, TypeSymbol.Boolean),
+        new(TokenKind.LogicalOR, BinaryOperationKind.LogicalOR, TypeSymbol.Boolean),
 
-        new(TokenKind.Ampersand, BinaryOperationKind.AND, TypeSymbol.Boolean),
-        new(TokenKind.Pipe, BinaryOperationKind.OR, TypeSymbol.Boolean),
-        new(TokenKind.Caret, BinaryOperationKind.XOR, TypeSymbol.Boolean),
+        new(TokenKind.Ampersand, BinaryOperationKind.BitwiseAND, TypeSymbol.Boolean),
+        new(TokenKind.Pipe, BinaryOperationKind.BitwiseOR, TypeSymbol.Boolean),
+        new(TokenKind.Caret, BinaryOperationKind.BitwiseXOR, TypeSymbol.Boolean),
 
-        new(TokenKind.Caret, BinaryOperationKind.XOR, TypeSymbol.Boolean, TypeSymbol.Integer, TypeSymbol.Integer),
-        new(TokenKind.Caret, BinaryOperationKind.XOR, TypeSymbol.Integer, TypeSymbol.Boolean, TypeSymbol.Integer),
+        new(TokenKind.Caret, BinaryOperationKind.BitwiseXOR, TypeSymbol.Boolean, TypeSymbol.Integer, TypeSymbol.Integer),
+        new(TokenKind.Caret, BinaryOperationKind.BitwiseXOR, TypeSymbol.Integer, TypeSymbol.Boolean, TypeSymbol.Integer),
 
-        new(TokenKind.Ampersand, BinaryOperationKind.AND, TypeSymbol.Integer),
-        new(TokenKind.Pipe, BinaryOperationKind.OR, TypeSymbol.Integer),
-        new(TokenKind.Caret, BinaryOperationKind.XOR, TypeSymbol.Integer),
+        new(TokenKind.Ampersand, BinaryOperationKind.BitwiseAND, TypeSymbol.Integer),
+        new(TokenKind.Pipe, BinaryOperationKind.BitwiseOR, TypeSymbol.Integer),
+        new(TokenKind.Caret, BinaryOperationKind.BitwiseXOR, TypeSymbol.Integer),
 
         new(TokenKind.Greater, BinaryOperationKind.Greater, TypeSymbol.Number, TypeSymbol.Boolean),
         new(TokenKind.Less, BinaryOperationKind.Less, TypeSymbol.Number, TypeSymbol.Boolean),

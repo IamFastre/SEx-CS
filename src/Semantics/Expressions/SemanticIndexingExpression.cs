@@ -22,19 +22,9 @@ internal sealed class SemanticIndexingExpression : SemanticExpression
         Span     = span;
     }
 
-    public static TypeSymbol? GetElementType(TypeID iterator, TypeID index) => iterator switch
-    {
-        TypeID.String => StringValue.GetIndexReturn(index),
-        TypeID.Range  => RangeValue.GetIndexReturn(index),
-        TypeID.List   => ListValue.GetIndexReturn(index),
-
-        _ => null,
-    };
-
-    public override IEnumerable<object> GetChildren()
+    public override IEnumerable<SemanticNode> GetChildren()
     {
         yield return Iterable;
         yield return Index;
     }
-
 }

@@ -69,12 +69,6 @@ public sealed class RangeValue
         return (smaller <= ((double) value.Value)) && (bigger >= ((double) value.Value));
     }
 
-    public static TypeSymbol GetIndexReturn(TypeID index) => index switch
-    {
-        TypeID.Integer => TypeSymbol.Number,
-        _ => TypeSymbol.Unknown,
-    };
-
     public Range GetSystemRange()
     {
         if (Direction == 1)

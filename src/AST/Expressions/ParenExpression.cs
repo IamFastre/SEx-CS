@@ -22,10 +22,6 @@ internal sealed class ParenthesizedExpression : Expression
         Span       = new Span(OpenParen.Span.Start, CloseParen.Span.End);
     }
 
-
-    public override string ToString()
-        => $"{C.RED}({C.END}{Expression}{C.RED}){C.END}";
-
     public override IEnumerable<Node> GetChildren()
     {
         yield return OpenParen.Node;

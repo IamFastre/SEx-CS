@@ -22,7 +22,6 @@ internal sealed class BlockStatement : Statement
         Span       = new(openBrace.Span, closeBrace.Span);
     }
 
-    public override string ToString() => $"<{C.BLUE2}BlockStatement{C.GREEN2}[{Body.Length}]{C.END}>";
     public override IEnumerable<Node> GetChildren()
     {
         yield return OpenBrace.Node;

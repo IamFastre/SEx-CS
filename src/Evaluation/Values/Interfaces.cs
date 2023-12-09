@@ -5,7 +5,6 @@ namespace SEx.Evaluate.Values;
 public interface IIterableValue
 {
     public abstract IntegerValue? Length { get; }
-    public abstract static TypeSymbol GetIndexReturn(TypeID index);
     public static LiteralValue? GetElement(LiteralValue iterator, LiteralValue index)
     {
         switch (iterator)

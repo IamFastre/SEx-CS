@@ -21,9 +21,6 @@ internal sealed class RangeLiteral : Expression
                               : end.Span);
     }
 
-    public sealed override string ToString()
-        => $"<{Start}:{End}{(Step is not null ? $":{Step}" : "")}>";
-
     public sealed override IEnumerable<Node> GetChildren()
     {
         yield return Start;

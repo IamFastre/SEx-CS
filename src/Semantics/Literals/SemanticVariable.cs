@@ -9,7 +9,7 @@ internal class SemanticVariable : SemanticExpression
     public override Span       Span   { get; }
     public override TypeSymbol Type   { get; }
 
-    public override SemanticKind Kind => SemanticKind.Name;
+    public override SemanticKind Kind => SemanticKind.Variable;
 
     public SemanticVariable(VariableSymbol symbol, Span span)
     {

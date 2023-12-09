@@ -154,7 +154,7 @@ internal class Lexer
             case '%':
                 return FabricateToken(TokenKind.Percent);
             case '!':
-                return FabricateToken(TokenKind.ExclamationMark);
+                return FabricateToken(TokenKind.BangMark);
             case '~':
                 return FabricateToken(TokenKind.Tilde);
             case '&':
