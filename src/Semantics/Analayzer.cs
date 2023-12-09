@@ -129,7 +129,7 @@ internal sealed class Analyzer
     private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement ds)
     {
         var expr = ds.Expression is not null ? BindExpression(ds.Expression) : null;
-        var hint = ds.TypeClause is not null ? GetType(ds.TypeClause) : TypeSymbol.Any;
+        var hint = ds.TypeClause is not null ? GetType(ds.TypeClause) : (expr?.Type ?? TypeSymbol.Any);
         var var  = new VariableSymbol(ds.Variable.Value, hint, ds.IsConstant);
 
         if (ds.IsConstant && expr is null)
@@ -170,6 +170,7 @@ internal sealed class Analyzer
         Scope.Symbols.Add(n.Value, symbol);
         return symbol;
     }
+
     private TypeSymbol[] GetTypes(TypeClause[] tcs)
     {
         List<TypeSymbol> types = new();
