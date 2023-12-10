@@ -15,7 +15,7 @@ public sealed class BoolValue : LiteralValue
         => _value ? 1 : 0;
 
     public override string ToString()
-        => C.VIOLET + str() + C.END;
+        => C.VIOLET + GetString() + C.END;
 
     public override bool Equals(object? obj)
     {
@@ -27,7 +27,7 @@ public sealed class BoolValue : LiteralValue
 
     public override int GetHashCode() => _value.GetHashCode();
 
-    public override string str()
+    public override string GetString()
         => _value ? CONSTS.TRUE : CONSTS.FALSE;
 
 }

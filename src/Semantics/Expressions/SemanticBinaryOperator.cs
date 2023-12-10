@@ -66,7 +66,7 @@ internal class SemanticBinaryOperator
         Token = token;
     }
 
-    public static SemanticBinaryOperator? GetSemanticOperator(TypeSymbol left, BinaryOperationKind opKind, TypeSymbol right)
+    public static SemanticBinaryOperator GetSemanticOperator(TypeSymbol left, BinaryOperationKind opKind, TypeSymbol right)
     {
         foreach (var op in operators)
             if (op.LeftType.Matches(left) && op.Kind.HasFlag(opKind) && op.RightType.Matches(right))
@@ -77,7 +77,7 @@ internal class SemanticBinaryOperator
                 return op;
             }
 
-        return null;
+        throw new Exception("Where is that binary operation dude?!");
     }
 
     private static readonly SemanticBinaryOperator[] operators =

@@ -15,5 +15,5 @@ public abstract class LiteralValue
     public abstract override bool   Equals(object? obj);
     public abstract override int    GetHashCode();
 
-    public abstract string str();
+    public abstract string GetString();
 }

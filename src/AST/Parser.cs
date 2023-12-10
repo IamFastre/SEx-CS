@@ -256,6 +256,20 @@ internal class Parser
         }
     }
 
+    private Expression? GetConversion()
+    {
+        while (IsNextKind(TokenKind.RightArrow))
+        {
+            var expr = GetIntermediate();
+            if (expr is null)
+                break;
+
+            return new ConversionExpression(expr, GetTypeClause());
+        }
+
+        return GetIntermediate();
+    }
+
     private Expression? GetSecondary(int parentPrecedence = 0)
     {
         Expression? left;
@@ -263,7 +277,7 @@ internal class Parser
 
         // Get Unary
         if (unaryPrecedence == 0 || unaryPrecedence < parentPrecedence)
-            left = GetIntermediate();
+            left = GetConversion();
         else
         {
             if (Current.Kind.IsCounting())
@@ -382,7 +396,7 @@ internal class Parser
 
     private TypeClause GetTypeClause()
     {
-        var type = Expect(TokenKind.Type, "Expected a type after colon", true);
+        var type = Expect(TokenKind.Type, "Expected a type", true);
         var dimension = 0;
 
         if (IsNextKind(TokenKind.Less))

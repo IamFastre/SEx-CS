@@ -9,13 +9,13 @@ public class NullValue : LiteralValue
     public override TypeSymbol Type => TypeSymbol.Null;
 
     public override string ToString()
-        => C.RED2 + str() + C.END;
+        => C.RED2 + GetString() + C.END;
 
     public override bool Equals(object? obj) => obj is NullValue;
 
     public override int GetHashCode() => 0;
 
-    public override string str()
+    public override string GetString()
         => CONSTS.NULL;
 }
 
@@ -27,13 +27,13 @@ public sealed class VoidValue : LiteralValue
     public override TypeSymbol Type => TypeSymbol.Void;
 
     public override string ToString()
-        => str();
+        => GetString();
 
     public override bool Equals(object? obj) => obj is VoidValue;
 
     public override int GetHashCode() => 0;
 
-    public override string str()
+    public override string GetString()
         => "";
 }
 
@@ -45,13 +45,13 @@ public sealed class UnknownValue : LiteralValue
     public override TypeSymbol Type => TypeSymbol.Unknown;
 
     public override string ToString()
-        => C.RED2 + str() + C.END;
+        => C.RED2 + GetString() + C.END;
 
     public override bool Equals(object? obj) => obj is UnknownValue;
 
     public override int GetHashCode() => 0;
 
-    public override string str()
+    public override string GetString()
         => CONSTS.UNKNOWN;
 }
 
@@ -64,12 +64,12 @@ public sealed class UndefinedValue : LiteralValue
     public override TypeSymbol Type  => _type;
 
     public override string ToString()
-        => C.RED2 + str() + C.END;
+        => C.RED2 + GetString() + C.END;
 
     public override bool Equals(object? obj) => obj is UndefinedValue;
 
     public override int GetHashCode() => 0;
 
-    public override string str()
+    public override string GetString()
         => CONSTS.UNDEFINED;
 }

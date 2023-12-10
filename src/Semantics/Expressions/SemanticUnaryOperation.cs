@@ -19,10 +19,10 @@ internal sealed class SemanticUnaryOperation : SemanticExpression
     public UnaryOperationKind OperationKind { get; }
 
     public override Span         Span       { get; }
-    public override TypeSymbol   Type => Operand.Type;
     public override SemanticKind Kind => SemanticKind.UnaryOperation;
 
     public SemanticUnaryOperation(SemanticExpression operand, UnaryOperationKind kind, Span span)
+            : base(operand.Type)
     {
         Operand       = operand;
         OperationKind = kind;

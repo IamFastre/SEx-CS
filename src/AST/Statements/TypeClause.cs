@@ -11,12 +11,12 @@ internal class TypeClause : Clause
     public override Span     Span { get; }
     public override NodeKind Kind => NodeKind.TypeClause;
 
-    public TypeClause(Token type, Span end, int dimension = 0)
+    public TypeClause(Token type, Span endSpan, int dimension = 0)
     {
         Type          = type;
         ListDimension = dimension;
 
-        Span          = new(type.Span, end);
+        Span          = new(type.Span, endSpan);
     }
 
     public override IEnumerable<Node> GetChildren()

@@ -49,6 +49,9 @@ public class Report
     internal void ExpectedType(string type1, string type2, Span span)
         => Except(ExceptionType.TypeError, $"Expected {("aeiou".Contains(type1[0]) ? "an" : "a")} '{type1}' got {("aeiou".Contains(type2[0]) ? "an" : "a")} '{type2}'", span);
 
+    internal void CannotConvert(string type1, string type2, Span span)
+        => Except(ExceptionType.TypeError, $"Cannot convert from '{type1}' to '{type2}'", span);
+
     internal void TypesDoNotMatch(string type1, string type2, Span span)
         => Except(ExceptionType.TypeError, $"Types '{type1}' and '{type2}' do not match", span);
 

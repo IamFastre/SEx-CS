@@ -10,10 +10,10 @@ internal sealed class SemanticRange : SemanticExpression
     public SemanticExpression? Step  { get; }
 
     public override Span         Span { get; }
-    public override TypeSymbol   Type => TypeSymbol.Range;
     public override SemanticKind Kind => SemanticKind.Range;
 
     public SemanticRange(SemanticExpression start, SemanticExpression end, SemanticExpression? step)
+        : base(TypeSymbol.Range)
     {
         Start = start;
         End   = end;

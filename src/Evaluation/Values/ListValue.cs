@@ -62,12 +62,12 @@ public sealed class ListValue
 
     public override int GetHashCode() => HashCode.Combine(_values);
 
-    public override string str()
+    public override string GetString()
     {
         var str = "[";
         for (int i = 0; i < _values.Count; i++)
         {
-            var val = _values[i].str();
+            var val = _values[i].GetString();
 
             if (i != _values.Count - 1)
                 str += $"{val}, ";

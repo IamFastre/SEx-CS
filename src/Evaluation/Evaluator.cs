@@ -1,4 +1,5 @@
 using SEx.Diagnose;
+using SEx.Evaluate.Conversions;
 using SEx.Evaluate.Values;
 using SEx.Generic.Constants;
 using SEx.Generic.Logic;
@@ -188,6 +189,9 @@ internal class Evaluator
                     if (TypeSymbol.Float.Matches(expr.Type))
                         return ParseFloat((SemanticLiteral) expr);
 
+                    if (TypeSymbol.Number.Matches(expr.Type))
+                        return ParseNumber((SemanticLiteral) expr);
+
                     if (TypeSymbol.Char.Matches(expr.Type))
                         return ParseChar((SemanticLiteral) expr);
 
@@ -213,6 +217,9 @@ internal class Evaluator
 
                 case SemanticKind.CountingOperation:
                     return EvaluateCountingOperation((SemanticCountingOperation) expr);
+
+                case SemanticKind.ConversionExpression:
+                    return EvaluateConversionExpression((SemanticConversionExpression) expr);
 
                 case SemanticKind.BinaryOperation:
                     return EvaluateBinaryOperation((SemanticBinaryOperation) expr);
@@ -355,6 +362,13 @@ internal class Evaluator
         return kind is CountingKind.IncrementAfter or CountingKind.DecrementAfter
              ? value
              : name;
+    }
+
+    private LiteralValue EvaluateConversionExpression(SemanticConversionExpression ce)
+    {
+        var value = EvaluateExpression(ce.Expression);
+        return Converter.Convert(ce.ConversionKind, value, ce.Destination);
+        throw new NotImplementedException();
     }
 
     private LiteralValue EvaluateBinaryOperation(SemanticBinaryOperation biop)
@@ -607,6 +621,22 @@ internal class Evaluator
             return new BoolValue(false);
 
         Except($"Error ocurred while parsing boolean", literal.Span!, ExceptionType.InternalError);
+        return UnknownValue.Template;
+    }
+
+    private LiteralValue ParseNumber(SemanticLiteral literal)
+    {
+        double num;
+        try
+        {
+            num = double.Parse(literal.Value);
+            return NumberValue.Get(num);
+        }
+        catch
+        {
+            Except($"Error ocurred while parsing number", literal.Span!, ExceptionType.InternalError);
+        }
+
         return UnknownValue.Template;
     }
 

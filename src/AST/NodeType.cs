@@ -37,6 +37,7 @@ public enum NodeKind
     IndexingExpression,
     UnaryOperation,
     CountingOperation,
+    ConversionExpression,
     BinaryOperation,
     TernaryOperation,
 }

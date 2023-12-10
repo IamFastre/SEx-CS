@@ -27,6 +27,7 @@ public enum SemanticKind
     CountingOperation,
     BinaryOperation,
     TernaryOperation,
+    ConversionExpression,
 
     FailedOperation,
     FailedExpression,

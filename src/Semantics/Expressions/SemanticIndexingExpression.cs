@@ -10,15 +10,14 @@ internal sealed class SemanticIndexingExpression : SemanticExpression
     public SemanticExpression Index    { get; }
 
     public override Span         Span  { get; }
-    public override TypeSymbol   Type  { get; }
     public override SemanticKind Kind => SemanticKind.IndexingExpression;
 
     public SemanticIndexingExpression(SemanticExpression iterable, SemanticExpression index, TypeSymbol type, Span span)
+        : base(type)
     {
         Iterable = iterable;
         Index    = index;
 
-        Type     = type;
         Span     = span;
     }
 

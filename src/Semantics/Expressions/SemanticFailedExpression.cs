@@ -7,10 +7,11 @@ internal sealed class SemanticFailedExpression : SemanticExpression
 {
     public override Span Span { get; }
 
-    public override TypeSymbol   Type => TypeSymbol.Unknown;
     public override SemanticKind Kind => SemanticKind.FailedExpression;
 
-    public SemanticFailedExpression(Span span) => Span = span;
+    public SemanticFailedExpression(Span span)
+        : base(TypeSymbol.Unknown)
+        => Span = span;
 
     public override IEnumerable<SemanticNode> GetChildren() => Enumerable.Empty<SemanticNode>();
 }

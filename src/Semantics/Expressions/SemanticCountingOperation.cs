@@ -20,10 +20,10 @@ internal class SemanticCountingOperation : SemanticExpression
     public CountingKind     OperationKind { get; }
 
     public override Span         Span     { get; }
-    public override TypeSymbol   Type => Name.Type;
     public override SemanticKind Kind => SemanticKind.CountingOperation;
 
     public SemanticCountingOperation(SemanticVariable name, CountingKind kind, Span span)
+        : base(name.Type)
     {
         Name          = name;
         OperationKind = kind;

@@ -11,16 +11,15 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
     public SemanticExpression     Right    { get; }
 
     public override Span         Span { get; }
-    public override TypeSymbol   Type { get; }
     public override SemanticKind Kind => SemanticKind.BinaryOperation;
 
-    public SemanticBinaryOperation(SemanticExpression left, BinaryOperationKind kind, SemanticExpression right)
+    public SemanticBinaryOperation(SemanticExpression left, SemanticBinaryOperator @operator, SemanticExpression right)
+        : base(@operator.ResultType)
     {
         Left     = left;
-        Operator = SemanticBinaryOperator.GetSemanticOperator(left.Type, kind, right.Type)!;
+        Operator = @operator;
         Right    = right;
 
-        Type = Operator.ResultType;
         Span = new Span(left.Span.Start, right.Span.End);
     }
 

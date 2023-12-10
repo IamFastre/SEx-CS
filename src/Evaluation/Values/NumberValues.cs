@@ -25,7 +25,6 @@ public abstract class NumberValue : LiteralValue
 
 public sealed class IntegerValue : NumberValue
 {
-
     private readonly double _value;
     public  override object Value => _value;
     public  override TypeSymbol Type => TypeSymbol.Integer;
@@ -41,15 +40,14 @@ public sealed class IntegerValue : NumberValue
         => double.IsInteger(value) || double.IsInfinity(value)|| double.IsNaN(value);
 
     public override string ToString()
-        => C.YELLOW2 + str() + C.END;
+        => C.YELLOW2 + GetString() + C.END;
 
-    public override string str()
+    public override string GetString()
         => _value.ToString().Replace('E', 'e');
 }
 
 public sealed class FloatValue : NumberValue
 {
-
     private readonly double _value;
     public  override object Value => _value;
     public  override TypeSymbol Type => TypeSymbol.Float;
@@ -57,13 +55,8 @@ public sealed class FloatValue : NumberValue
     public FloatValue(double value) => _value = value;
 
     public override string ToString()
-        => C.YELLOW2 + str() + C.END;
+        => C.YELLOW2 + GetString() + C.END;
 
-    public override string str()
-    {
-        var str = _value.ToString().Replace('E', 'e');
-        if (!str.Contains('.')) str += ".0";
-
-        return str + "f";
-    }
+    public override string GetString()
+        => _value.ToString().Replace('E', 'e') + "f";
 }

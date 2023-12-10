@@ -129,7 +129,7 @@ internal sealed class Analyzer
     private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement ds)
     {
         var expr = ds.Expression is not null ? BindExpression(ds.Expression) : null;
-        var hint = ds.TypeClause is not null ? GetType(ds.TypeClause) : (expr?.Type ?? TypeSymbol.Any);
+        var hint = ds.TypeClause is not null ? GetTypeSymbol(ds.TypeClause) : (expr?.Type ?? TypeSymbol.Any);
         var var  = new VariableSymbol(ds.Variable.Value, hint, ds.IsConstant);
 
         if (ds.IsConstant && expr is null)
@@ -150,8 +150,11 @@ internal sealed class Analyzer
         else if (expr is not null && !(hint, expr.Type).IsAssignable())
             Diagnostics.Report.TypesDoNotMatch(hint.ToString(), expr.Type.ToString(), ds.Span);
 
-        else if (!Scope.TryDeclare(var))
-            Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
+        else if (!TypeSymbol.Unknown.Matches(hint))
+        {
+            if (!Scope.TryDeclare(var))
+                Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
+        }
 
         return new(var, expr, ds);
     }
@@ -171,20 +174,24 @@ internal sealed class Analyzer
         return symbol;
     }
 
-    private TypeSymbol[] GetTypes(TypeClause[] tcs)
+    private TypeSymbol[] GetTypeSymbols(TypeClause[] tcs)
     {
         List<TypeSymbol> types = new();
         foreach (var tc in tcs)
-            types.Add(GetType(tc));
+        {
+            var type = GetTypeSymbol(tc);
+            if (!TypeSymbol.Unknown.Matches(type))
+                types.Add(type);
+        }
         
         return types.ToArray();
     }
 
-    private TypeSymbol GetType(TypeClause tc)
+    private TypeSymbol GetTypeSymbol(TypeClause tc)
     {
         var type = tc.Kind == NodeKind.TypeClause
                  ? TypeSymbol.GetTypeByString(tc.Type.Value)
-                 : GenericTypeSymbol.GetTypeByString(tc.Type.Value, GetTypes(((GenericTypeClause) tc).Parameters));
+                 : GenericTypeSymbol.GetTypeByString(tc.Type.Value, GetTypeSymbols(((GenericTypeClause) tc).Parameters));
 
         if (type is null)
         {
@@ -198,7 +205,7 @@ internal sealed class Analyzer
         return type;
     }
 
-    private VariableSymbol? GetVariable(NameLiteral n)
+    private VariableSymbol? GetVariableSymbol(NameLiteral n)
     {
         switch (Scope.Resolve(n.Value))
         {
@@ -261,6 +268,9 @@ internal sealed class Analyzer
             case NodeKind.CountingOperation:
                 return BindCountingOperation((CountingOperation) expr);
 
+            case NodeKind.ConversionExpression:
+                return BindConversionExpression((ConversionExpression) expr);
+
             case NodeKind.BinaryOperation:
                 return BindBinaryOperation((BinaryOperation) expr);
 
@@ -289,7 +299,7 @@ internal sealed class Analyzer
 
     private SemanticExpression BindName(NameLiteral n)
     {
-        var symbol = GetVariable(n);
+        var symbol = GetVariableSymbol(n);
         if (symbol == null)
             return new SemanticFailedExpression(n.Span);
 
@@ -391,6 +401,21 @@ internal sealed class Analyzer
         return new SemanticCountingOperation(name, opKind.Value, co.Span);
     }
 
+    private SemanticExpression BindConversionExpression(ConversionExpression ce)
+    {
+        var expr   = BindExpression(ce.Expression);
+        var dest   = GetTypeSymbol(ce.Destination);
+        var cvKind = SemanticConversionExpression.GetConversionKind(expr.Type, dest);
+    
+        if (cvKind is null)
+        {
+            Diagnostics.Report.CannotConvert(expr.Type.ToString(), dest.ToString(), ce.Span);
+            return new SemanticFailedExpression(ce.Span);
+        }
+    
+        return new SemanticConversionExpression(expr, dest, cvKind.Value, ce.Span);
+    }
+
     private SemanticExpression BindBinaryOperation(BinaryOperation biop)
     {
         var left   = BindExpression(biop.LHS);
@@ -403,7 +428,9 @@ internal sealed class Analyzer
             return new SemanticFailedOperation(new[] { left, right });
         }
 
-        return new SemanticBinaryOperation(left, opKind.Value, right);
+        var @operator = SemanticBinaryOperator.GetSemanticOperator(left.Type, opKind.Value, right.Type);
+
+        return new SemanticBinaryOperation(left, @operator, right);
     }
 
     private SemanticTernaryOperation BindTernaryOperation(TernaryOperation terop)

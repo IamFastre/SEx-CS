@@ -9,14 +9,14 @@ internal sealed class SemanticList : SemanticExpression
     public TypeSymbol            ElementType { get; }
 
     public override Span         Span        { get; }
-    public override TypeSymbol   Type        { get; }
     public override SemanticKind Kind  => SemanticKind.List;
 
     public SemanticList(SemanticExpression[] elements, TypeSymbol elementType, Span span)
+        : base(GenericTypeSymbol.TypedList(elementType))
     {
         Elements    = elements;
         ElementType = elementType;
-        Type        = GenericTypeSymbol.TypedList(elementType); 
+
         Span        = span;
     }
 

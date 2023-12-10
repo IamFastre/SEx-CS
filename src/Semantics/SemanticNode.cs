@@ -83,5 +83,13 @@ internal abstract class SemanticStatement  : SemanticNode {}
 internal abstract class SemanticClause     : SemanticNode {}
 internal abstract class SemanticExpression : SemanticNode
 {
-    public abstract TypeSymbol Type { get; }
+    public TypeSymbol Type { get; private set; }
+
+    protected SemanticExpression(TypeSymbol type)
+        => Type = type;
+
+    public void SetType(TypeSymbol type)
+    {
+        Type = type;
+    }
 }

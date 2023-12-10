@@ -48,8 +48,8 @@ public sealed class RangeValue
 
     public override int GetHashCode() => HashCode.Combine(Start, End, Step);
 
-    public override string str()
-        => $"{Start.str()}:{End.str()}:{Step.str()}";
+    public override string GetString()
+        => $"{Start.GetString()}:{End.GetString()}:{Step.GetString()}";
 
     public NumberValue? GetIndexed(IntegerValue index)
     {
