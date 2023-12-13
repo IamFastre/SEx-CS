@@ -150,9 +150,12 @@ internal sealed class Analyzer
         else if (expr is not null && !(hint, expr.Type).IsAssignable())
             Diagnostics.Report.TypesDoNotMatch(hint.ToString(), expr.Type.ToString(), ds.Span);
 
-        else if (!TypeSymbol.Unknown.Matches(hint))
+        else if (hint.IsKnown)
         {
-            if (!Scope.TryDeclare(var))
+            if (expr is not null && (!expr.Type.IsKnown))
+                Diagnostics.Report.BadInitializer(ds.Expression!.Span);
+
+            else if (!Scope.TryDeclare(var))
                 Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
         }
 
@@ -193,14 +196,14 @@ internal sealed class Analyzer
                  ? TypeSymbol.GetTypeByString(tc.Type.Value)
                  : GenericTypeSymbol.GetTypeByString(tc.Type.Value, GetTypeSymbols(((GenericTypeClause) tc).Parameters));
 
-        if (type is null)
+        if (type is null || !type.IsKnown)
         {
             Diagnostics.Report.InvalidTypeClause(tc.Span);
             return TypeSymbol.Unknown;
         }
 
         for (int i = 0; i < tc.ListDimension; i++)
-            type = GenericTypeSymbol.TypedList(type);
+            type = TypeSymbol.TypedList(type);
         
         return type;
     }

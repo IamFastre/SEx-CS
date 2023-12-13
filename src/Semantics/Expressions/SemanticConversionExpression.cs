@@ -7,10 +7,18 @@ internal enum ConversionKind
 {
     AnyToString,
     Direct,
-    IntToChar,
-    CharToInt,
+
     IntToFloat,
+    IntToChar,
+
     FloatToInt,
+    FloatToChar,
+
+    CharToInt,
+    CharToFloat,
+
+    StringToCharList,
+    StringToStringList,
 }
 
 internal class SemanticConversionExpression : SemanticExpression
@@ -42,24 +50,20 @@ internal class SemanticConversionExpression : SemanticExpression
         if (to.Matches(from))
             return ConversionKind.Direct;
 
-        if (TypeSymbol.String.Matches(to))
-            return ConversionKind.AnyToString;
-
-        switch (from.ID, to.ID)
+        return (from.ID, to.ID) switch
         {
-            case (TypeID.Integer, TypeID.Char):
-                return ConversionKind.IntToChar;
+            ( _ , TypeID.String) when from.IsKnown => ConversionKind.AnyToString,
 
-            case (TypeID.Char, TypeID.Integer):
-                return ConversionKind.CharToInt;
+            (TypeID.Integer, TypeID.Char)          => ConversionKind.IntToChar,
+            (TypeID.Integer, TypeID.Float)         => ConversionKind.IntToFloat,
 
-            case (TypeID.Integer, TypeID.Float):
-                return ConversionKind.IntToFloat;
+            (TypeID.Float, TypeID.Integer)         => ConversionKind.FloatToInt,
+            (TypeID.Float, TypeID.Char)            => ConversionKind.FloatToChar,
 
-            case ( TypeID.Float, TypeID.Integer):
-                return ConversionKind.FloatToInt;
-        }
+            (TypeID.Char, TypeID.Integer)          => ConversionKind.CharToInt,
+            (TypeID.Char, TypeID.Float)            => ConversionKind.CharToFloat,
 
-        return null;
+            _  => null,
+        };
     }
 }

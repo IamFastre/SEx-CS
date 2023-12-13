@@ -9,6 +9,7 @@ public class TypeSymbol : Symbol
 
     public bool IsKnown    => ID is not TypeID.Unknown;
     public bool IsIterable => ElementType is not null;
+    public bool IsGeneric  => this is GenericTypeSymbol;
 
     public override SymbolKind Kind => SymbolKind.Type;
 
@@ -17,10 +18,15 @@ public class TypeSymbol : Symbol
     {
         ID          = typeKind;
         ElementType = elementType;
+    
+        if (!IsGeneric)
+            Types.Add(this);
     }
 
     public override int  GetHashCode()       => ToString().GetHashCode();
     public override bool Equals(object? obj) => obj?.ToString() == ToString();
+
+    public static readonly List<TypeSymbol> Types = new();
 
     public static bool operator ==(TypeSymbol left, TypeSymbol right) =>  left.Equals(right);
     public static bool operator !=(TypeSymbol left, TypeSymbol right) => !left.Equals(right);
@@ -46,33 +52,23 @@ public class TypeSymbol : Symbol
     }
 
 
-    public static TypeSymbol? GetTypeByID(TypeID type) => type switch
+    public static TypeSymbol GetTypeByID(TypeID id)
     {
-        TypeID.Any     => Any,
-        TypeID.Boolean => Boolean,
-        TypeID.Number  => Number,
-        TypeID.Integer => Integer,
-        TypeID.Float   => Float,
-        TypeID.Char    => Char,
-        TypeID.String  => String,
-        TypeID.Range   => Range,
+        foreach (var type in Types)
+            if (type.ID == id)
+                return type;
 
-        _              => null,
-    };
+        return Unknown;
+    }
 
-    public static TypeSymbol? GetTypeByString(string? type) => type switch
+    public static TypeSymbol GetTypeByString(string? str)
     {
-        CONSTS.ANY     => Any,
-        CONSTS.BOOLEAN => Boolean,
-        CONSTS.NUMBER  => Number,
-        CONSTS.INTEGER => Integer,
-        CONSTS.FLOAT   => Float,
-        CONSTS.CHAR    => Char,
-        CONSTS.STRING  => String,
-        CONSTS.RANGE   => Range,
+        foreach (var type in Types)
+            if (type.Name == str)
+                return type;
 
-        _              => null,
-    };
+        return Unknown;
+    }
 
 
     // Special types
@@ -93,6 +89,15 @@ public class TypeSymbol : Symbol
     public static readonly TypeSymbol Range   = new(CONSTS.RANGE,   TypeID.Range,  Number);
 
     public static readonly GenericTypeSymbol List = new(CONSTS.LIST, $"{Any}[]", TypeID.List, Any, Any);
+
+    public static GenericTypeSymbol TypedList(TypeID id)
+    {
+        var type = GetTypeByID(id);
+        return new(CONSTS.LIST, $"{type}[]", TypeID.List, type, type);
+    }
+
+    public static GenericTypeSymbol TypedList(TypeSymbol type)
+        => new(CONSTS.LIST, $"{type}[]", TypeID.List, type, type);
 }
 
 public static class TypeExtension

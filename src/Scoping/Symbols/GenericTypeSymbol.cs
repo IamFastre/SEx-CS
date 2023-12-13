@@ -56,12 +56,9 @@ public sealed class GenericTypeSymbol : TypeSymbol
         return str + ">";
     }
 
-    public static GenericTypeSymbol? GetTypeByString(string? type, TypeSymbol[] symbols) => type switch
+    public static TypeSymbol GetTypeByString(string? type, TypeSymbol[] symbols) => type switch
     {
-        CONSTS.LIST => symbols.Length == 1 ? TypedList(symbols[0]) : null,
-        _ => null
+        CONSTS.LIST => symbols.Length == 1 ? TypedList(symbols[0]) : Unknown,
+        _ => Unknown
     };
-
-    public static GenericTypeSymbol TypedList(TypeSymbol type)
-        => new(CONSTS.LIST, $"{type}[]", TypeID.List, type, type);
 }

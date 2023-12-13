@@ -12,7 +12,7 @@ internal sealed class SemanticList : SemanticExpression
     public override SemanticKind Kind  => SemanticKind.List;
 
     public SemanticList(SemanticExpression[] elements, TypeSymbol elementType, Span span)
-        : base(GenericTypeSymbol.TypedList(elementType))
+        : base(TypeSymbol.TypedList(elementType))
     {
         Elements    = elements;
         ElementType = elementType;

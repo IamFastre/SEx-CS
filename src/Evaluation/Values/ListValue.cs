@@ -25,7 +25,7 @@ public sealed class ListValue
     public ListValue(List<LiteralValue> list, TypeSymbol? type = null)
     {
         _values = list;
-        Type    = GenericTypeSymbol.TypedList(type ?? TypeSymbol.Any);
+        Type    = TypeSymbol.TypedList(type ?? TypeSymbol.Any);
     }
 
     public override string ToString()

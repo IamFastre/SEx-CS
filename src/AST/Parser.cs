@@ -258,16 +258,12 @@ internal class Parser
 
     private Expression? GetConversion()
     {
-        while (IsNextKind(TokenKind.RightArrow))
-        {
-            var expr = GetIntermediate();
-            if (expr is null)
-                break;
+        var expr = GetIntermediate();
 
-            return new ConversionExpression(expr, GetTypeClause());
-        }
+        while (IsNextKind(TokenKind.RightArrow) && expr is not null)
+            expr = new ConversionExpression(expr, GetTypeClause());
 
-        return GetIntermediate();
+        return expr;
     }
 
     private Expression? GetSecondary(int parentPrecedence = 0)

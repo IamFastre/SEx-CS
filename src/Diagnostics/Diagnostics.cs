@@ -46,6 +46,9 @@ public class Report
     internal void UselessTypeAdded(string type, Span span)
         => Except(ExceptionType.SyntaxError, $"No need for added type '{type}'", span);
 
+    internal void BadInitializer(Span span)
+        => Except(ExceptionType.SyntaxError, $"Bad initializer", span);
+
     internal void ExpectedType(string type1, string type2, Span span)
         => Except(ExceptionType.TypeError, $"Expected {("aeiou".Contains(type1[0]) ? "an" : "a")} '{type1}' got {("aeiou".Contains(type2[0]) ? "an" : "a")} '{type2}'", span);
 
