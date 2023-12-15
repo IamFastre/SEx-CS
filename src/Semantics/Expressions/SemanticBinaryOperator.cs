@@ -140,7 +140,6 @@ internal class SemanticBinaryOperator
         new(TokenKind.Plus, BinaryOperationKind.CharAddition, TypeSymbol.Integer, TypeSymbol.Char, TypeSymbol.Char),
 
         new(TokenKind.Minus, BinaryOperationKind.CharSubtraction, TypeSymbol.Char, TypeSymbol.Integer, TypeSymbol.Char),
-        new(TokenKind.Minus, BinaryOperationKind.CharSubtraction, TypeSymbol.Integer, TypeSymbol.Char, TypeSymbol.Char),
 
         new(TokenKind.Plus, BinaryOperationKind.StringConcatenation, TypeSymbol.Char, TypeSymbol.String),
 

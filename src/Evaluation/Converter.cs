@@ -26,12 +26,10 @@ internal static class Converter
                 return new FloatValue((double) value.Value);
 
             case ConversionKind.FloatToInt:
-                var _flt1 = (FloatValue) value;
-                return new IntegerValue(Math.Floor((double) _flt1.Value));
+                return new IntegerValue(Math.Floor((double) value.Value));
 
             case ConversionKind.FloatToChar:
-                var _flt2 = (FloatValue) value;
-                return new CharValue((char) Math.Floor((double) _flt2.Value));
+                return new CharValue((char) Math.Floor((double) value.Value));
 
             case ConversionKind.CharToInt:
                 return new IntegerValue((char) value.Value);

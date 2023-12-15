@@ -54,6 +54,9 @@ internal class SemanticConversionExpression : SemanticExpression
         {
             ( _ , TypeID.String) when from.IsKnown => ConversionKind.AnyToString,
 
+            (TypeID.Number, TypeID.Float)          => ConversionKind.IntToFloat,
+            (TypeID.Number, TypeID.Integer)        => ConversionKind.FloatToInt,
+
             (TypeID.Integer, TypeID.Char)          => ConversionKind.IntToChar,
             (TypeID.Integer, TypeID.Float)         => ConversionKind.IntToFloat,
 
@@ -63,6 +66,11 @@ internal class SemanticConversionExpression : SemanticExpression
             (TypeID.Char, TypeID.Integer)          => ConversionKind.CharToInt,
             (TypeID.Char, TypeID.Float)            => ConversionKind.CharToFloat,
 
+            (TypeID.String, TypeID.List)           => to.ElementType!.ID is TypeID.Char
+                                                    ? ConversionKind.StringToCharList
+                                                    : to.ElementType!.ID is TypeID.String
+                                                    ? ConversionKind.StringToStringList
+                                                    : null,
             _  => null,
         };
     }

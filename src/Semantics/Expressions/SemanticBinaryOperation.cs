@@ -90,12 +90,12 @@ internal sealed class SemanticBinaryOperation : SemanticExpression
 
 
         if ((left, right).Match(TypeSymbol.Char, TypeSymbol.Integer, true))
-        {
             if (op is TokenKind.Plus)
                 return BinaryOperationKind.CharAddition;
+
+        if ((left, right).Match(TypeSymbol.Char, TypeSymbol.Integer))
             if (op is TokenKind.Minus)
                 return BinaryOperationKind.CharSubtraction;
-        }
 
         if ((left, right).Match(TypeSymbol.Char))
             if (op is TokenKind.Plus)
