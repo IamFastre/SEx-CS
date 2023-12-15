@@ -13,8 +13,8 @@ public enum TypeID
     Integer  = 1 << 4,
     Float    = 1 << 5,
     Char     = 1 << 6,
-    String   = 1 << 7,
-    Range    = 1 << 8,
+    Range    = 1 << 7,
+    String   = 1 << 8,
     List     = 1 << 9,
 
     Any      = int.MaxValue,

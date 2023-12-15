@@ -17,6 +17,11 @@ internal enum BinaryOperationKind
     BitwiseOR,
     BitwiseXOR,
 
+    Greater,
+    Less,
+    GreaterEqual,
+    LessEqual,
+
     Addition,
     Subtraction,
     Multiplication,
@@ -24,18 +29,14 @@ internal enum BinaryOperationKind
     Power,
     Modulo,
 
-    RangeInclusion,
-
     CharAddition,
     CharSubtraction,
+
+    RangeInclusion,
 
     StringConcatenation,
     StringMultiplication,
     StringInclusion,
-    Greater,
-    Less,
-    GreaterEqual,
-    LessEqual,
 
     ListConcatenation,
     ListInclusion,

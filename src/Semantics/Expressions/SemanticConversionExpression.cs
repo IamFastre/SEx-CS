@@ -8,6 +8,10 @@ internal enum ConversionKind
     AnyToString,
     Direct,
 
+    NumberToInt,
+    NumberToFloat,
+    NumberToChar,
+
     IntToFloat,
     IntToChar,
 
@@ -16,6 +20,10 @@ internal enum ConversionKind
 
     CharToInt,
     CharToFloat,
+
+    RangeToNumberList,
+    RangeToIntList,
+    RangeToFloatList,
 
     StringToCharList,
     StringToStringList,
@@ -54,8 +62,9 @@ internal class SemanticConversionExpression : SemanticExpression
         {
             ( _ , TypeID.String) when from.IsKnown => ConversionKind.AnyToString,
 
-            (TypeID.Number, TypeID.Float)          => ConversionKind.IntToFloat,
-            (TypeID.Number, TypeID.Integer)        => ConversionKind.FloatToInt,
+            (TypeID.Number, TypeID.Integer)        => ConversionKind.NumberToInt,
+            (TypeID.Number, TypeID.Float)          => ConversionKind.NumberToFloat,
+            (TypeID.Number, TypeID.Char)           => ConversionKind.NumberToChar,
 
             (TypeID.Integer, TypeID.Char)          => ConversionKind.IntToChar,
             (TypeID.Integer, TypeID.Float)         => ConversionKind.IntToFloat,
@@ -65,6 +74,14 @@ internal class SemanticConversionExpression : SemanticExpression
 
             (TypeID.Char, TypeID.Integer)          => ConversionKind.CharToInt,
             (TypeID.Char, TypeID.Float)            => ConversionKind.CharToFloat,
+
+            (TypeID.Range, TypeID.List)            => to.ElementType!.ID is TypeID.Number
+                                                    ? ConversionKind.RangeToNumberList
+                                                    : to.ElementType!.ID is TypeID.Integer
+                                                    ? ConversionKind.RangeToIntList
+                                                    : to.ElementType!.ID is TypeID.Float
+                                                    ? ConversionKind.RangeToFloatList
+                                                    : null,
 
             (TypeID.String, TypeID.List)           => to.ElementType!.ID is TypeID.Char
                                                     ? ConversionKind.StringToCharList

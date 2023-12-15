@@ -19,23 +19,41 @@ internal static class Converter
             case ConversionKind.AnyToString:
                 return new StringValue(value.GetString());
 
-            case ConversionKind.IntToChar:
-                return new CharValue((char)(double) value.Value);
+            //=============Numbers=============//
 
-            case ConversionKind.IntToFloat:
-                return new FloatValue((double) value.Value);
-
+            case ConversionKind.NumberToInt:
             case ConversionKind.FloatToInt:
                 return new IntegerValue(Math.Floor((double) value.Value));
 
+            case ConversionKind.NumberToFloat:
+            case ConversionKind.IntToFloat:
+                return new FloatValue((double) value.Value);
+
+            case ConversionKind.NumberToChar:
+            case ConversionKind.IntToChar:
             case ConversionKind.FloatToChar:
                 return new CharValue((char) Math.Floor((double) value.Value));
+
+            //=============Chars=============//
 
             case ConversionKind.CharToInt:
                 return new IntegerValue((char) value.Value);
 
             case ConversionKind.CharToFloat:
                 return new FloatValue((char) value.Value);
+
+            //=============Lists=============//
+
+            case ConversionKind.RangeToNumberList:
+                return new ListValue(((RangeValue) value).GetEnumerator(), to);
+
+            case ConversionKind.RangeToIntList:
+                return new ListValue(((RangeValue) value).GetEnumerator()
+                                      .Select(i => new IntegerValue(Math.Floor((double) i.Value))), TypeSymbol.Integer);
+
+            case ConversionKind.RangeToFloatList:
+                return new ListValue(((RangeValue) value).GetEnumerator()
+                                      .Select(i => new FloatValue((double) i.Value)), TypeSymbol.Float);
 
             case ConversionKind.StringToCharList:
                 List<CharValue> chars = new();

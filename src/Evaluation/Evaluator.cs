@@ -530,7 +530,7 @@ internal class Evaluator
             //=====================================================================//
 
             case BinaryOperationKind.StringConcatenation:
-                _string = left.Value.ToString() + right.Value.ToString();
+                _string = left.GetString() + right.GetString();
                 return new StringValue(_string);
 
             case BinaryOperationKind.StringMultiplication:

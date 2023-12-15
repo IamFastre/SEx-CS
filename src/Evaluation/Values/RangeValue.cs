@@ -20,9 +20,9 @@ public sealed class RangeValue
     {
         get
         {
-            var len = Math.Floor(((double) End.Value - (double) Start.Value) / (double) Step.Value) + 1D;
+            var len = Math.Ceiling(((double) End.Value - (double) Start.Value) / (double) Step.Value) + 1D;
             len = double.IsNaN(len) ? 0 : len;
-            return len >= 0 ? new(len) : null;
+            return len > 0 ? new(len) : null;
         }
     }
 
@@ -73,7 +73,7 @@ public sealed class RangeValue
 
     public IEnumerable<NumberValue> GetEnumerator()
     {
-        for (int i = 0; i < (double)Length!.Value; i++)
+        for (int i = 0; i < (double) Length!.Value; i++)
             yield return GetIndexed(new(i))!;
     }
 
