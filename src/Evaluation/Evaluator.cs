@@ -360,8 +360,8 @@ internal class Evaluator
         Scope.Assign(co.Name.Symbol, value);
 
         return kind is CountingKind.IncrementAfter or CountingKind.DecrementAfter
-             ? value
-             : name;
+             ? name
+             : value;
     }
 
     private LiteralValue EvaluateConversionExpression(SemanticConversionExpression ce)
