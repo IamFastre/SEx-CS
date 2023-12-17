@@ -3,6 +3,7 @@ using SEx.AST;
 using SEx.Diagnose;
 using SEx.Generic.Constants;
 using SEx.Generic.Text;
+using System.Collections.Immutable;
 
 namespace SEx.Parse;
 
@@ -134,12 +135,13 @@ internal class Parser
         return new(openParen, expression, closeParen);
     }
 
-    private Expression[] GetSeparated(TokenKind endToken)
+    private SeparatedClause GetSeparated(TokenKind endToken)
     {
         if (Current.Kind == endToken)
-            return Array.Empty<Expression>();
+            return SeparatedClause.Empty;
 
-        List<Expression> expressions = new();
+        var expressions = ImmutableArray.CreateBuilder<Expression>();
+        var separators  = ImmutableArray.CreateBuilder<Token>();
 
         do
         {
@@ -149,22 +151,23 @@ internal class Parser
             {
                 expressions.Add(expr);
 
-                if (IsNextKind(TokenKind.Comma))
+                if (Current.Kind == TokenKind.Comma)
+                {
+                    separators.Add(Eat());
                     continue;
+                }
             }
             break;
         }
         while (Current.Kind != endToken);
 
-        return expressions.ToArray();
+        return new(expressions.ToArray(), separators.ToArray());
     }
 
     private ListLiteral GetList()
     {
         var openBracket  = Eat();
-        var exprs        = Current.Kind != TokenKind.CloseSquareBracket
-                         ? GetSeparated(TokenKind.CloseSquareBracket)
-                         : Array.Empty<Expression>();
+        var exprs        = GetSeparated(TokenKind.CloseSquareBracket);
         var closeBracket = Expect(TokenKind.CloseSquareBracket, $"'[' was never closed");
 
         return new(openBracket, exprs, closeBracket);
@@ -193,6 +196,15 @@ internal class Parser
         }
 
         return start;
+    }
+
+    private Expression? GetCall(Expression func)
+    {
+        var openParen  = Eat();
+        var args       = GetSeparated(TokenKind.CloseParenthesis);
+        var closeParen = Expect(TokenKind.CloseParenthesis, $"'(' was never closed");
+
+        return new CallExpression(func, openParen, args, closeParen);
     }
 
     private Expression? GetIndexing(Expression iterable)
@@ -242,8 +254,13 @@ internal class Parser
     {
         var factor = GetPrimary();
 
+        // Indexing
         while (Current.Kind == TokenKind.OpenSquareBracket)
             factor = GetIndexing(factor!);
+
+        // Calling
+        if (Current.Kind == TokenKind.OpenParenthesis)
+            factor = GetCall(factor!);
 
         switch (Current.Kind)
         {

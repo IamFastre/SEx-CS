@@ -8,8 +8,10 @@ public class TypeSymbol : Symbol
     public TypeSymbol? ElementType { get; }
 
     public bool IsKnown    => ID is not TypeID.Unknown;
+    public bool IsVoid     => ID is TypeID.Void;
     public bool IsIterable => ElementType is not null;
     public bool IsGeneric  => this is GenericTypeSymbol;
+    public bool IsCallable => ID is TypeID.Function;
 
     public override SymbolKind Kind => SymbolKind.Type;
 
@@ -98,6 +100,24 @@ public class TypeSymbol : Symbol
 
     public static GenericTypeSymbol TypedList(TypeSymbol type)
         => new(CONSTS.LIST, $"{type}[]", TypeID.List, type, type);
+
+
+    public static GenericTypeSymbol Function(TypeSymbol type, params TypeSymbol[] parameters)
+    {
+        var allParams = new List<TypeSymbol> { type };
+        allParams.AddRange(parameters);
+
+        var paramsStr = string.Empty;
+        foreach (var param in parameters)
+        {
+            paramsStr += param.ToString();
+
+            if (param != parameters.Last())
+                paramsStr += ", ";
+        }
+
+        return new(CONSTS.FUNCTION, $"({paramsStr}) -> {type}", TypeID.Function, null, allParams.ToArray());
+    }
 }
 
 public static class TypeExtension

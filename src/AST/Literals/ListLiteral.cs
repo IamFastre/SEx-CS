@@ -7,14 +7,14 @@ namespace SEx.Parse;
 
 internal sealed class ListLiteral : Expression
 {
-    public Token        OpenBracket  { get; }
-    public Expression[] Elements     { get; }
-    public Token        CloseBracket { get; }
+    public Token           OpenBracket  { get; }
+    public SeparatedClause Elements     { get; }
+    public Token           CloseBracket { get; }
 
-    public override Span     Span    { get; }
+    public override Span     Span       { get; }
     public override NodeKind Kind  => NodeKind.List;
 
-    public ListLiteral(Token open, Expression[] elements, Token close)
+    public ListLiteral(Token open, SeparatedClause elements, Token close)
     {
         OpenBracket  = open;
         Elements     = elements;
@@ -26,8 +26,7 @@ internal sealed class ListLiteral : Expression
     public override IEnumerable<Node> GetChildren()
     {
         yield return OpenBracket.Node;
-        foreach (var expr in Elements)
-            yield return expr;
+        yield return Elements;
         yield return CloseBracket.Node;
     }
 }

@@ -318,6 +318,6 @@ internal class REPL
             C.ToMono();
         else
             C.ToPoly();
-        Console.WriteLine($"Show {C.RED2}c{C.YELLOW}o{C.YELLOW2}l{C.GREEN}o{C.BLUE}r{C.VIOLET}s{C.END} set to: {!IsMonochrome}");
+        Console.WriteLine($"Show {C.RED2}c{C.YELLOW}o{C.YELLOW2}l{C.GREEN}o{C.BLUE}r{C.MAGENTA}s{C.END} set to: {!IsMonochrome}");
     }
 }

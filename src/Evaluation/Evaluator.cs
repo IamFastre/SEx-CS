@@ -206,8 +206,14 @@ internal class Evaluator
                 case SemanticKind.Variable:
                     return EvaluateVariable((SemanticVariable) expr);
 
+                case SemanticKind.Function:
+                    return EvaluateFunction((SemanticFunction) expr);
+
                 case SemanticKind.List:
-                    return EvaluateArray((SemanticList) expr);
+                    return EvaluateList((SemanticList) expr);
+
+                case SemanticKind.CallExpression:
+                    return EvaluateCallExpression((SemanticCallExpression) expr);
 
                 case SemanticKind.IndexingExpression:
                     return EvaluateIndexingExpression((SemanticIndexingExpression) expr);
@@ -275,16 +281,41 @@ internal class Evaluator
         return value;
     }
 
-    private LiteralValue EvaluateArray(SemanticList ll)
+    private LiteralValue EvaluateFunction(SemanticFunction expr)
+    {
+        return new FunctionValue(expr.Symbol);
+    }
+
+    private LiteralValue EvaluateList(SemanticList ll)
     {
         List<LiteralValue> values = new();
 
         foreach (var statement in ll.Elements)
-            values.Add(EvaluateExpression(statement));
+        {
+            var value = EvaluateExpression(statement);
+            if (value.IsKnown)
+                values.Add(value);
+            else
+                return UnknownValue.Template;
+        }
 
         var type = values.Count > 0 ? values[0].Type : ll.ElementType; 
 
         return new ListValue(values, type);
+    }
+
+    private LiteralValue EvaluateCallExpression(SemanticCallExpression fc)
+    {
+        var func = (FunctionValue) EvaluateExpression(fc.Function);
+
+        if (func.Symbol == FunctionSymbol.BuiltIns["log"])
+        {
+            var text = EvaluateExpression(fc.Arguments[0]);
+            Console.WriteLine((string) text.Value);
+            return VoidValue.Template;
+        }
+
+        throw new Exception("Haven't done here yet");
     }
 
     private LiteralValue EvaluateIndexingExpression(SemanticIndexingExpression ie)

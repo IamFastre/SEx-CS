@@ -1,6 +1,6 @@
 namespace SEx.Scoping.Symbols;
 
-internal class VariableSymbol : Symbol
+public class VariableSymbol : Symbol
 {
     public TypeSymbol Type       { get; protected set; }
     public bool       IsConstant { get; protected set; }

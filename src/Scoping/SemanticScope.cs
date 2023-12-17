@@ -11,6 +11,15 @@ internal class SemanticScope
     {
         Symbols = new();
         Parent  = parent;
+
+        if (parent is null)
+            DeclareBuiltIns();
+    }
+
+    private void DeclareBuiltIns()
+    {
+        foreach (var func in FunctionSymbol.BuiltIns.Values)
+            TryDeclare(func);
     }
 
     public VariableSymbol[] Variables => Symbols.Values.OfType<VariableSymbol>().ToArray();

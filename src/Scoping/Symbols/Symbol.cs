@@ -3,13 +3,13 @@ namespace SEx.Scoping.Symbols;
 public enum SymbolKind
 {
     Type,
-    GenericType,
+    Function,
     Variable,
+    GenericType,
 }
 
 public abstract class Symbol
 {
-
     public          string     Name    { get; }
     public abstract SymbolKind Kind    { get; }
 

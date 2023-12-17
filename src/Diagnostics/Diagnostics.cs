@@ -46,14 +46,14 @@ public class Report
     internal void UselessTypeAdded(string type, Span span)
         => Except(ExceptionType.SyntaxError, $"No need for added type '{type}'", span);
 
-    internal void BadInitializer(Span span)
-        => Except(ExceptionType.SyntaxError, $"Bad initializer", span);
-
     internal void ExpectedType(string type1, string type2, Span span)
         => Except(ExceptionType.TypeError, $"Expected {("aeiou".Contains(type1[0]) ? "an" : "a")} '{type1}' got {("aeiou".Contains(type2[0]) ? "an" : "a")} '{type2}'", span);
 
     internal void CannotConvert(string type1, string type2, Span span)
         => Except(ExceptionType.TypeError, $"Cannot convert from '{type1}' to '{type2}'", span);
+
+    internal void CannotAssignType(string type, Span span)
+        => Except(ExceptionType.TypeError, $"Cannot assign type '{type}'", span);
 
     internal void TypesDoNotMatch(string type1, string type2, Span span)
         => Except(ExceptionType.TypeError, $"Types '{type1}' and '{type2}' do not match", span);
@@ -63,6 +63,12 @@ public class Report
 
     internal void CannotIterate(string type, Span span)
         => Except(ExceptionType.TypeError, $"Type '{type}' is not iterable", span);
+
+    internal void NotCallable(string name, Span span)
+        => Except(ExceptionType.TypeError, $"Type '{name}' is not callable", span);
+
+    internal void InvalidArgumentCount(string function, int expected, int gotten, Span span)
+        => Except(ExceptionType.TypeError, $"Function '{function}' takes {expected} arguments got {gotten}", span);
 
     internal void CannotIndex(string type, Span span)
         => Except(ExceptionType.IndexError, $"Cannot perform indexing on '{type}'", span);

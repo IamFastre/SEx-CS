@@ -34,10 +34,14 @@ public enum NodeKind
     // Expressions
     AssignmentExpression,
     ParenthesizedExpression,
+    CallExpression,
     IndexingExpression,
     UnaryOperation,
     CountingOperation,
     ConversionExpression,
     BinaryOperation,
     TernaryOperation,
+
+    // Others
+    SeparatedClause,
 }

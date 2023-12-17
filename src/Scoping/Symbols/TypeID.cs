@@ -1,5 +1,3 @@
-using SEx.Generic.Constants;
-
 namespace SEx.Scoping.Symbols;
 
 [Flags]
@@ -16,8 +14,9 @@ public enum TypeID
     Range    = 1 << 7,
     String   = 1 << 8,
     List     = 1 << 9,
+    Function = 1 << 10,
 
-    Any      = int.MaxValue,
+    Any      = int.MaxValue - UAVTs,
     Whole    = Integer | Char,
     Number   = Integer | Float,
     Numable  = Number  | Char,

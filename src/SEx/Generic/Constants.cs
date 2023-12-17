@@ -8,7 +8,7 @@ internal static class CONSTS
     public const string NULL      = "null";
     public const string UNKNOWN   = "?";
     public const string UNDEFINED = UNKNOWN;
-    public const string VOID      = "";
+    public const string VOID      = "void";
 
     public const string TRUE      = "true";
     public const string FALSE     = "false";
@@ -33,6 +33,7 @@ internal static class CONSTS
     public const string STRING    = "string";
     public const string RANGE     = "range";
     public const string LIST      = "list";
+    public const string FUNCTION  = "function";
     public const string ANY       = "any";
     public static string[] TYPES  = { BOOLEAN, INTEGER, FLOAT, NUMBER, CHAR, STRING, RANGE, LIST, ANY };
 

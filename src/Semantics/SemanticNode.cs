@@ -52,13 +52,13 @@ internal abstract class SemanticNode
             SemanticCountingOperation    c => $"<{C.BLUE2}{c.Kind}({C.YELLOW2}{c.OperationKind}{C.BLUE2}):{C.GREEN2}{c.Type}{C.END}>",
             SemanticBinaryOperation      b => $"<{C.BLUE2}{b.Kind}({C.YELLOW2}{b.Operator.Kind}{C.BLUE2}):{C.GREEN2}{b.Type}{C.END}>",
 
-            SemanticDeclarationStatement d => $"<{C.VIOLET2}{d.Kind}({C.YELLOW2}{d.Variable.Name}{C.VIOLET2}:{C.GREEN2}{d.Variable.Type}{C.VIOLET2}){C.END}>",
-            SemanticForStatement         f => $"<{C.VIOLET2}{f.Kind}({C.YELLOW2}{f.Variable.Name}{C.VIOLET2}:{C.GREEN2}{f.Variable.Type}{C.VIOLET2}){C.END}>",
+            SemanticDeclarationStatement d => $"<{C.MAGENTA2}{d.Kind}({C.YELLOW2}{d.Variable.Name}{C.MAGENTA2}:{C.GREEN2}{d.Variable.Type}{C.MAGENTA2}){C.END}>",
+            SemanticForStatement         f => $"<{C.MAGENTA2}{f.Kind}({C.YELLOW2}{f.Variable.Name}{C.MAGENTA2}:{C.GREEN2}{f.Variable.Type}{C.MAGENTA2}){C.END}>",
 
             SemanticFailedExpression     f => $"<{C.GREEN2}{f.Type}{C.END}>",
             SemanticExpression           e => $"<{C.BLUE2}{e.Kind}:{C.GREEN2}{e.Type}{C.END}>",
             SemanticClause               c => $"[{C.RED2}{c.Kind}{C.END}]",
-            _                              => $"{{{C.VIOLET2}{Kind}{C.END}}}",
+            _                              => $"{{{C.MAGENTA2}{Kind}{C.END}}}",
         };
     
         writer.WriteLine(header);

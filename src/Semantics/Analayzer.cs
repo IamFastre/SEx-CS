@@ -4,6 +4,7 @@ using SEx.Scoping;
 using SEx.Scoping.Symbols;
 using SEx.Generic.Text;
 using SEx.Parse;
+using System.Collections.Immutable;
 
 namespace SEx.Semantics;
 
@@ -150,14 +151,11 @@ internal sealed class Analyzer
         else if (expr is not null && !(hint, expr.Type).IsAssignable())
             Diagnostics.Report.TypesDoNotMatch(hint.ToString(), expr.Type.ToString(), ds.Span);
 
-        else if (hint.IsKnown)
-        {
-            if (expr is not null && (!expr.Type.IsKnown))
-                Diagnostics.Report.BadInitializer(ds.Expression!.Span);
+        else if (expr is not null && !TypeSymbol.Any.Matches(expr.Type))
+            Diagnostics.Report.CannotAssignType(expr.Type.ToString(), ds.Expression!.Span);
 
-            else if (!Scope.TryDeclare(var))
-                Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
-        }
+        else if (!Scope.TryDeclare(var))
+            Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
 
         return new(var, expr, ds);
     }
@@ -208,12 +206,15 @@ internal sealed class Analyzer
         return type;
     }
 
-    private VariableSymbol? GetVariableSymbol(NameLiteral n)
+    private Symbol? GetSymbol(NameLiteral n)
     {
         switch (Scope.Resolve(n.Value))
         {
             case VariableSymbol variable:
                 return variable;
+
+            case FunctionSymbol function:
+                return function;
 
             case null:
                 Diagnostics.Report.UndefinedVariable(n.Value, n.Span);
@@ -259,6 +260,9 @@ internal sealed class Analyzer
             case NodeKind.List:
                 return BindList((ListLiteral) expr);
 
+            case NodeKind.CallExpression:
+                return BindFunctionCallExpression((CallExpression) expr);
+
             case NodeKind.ParenthesizedExpression:
                 return BindParenExpression((ParenthesizedExpression) expr);
 
@@ -302,23 +306,27 @@ internal sealed class Analyzer
 
     private SemanticExpression BindName(NameLiteral n)
     {
-        var symbol = GetVariableSymbol(n);
-        if (symbol == null)
-            return new SemanticFailedExpression(n.Span);
+        var symbol = GetSymbol(n);
 
-        return new SemanticVariable(symbol, n.Span);
+        if (symbol is VariableSymbol v)
+            return new SemanticVariable(v, n.Span);
+
+        if (symbol is FunctionSymbol f)
+            return new SemanticFunction(f, n.Span);
+
+        return new SemanticFailedExpression(n.Span);
     }
 
     private SemanticExpression BindList(ListLiteral ll)
     {
-        if (ll.Elements.Length > 0)
+        if (ll.Elements.Expressions.Length > 0)
         {
             List<SemanticExpression> expressions = new();
-            var arRef = BindExpression(ll.Elements.First());
+            var arRef = BindExpression(ll.Elements.Expressions.First());
             TypeSymbol type = arRef.Type;
             expressions.Add(arRef);
 
-            foreach (var elem in ll.Elements[1..])
+            foreach (var elem in ll.Elements.Expressions[1..])
             {
                 var expr = BindExpression(elem);
 
@@ -333,13 +341,61 @@ internal sealed class Analyzer
                     Diagnostics.Report.HeteroList(type.ToString(), expr.Type.ToString(), ll.Span);
             }
 
-            if (ll.Elements.Length != expressions.Count)
+            if (ll.Elements.Expressions.Length != expressions.Count)
                 return new SemanticFailedOperation(expressions.ToArray(), ll.Span);
 
             return new SemanticList(expressions.ToArray(), type, ll.Span);
         }
 
         return new SemanticList(Array.Empty<SemanticExpression>(), TypeSymbol.Any, ll.Span);
+    }
+
+    private SemanticExpression BindFunctionCallExpression(CallExpression fce)
+    {
+        var func = BindExpression(fce.Function);
+
+        if (func.Type.IsCallable)
+        {
+            var fs = (GenericTypeSymbol) func.Type;
+            var funcParams = fs.Parameters[1..];
+            if (funcParams.Length != fce.Arguments.Expressions.Length)
+            {
+                Diagnostics.Report.InvalidArgumentCount(fs.ToString(), funcParams.Length, fce.Arguments.Expressions.Length, fce.Span);
+                return new SemanticFailedExpression(fce.Span);
+            }
+
+            var args = BindSeparatedClause(fce.Arguments);
+            var faulty = false;
+            for (int i = 0; i < args.Length; i++)
+            {
+                var paramType = funcParams[i];
+                var argType   = args[i].Type;
+
+                if (!paramType.Matches(argType))
+                {
+                    Diagnostics.Report.TypesDoNotMatch(paramType.ToString(), argType.ToString(), args[i].Span);
+                    faulty = true;
+                }
+            }
+
+            if (faulty) return new SemanticFailedExpression(fce.Span);
+
+            return new SemanticCallExpression(func, fs, args, fce.Span);
+        }
+        else if (func is null)
+            return new SemanticFailedExpression(fce.Span);
+
+        Diagnostics.Report.NotCallable(func.Type.ToString(), fce.Function.Span);
+        return new SemanticFailedExpression(fce.Span);
+    }
+
+    private SemanticExpression[] BindSeparatedClause(SeparatedClause sc)
+    {
+        var exprs = ImmutableArray.CreateBuilder<SemanticExpression>();
+        foreach (var expr in sc.Expressions)
+            exprs.Add(BindExpression(expr));
+
+        return exprs.ToArray();
     }
 
     private SemanticExpression BindParenExpression(ParenthesizedExpression pe)

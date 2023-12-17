@@ -15,7 +15,7 @@ public sealed class BoolValue : LiteralValue
         => _value ? 1 : 0;
 
     public override string ToString()
-        => C.VIOLET + GetString() + C.END;
+        => C.MAGENTA + GetString() + C.END;
 
     public override bool Equals(object? obj)
     {

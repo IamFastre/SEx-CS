@@ -17,11 +17,13 @@ public enum SemanticKind
     Literal,
     Range,
     Variable,
+    Function,
     List,
 
     // Expressions
     AssignExpression,
     ParenExpression,
+    CallExpression,
     IndexingExpression,
     UnaryOperation,
     CountingOperation,
@@ -31,4 +33,7 @@ public enum SemanticKind
 
     FailedOperation,
     FailedExpression,
+
+    // Others
+    SeparatedClause,
 }
