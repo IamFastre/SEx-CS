@@ -102,6 +102,9 @@ public class TypeSymbol : Symbol
         => new(CONSTS.LIST, $"{type}[]", TypeID.List, type, type);
 
 
+    public static GenericTypeSymbol Function(TypeSymbol[] parameters)
+        => Function(parameters[0], parameters[1..]);
+
     public static GenericTypeSymbol Function(TypeSymbol type, params TypeSymbol[] parameters)
     {
         var allParams = new List<TypeSymbol> { type };

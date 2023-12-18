@@ -58,7 +58,8 @@ public sealed class GenericTypeSymbol : TypeSymbol
 
     public static TypeSymbol GetTypeByString(string? type, TypeSymbol[] symbols) => type switch
     {
-        CONSTS.LIST => symbols.Length == 1 ? TypedList(symbols[0]) : Unknown,
+        CONSTS.LIST     => symbols.Length == 1 ? TypedList(symbols[0]) : Unknown,
+        CONSTS.FUNCTION => Function(symbols),
         _ => Unknown
     };
 }

@@ -91,9 +91,6 @@ public class Report
     internal void AlreadyConstant(string name, Span span)
         => Except(ExceptionType.SymbolError, $"Name '{name}' is already a constant", span);
 
-    internal void SymbolWrongUsage(string name, Span span)
-        => Except(ExceptionType.SymbolError, $"Wrong usage for symbol '{name}'", span);
-
     internal void InvalidTypeClause(Span span)
         => Except(ExceptionType.SymbolError, $"Type is invalid", span);
 }

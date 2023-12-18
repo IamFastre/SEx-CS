@@ -308,7 +308,7 @@ internal class Evaluator
     {
         var func = (FunctionValue) EvaluateExpression(fc.Function);
 
-        if (func.Symbol == FunctionSymbol.BuiltIns["log"])
+        if (func.Symbol == BuiltIn.Functions["log"])
         {
             var text = EvaluateExpression(fc.Arguments[0]);
             Console.WriteLine((string) text.Value);

@@ -5,7 +5,7 @@ namespace SEx.Scoping;
 internal class SemanticScope
 {
     public Dictionary<string, Symbol> Symbols { get; }
-    public SemanticScope? Parent { get; }
+    public SemanticScope?             Parent  { get; }
 
     public SemanticScope(SemanticScope? parent = null)
     {
@@ -18,7 +18,7 @@ internal class SemanticScope
 
     private void DeclareBuiltIns()
     {
-        foreach (var func in FunctionSymbol.BuiltIns.Values)
+        foreach (var func in BuiltIn.Functions.Values)
             TryDeclare(func);
     }
 

@@ -33,9 +33,4 @@ public class FunctionSymbol : Symbol
 
         return $"{str} -> {ReturnType}";
     }
-
-    public static readonly Dictionary<string, FunctionSymbol> BuiltIns = new()
-    {
-        { "log", new("log", TypeSymbol.Void, new ParameterSymbol("value", TypeSymbol.String)) }
-    };
 }

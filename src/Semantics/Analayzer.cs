@@ -208,22 +208,13 @@ internal sealed class Analyzer
 
     private Symbol? GetSymbol(NameLiteral n)
     {
-        switch (Scope.Resolve(n.Value))
-        {
-            case VariableSymbol variable:
-                return variable;
+        var result = Scope.Resolve(n.Value);
 
-            case FunctionSymbol function:
-                return function;
+        if (result is not null)
+            return result;
 
-            case null:
-                Diagnostics.Report.UndefinedVariable(n.Value, n.Span);
-                return null;
-
-            default:
-                Diagnostics.Report.SymbolWrongUsage(n.Value, n.Span);
-                return null;
-        }
+        Diagnostics.Report.UndefinedVariable(n.Value, n.Span);
+        return null;
     }
 
     //=====================================================================//
