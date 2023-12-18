@@ -3,7 +3,7 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class BinaryOperation : Expression
+public sealed class BinaryOperation : Expression
 {
     public Expression LHS         { get; }
     public Token      Operator    { get; }

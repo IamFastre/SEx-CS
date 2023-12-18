@@ -3,7 +3,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticRange : SemanticExpression
+public sealed class SemanticRange : SemanticExpression
 {
     public SemanticExpression  Start { get; }
     public SemanticExpression  End   { get; }

@@ -3,7 +3,7 @@ using SEx.Lex;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticAssignment : SemanticExpression
+public sealed class SemanticAssignment : SemanticExpression
 {
     public SemanticVariable      Assignee   { get; }
     public SemanticExpression    Expression { get; }

@@ -1,18 +1,16 @@
 namespace SEx.Scoping.Symbols;
 
-public class FunctionSymbol : Symbol
+public class FunctionSymbol : NameSymbol
 {
-    public TypeSymbol        Type       { get; }
     public TypeSymbol        ReturnType { get; }
     public ParameterSymbol[] Parameters { get; }
 
     public override SymbolKind Kind => SymbolKind.Function;
 
-    public FunctionSymbol(string name, TypeSymbol type, params ParameterSymbol[] parameters)
-        : base(name)
+    public FunctionSymbol(string name, TypeSymbol returnType, bool isConstant, params ParameterSymbol[] parameters)
+        : base(name, TypeSymbol.Function(returnType, parameters.Select(p => p.Type).ToArray()), isConstant)
     {
-        Type       = TypeSymbol.Function(type, parameters.Select(p => p.Type).ToArray());
-        ReturnType = type;
+        ReturnType = returnType;
         Parameters = parameters;
     }
 
@@ -33,4 +31,7 @@ public class FunctionSymbol : Symbol
 
         return $"{str} -> {ReturnType}";
     }
+
+    public override int  GetHashCode()       => HashCode.Combine(Name, Type, IsConstant, ReturnType, Parameters);
+    public override bool Equals(object? obj) => GetHashCode() == obj?.GetHashCode();
 }

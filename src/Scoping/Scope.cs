@@ -5,21 +5,30 @@ namespace SEx.Scoping;
 
 internal class Scope
 {
-    public Scope?       Parent      { get; }
-    public Dictionary<VariableSymbol, LiteralValue> Variables { get; }
+    public Scope? Parent { get; }
+    public Dictionary<NameSymbol, LiteralValue> Variables { get; }
 
-    public LiteralValue this[VariableSymbol variable] => Variables[variable];
+    public LiteralValue this[NameSymbol variable] => Variables[variable];
 
     public Scope(Scope? parent = null)
     {
         Parent      = parent;
         Variables   = new();
+
+        if (parent is null)
+            DeclareBuiltIns();
     }
 
-    public void AddVariable(VariableSymbol variable, LiteralValue value)
+    private void DeclareBuiltIns()
+    {
+        foreach (var func in BuiltIn.GetFunctions())
+            Declare(func, new BuiltinFunctionValue(func));
+    }
+
+    public void AddVariable(NameSymbol variable, LiteralValue value)
         => Variables.Add(variable, value);
 
-    public void EditVariable(VariableSymbol variable, LiteralValue value)
+    public void EditVariable(NameSymbol variable, LiteralValue value)
     {
         if (Variables.ContainsKey(variable))
             Variables[variable] = value;
@@ -33,7 +42,7 @@ internal class Scope
     //=====================================================================//
     //=====================================================================//
 
-    public TypeSymbol ResolveType(VariableSymbol variable)
+    public TypeSymbol ResolveType(NameSymbol variable)
     {
         if (Variables.ContainsKey(variable))
             return Variables[variable].Type;
@@ -44,7 +53,7 @@ internal class Scope
         return TypeSymbol.Unknown;
     }
 
-    public bool TryResolveType(VariableSymbol variable, out TypeSymbol value)
+    public bool TryResolveType(NameSymbol variable, out TypeSymbol value)
     {
         if (Variables.ContainsKey(variable))
         {
@@ -61,7 +70,7 @@ internal class Scope
 
     //=====================================================================//
 
-    public LiteralValue Resolve(VariableSymbol variable)
+    public LiteralValue Resolve(NameSymbol variable)
     {
         if (Variables.ContainsKey(variable))
             return Variables[variable];
@@ -72,7 +81,7 @@ internal class Scope
         return UnknownValue.Template;
     }
 
-    public bool TryResolve(VariableSymbol variable, out LiteralValue value)
+    public bool TryResolve(NameSymbol variable, out LiteralValue value)
     {
         if (Variables.ContainsKey(variable))
         {
@@ -89,10 +98,10 @@ internal class Scope
 
     //=====================================================================//
 
-    public bool IsDeclared(VariableSymbol variable)
+    public bool IsDeclared(NameSymbol variable)
         => Variables.ContainsKey(variable);
 
-    public void Declare(VariableSymbol variable, LiteralValue value)
+    public void Declare(NameSymbol variable, LiteralValue value)
     {
         if ((variable.Type, value.Type).IsAssignable())
             AddVariable(variable, value);
@@ -105,7 +114,7 @@ internal class Scope
                 sym.MakeConstant();
     }
 
-    public void Assign(VariableSymbol variable, LiteralValue value, bool skipDeclaration = false)
+    public void Assign(NameSymbol variable, LiteralValue value, bool skipDeclaration = false)
     {
         if (skipDeclaration)
             Variables[variable] = value;

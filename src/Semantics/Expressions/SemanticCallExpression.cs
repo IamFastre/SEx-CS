@@ -3,7 +3,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal class SemanticCallExpression : SemanticExpression
+public class SemanticCallExpression : SemanticExpression
 {
     public SemanticExpression   Function  { get; }
     public SemanticExpression[] Arguments { get; }

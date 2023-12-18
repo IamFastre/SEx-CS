@@ -5,7 +5,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal enum CountingKind
+public enum CountingKind
 {
     IncrementAfter,
     IncrementBefore,
@@ -14,7 +14,7 @@ internal enum CountingKind
     DecrementBefore,
 }
 
-internal class SemanticCountingOperation : SemanticExpression
+public class SemanticCountingOperation : SemanticExpression
 {
     public SemanticVariable Name          { get; }
     public CountingKind     OperationKind { get; }

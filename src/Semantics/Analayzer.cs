@@ -105,7 +105,8 @@ internal sealed class Analyzer
         var elemType = iterable.Type.ElementType;
 
         if (elemType is null)
-            Diagnostics.Report.CannotIterate(iterable.Type.ToString(), iterable.Span);
+            if (iterable.Type.IsKnown)
+                Diagnostics.Report.CannotIterate(iterable.Type.ToString(), iterable.Span);
 
         Scope = new(Scope);
 
@@ -149,10 +150,12 @@ internal sealed class Analyzer
         }
 
         else if (expr is not null && !(hint, expr.Type).IsAssignable())
-            Diagnostics.Report.TypesDoNotMatch(hint.ToString(), expr.Type.ToString(), ds.Span);
+            if (expr.Type.IsKnown)
+                Diagnostics.Report.TypesDoNotMatch(hint.ToString(), expr.Type.ToString(), ds.Span);
 
         else if (expr is not null && !TypeSymbol.Any.Matches(expr.Type))
-            Diagnostics.Report.CannotAssignType(expr.Type.ToString(), ds.Expression!.Span);
+            if (expr.Type.IsKnown)
+                Diagnostics.Report.CannotAssignType(expr.Type.ToString(), ds.Expression!.Span);
 
         else if (!Scope.TryDeclare(var))
             Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
@@ -206,7 +209,7 @@ internal sealed class Analyzer
         return type;
     }
 
-    private Symbol? GetSymbol(NameLiteral n)
+    private NameSymbol? GetNameSymbol(NameLiteral n)
     {
         var result = Scope.Resolve(n.Value);
 
@@ -223,7 +226,7 @@ internal sealed class Analyzer
     {
         var val = BindExpression(expr);
         if (!expected.Matches(val.Type))
-            if (expected.IsKnown)
+            if (val.Type.IsKnown)
                 Diagnostics.Report.ExpectedType(expected.ToString(), val.Type.ToString(), expr.Span);
 
         return val;
@@ -297,13 +300,10 @@ internal sealed class Analyzer
 
     private SemanticExpression BindName(NameLiteral n)
     {
-        var symbol = GetSymbol(n);
+        var symbol = GetNameSymbol(n);
 
-        if (symbol is VariableSymbol v)
-            return new SemanticVariable(v, n.Span);
-
-        if (symbol is FunctionSymbol f)
-            return new SemanticFunction(f, n.Span);
+        if (symbol is not null)
+            return new SemanticVariable(symbol, n.Span);
 
         return new SemanticFailedExpression(n.Span);
     }
@@ -329,7 +329,8 @@ internal sealed class Analyzer
                     expressions.Add(expr);
                 }
                 else
-                    Diagnostics.Report.HeteroList(type.ToString(), expr.Type.ToString(), ll.Span);
+                    if (type.IsKnown && expr.Type.IsKnown)
+                        Diagnostics.Report.HeteroList(type.ToString(), expr.Type.ToString(), ll.Span);
             }
 
             if (ll.Elements.Expressions.Length != expressions.Count)
@@ -349,6 +350,7 @@ internal sealed class Analyzer
         {
             var fs = (GenericTypeSymbol) func.Type;
             var funcParams = fs.Parameters[1..];
+
             if (funcParams.Length != fce.Arguments.Expressions.Length)
             {
                 Diagnostics.Report.InvalidArgumentCount(fs.ToString(), funcParams.Length, fce.Arguments.Expressions.Length, fce.Span);
@@ -364,19 +366,22 @@ internal sealed class Analyzer
 
                 if (!paramType.Matches(argType))
                 {
-                    Diagnostics.Report.TypesDoNotMatch(paramType.ToString(), argType.ToString(), args[i].Span);
+                    if (argType.IsKnown)
+                        Diagnostics.Report.TypesDoNotMatch(paramType.ToString(), argType.ToString(), args[i].Span);
                     faulty = true;
                 }
             }
 
-            if (faulty) return new SemanticFailedExpression(fce.Span);
+            if (faulty)
+                return new SemanticFailedExpression(fce.Span);
 
             return new SemanticCallExpression(func, fs.Parameters[0], args, fce.Span);
         }
         else if (func is null)
             return new SemanticFailedExpression(fce.Span);
 
-        Diagnostics.Report.NotCallable(func.Type.ToString(), fce.Function.Span);
+        if (func.Type.IsKnown)
+            Diagnostics.Report.NotCallable(func.Type.ToString(), fce.Function.Span);
         return new SemanticFailedExpression(fce.Span);
     }
 
@@ -459,7 +464,8 @@ internal sealed class Analyzer
     
         if (cvKind is null)
         {
-            Diagnostics.Report.CannotConvert(expr.Type.ToString(), dest.ToString(), ce.Span);
+            if (expr.Type.IsKnown)
+                Diagnostics.Report.CannotConvert(expr.Type.ToString(), dest.ToString(), ce.Span);
             return new SemanticFailedExpression(ce.Span);
         }
     
@@ -515,7 +521,8 @@ internal sealed class Analyzer
                 Scope.Assign(var.Symbol);
             else
             {
-                Diagnostics.Report.TypesDoNotMatch(var.Symbol.Type.ToString(), expr.Type.ToString(), aexpr.Span);
+                if (expr.Type.IsKnown)
+                    Diagnostics.Report.TypesDoNotMatch(var.Symbol.Type.ToString(), expr.Type.ToString(), aexpr.Span);
                 return BindName(aexpr.Assignee);
             }
             

@@ -6,7 +6,7 @@ namespace SEx.Evaluate.Conversions;
 
 internal static class Converter
 {
-    public static LiteralValue Convert(ConversionKind kind, LiteralValue value, TypeSymbol to)
+    public static LiteralValue Convert(ConversionKind kind, LiteralValue value)
     {
         if (!value.IsKnown)
             return UnknownValue.Template;
@@ -23,7 +23,7 @@ internal static class Converter
 
             case ConversionKind.NumberToInt:
             case ConversionKind.FloatToInt:
-                return new IntegerValue(Math.Floor((double) value.Value));
+                return new IntegerValue((double) value.Value);
 
             case ConversionKind.NumberToFloat:
             case ConversionKind.IntToFloat:
@@ -45,7 +45,7 @@ internal static class Converter
             //=============Lists=============//
 
             case ConversionKind.RangeToNumberList:
-                return new ListValue(((RangeValue) value).GetEnumerator(), to);
+                return new ListValue(((RangeValue) value).GetEnumerator(), TypeSymbol.TypedList(TypeID.Number));
 
             case ConversionKind.RangeToIntList:
                 return new ListValue(((RangeValue) value).GetEnumerator()
@@ -60,14 +60,14 @@ internal static class Converter
                 foreach (var c in (string) value.Value)
                     chars.Add(new(c));
 
-                return new ListValue(chars, to);
+                return new ListValue(chars, TypeSymbol.TypedList(TypeID.Char));
 
             case ConversionKind.StringToStringList:
                 List<StringValue> strs = new();
                 foreach (var c in (string) value.Value)
                     strs.Add(new(c.ToString()));
 
-                return new ListValue(strs, to);
+                return new ListValue(strs, TypeSymbol.TypedList(TypeID.String));
         }
 
         return UnknownValue.Template;

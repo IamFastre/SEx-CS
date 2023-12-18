@@ -2,7 +2,7 @@ using SEx.Generic.Text;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticProgramStatement : SemanticStatement
+public sealed class SemanticProgramStatement : SemanticStatement
 {
     public SemanticStatement[] Body   { get; }
 

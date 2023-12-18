@@ -1,10 +1,9 @@
-using SEx.Evaluate.Values;
 using SEx.Generic.Text;
 using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal class SemanticTernaryOperation : SemanticExpression
+public class SemanticTernaryOperation : SemanticExpression
 {
     public SemanticExpression Condition       { get; }
     public SemanticExpression TrueExpression  { get; }

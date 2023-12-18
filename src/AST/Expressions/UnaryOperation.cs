@@ -1,10 +1,9 @@
 using SEx.Generic.Text;
-using SEx.Generic.Constants;
 using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class UnaryOperation : Expression
+public sealed class UnaryOperation : Expression
 {
     public Token      Operator { get; }
     public Expression Operand  { get; }

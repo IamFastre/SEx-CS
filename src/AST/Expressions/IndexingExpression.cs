@@ -1,10 +1,9 @@
 using SEx.Generic.Text;
-using SEx.Generic.Constants;
 using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class IndexingExpression : Expression
+public sealed class IndexingExpression : Expression
 {
     public Expression Iterable     { get; }
     public Token      OpenBracket  { get; }

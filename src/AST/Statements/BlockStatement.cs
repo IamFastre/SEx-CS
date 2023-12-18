@@ -1,10 +1,9 @@
-using SEx.Generic.Constants;
 using SEx.Generic.Text;
 using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class BlockStatement : Statement
+public sealed class BlockStatement : Statement
 {
     public Token OpenBrace        { get; }
     public Statement[] Body       { get; }

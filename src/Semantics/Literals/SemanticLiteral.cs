@@ -1,10 +1,9 @@
 using SEx.AST;
 using SEx.Generic.Text;
-using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticLiteral : SemanticExpression
+public sealed class SemanticLiteral : SemanticExpression
 {
     public string Value                { get; }
 
@@ -14,8 +13,8 @@ internal sealed class SemanticLiteral : SemanticExpression
     public SemanticLiteral(Literal literal)
         : base(ToValueKind(literal.Kind))
     {
-        Span  = literal.Span;
         Value = literal.Value;
+        Span  = literal.Span;
     }
 
     public override IEnumerable<SemanticNode> GetChildren() => Enumerable.Empty<SemanticNode>();

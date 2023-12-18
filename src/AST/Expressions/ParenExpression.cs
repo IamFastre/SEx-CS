@@ -1,10 +1,9 @@
 using SEx.Generic.Text;
-using SEx.Generic.Constants;
 using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class ParenthesizedExpression : Expression
+public sealed class ParenthesizedExpression : Expression
 {
     public Token       OpenParen  { get; }
     public Expression? Expression { get; }

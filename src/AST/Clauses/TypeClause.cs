@@ -3,7 +3,7 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-internal class TypeClause : Clause
+public class TypeClause : Clause
 {
     public Token Type          { get; }
     public int   ListDimension { get; }

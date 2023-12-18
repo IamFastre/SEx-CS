@@ -5,7 +5,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal abstract class SemanticNode
+public abstract class SemanticNode
 {
     public abstract SemanticKind Kind { get; }
     public abstract Span Span { get; }
@@ -79,9 +79,9 @@ internal abstract class SemanticNode
     }
 }
 
-internal abstract class SemanticStatement  : SemanticNode {}
-internal abstract class SemanticClause     : SemanticNode {}
-internal abstract class SemanticExpression : SemanticNode
+public abstract class SemanticStatement  : SemanticNode {}
+public abstract class SemanticClause     : SemanticNode {}
+public abstract class SemanticExpression : SemanticNode
 {
     public TypeSymbol Type { get; private set; }
 

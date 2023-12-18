@@ -1,10 +1,9 @@
-using SEx.Generic.Constants;
 using SEx.Generic.Text;
 using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class WhileStatement : Statement
+public sealed class WhileStatement : Statement
 {
     public Token       While      { get; }
     public Expression  Condition  { get; }

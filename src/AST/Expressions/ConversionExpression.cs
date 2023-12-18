@@ -3,7 +3,7 @@ using SEx.Generic.Text;
 
 namespace SEx.Parse;
 
-internal class ConversionExpression : Expression
+public class ConversionExpression : Expression
 {
     public Expression Expression  { get; }
     public TypeClause Destination        { get; }

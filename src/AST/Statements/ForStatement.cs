@@ -1,11 +1,10 @@
 using SEx.Lex;
 using SEx.AST;
-using SEx.Generic.Constants;
 using SEx.Generic.Text;
 
 namespace SEx.Parse;
 
-internal class ForStatement : Statement
+public class ForStatement : Statement
 {
     public Token       For        { get; }
     public NameLiteral Variable   { get; }

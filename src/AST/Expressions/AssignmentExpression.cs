@@ -1,10 +1,9 @@
 using SEx.Generic.Text;
-using SEx.Generic.Constants;
 using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class AssignmentExpression : Expression
+public sealed class AssignmentExpression : Expression
 {
     public NameLiteral Assignee    { get; }
     public Token       Equal       { get; }

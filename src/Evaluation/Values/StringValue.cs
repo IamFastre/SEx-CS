@@ -22,15 +22,8 @@ public sealed class StringValue
     public override string ToString()
         => $"{C.BLUE2}\"{GetString()}\"{C.END}";
 
-    public override bool Equals(object? obj)
-    {
-        if (obj is StringValue str)
-            return _value == str._value;
-
-        return false;
-    }
-
-    public override int GetHashCode() => _value.GetHashCode();
+    public override bool Equals(object? obj) => obj is StringValue str && _value == str._value;
+    public override int GetHashCode()        => _value.GetHashCode();
 
     public override string GetString()
         => _value.Escape();

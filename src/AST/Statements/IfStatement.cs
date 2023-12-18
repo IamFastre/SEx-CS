@@ -1,10 +1,9 @@
-using SEx.Generic.Constants;
 using SEx.Generic.Text;
 using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class IfStatement : Statement
+public sealed class IfStatement : Statement
 {
     public Token       If         { get; }
     public Expression  Condition  { get; }

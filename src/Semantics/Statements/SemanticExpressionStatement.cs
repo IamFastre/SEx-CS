@@ -2,7 +2,7 @@ using SEx.Generic.Text;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticExpressionStatement : SemanticStatement
+public sealed class SemanticExpressionStatement : SemanticStatement
 {
     public SemanticExpression Expression { get; }
 

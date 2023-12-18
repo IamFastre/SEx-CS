@@ -1,11 +1,10 @@
 using SEx.Lex;
 using SEx.AST;
-using SEx.Generic.Constants;
 using SEx.Generic.Text;
 
 namespace SEx.Parse;
 
-internal class CountingOperation : Expression
+public class CountingOperation : Expression
 {
     public bool        ReturnAfter { get; }
     public Token       Operator    { get; }

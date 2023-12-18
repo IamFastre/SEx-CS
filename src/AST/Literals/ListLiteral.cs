@@ -1,11 +1,10 @@
 using SEx.AST;
-using SEx.Generic.Constants;
 using SEx.Generic.Text;
 using SEx.Lex;
 
 namespace SEx.Parse;
 
-internal sealed class ListLiteral : Expression
+public sealed class ListLiteral : Expression
 {
     public Token           OpenBracket  { get; }
     public SeparatedClause Elements     { get; }

@@ -3,7 +3,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticFailedOperation : SemanticExpression
+public sealed class SemanticFailedOperation : SemanticExpression
 {
     public SemanticExpression[] Expressions { get; }
 

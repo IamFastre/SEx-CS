@@ -10,7 +10,6 @@ public abstract class NumberValue : LiteralValue
     public static NumberValue Get(double value)
         => IntegerValue.IsInt(value) ? new IntegerValue(value) : new FloatValue(value);
 
-
     public override bool Equals(object? obj)
     {
         if (obj is NumberValue num)
@@ -29,12 +28,7 @@ public sealed class IntegerValue : NumberValue
     public  override object Value => _value;
     public  override TypeSymbol Type => TypeSymbol.Integer;
 
-    public IntegerValue(double value)
-    {
-        if (!IsInt(value))
-            throw new Exception("Value given is not int");
-        _value = value;
-    }
+    public IntegerValue(double value) => _value = Math.Floor(value);
 
     public static bool IsInt(double value)
         => double.IsInteger(value) || double.IsInfinity(value)|| double.IsNaN(value);

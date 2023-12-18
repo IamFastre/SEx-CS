@@ -1,10 +1,9 @@
-using SEx.Generic.Constants;
 using SEx.Generic.Text;
 using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class ElseClause : Clause
+public sealed class ElseClause : Clause
 {
     public Token     Else  { get; }
     public Statement Body  { get; }

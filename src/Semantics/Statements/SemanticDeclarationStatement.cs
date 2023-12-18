@@ -4,7 +4,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticDeclarationStatement : SemanticStatement
+public sealed class SemanticDeclarationStatement : SemanticStatement
 {
     public VariableSymbol        Variable   { get; }
     public Span                  VarSpan    { get; }

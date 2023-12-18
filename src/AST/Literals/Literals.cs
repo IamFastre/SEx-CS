@@ -1,10 +1,9 @@
 using SEx.Generic.Text;
-using SEx.Generic.Constants;
 using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class Literal : Expression
+public sealed class Literal : Expression
 {
     public Token  Token           { get; }
     public string Value           { get; }

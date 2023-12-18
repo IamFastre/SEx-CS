@@ -4,7 +4,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticBinaryOperation : SemanticExpression
+public sealed class SemanticBinaryOperation : SemanticExpression
 {
     public SemanticExpression     Left     { get; }
     public SemanticBinaryOperator Operator { get; }

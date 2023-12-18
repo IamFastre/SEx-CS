@@ -1,11 +1,10 @@
-using SEx.Evaluate.Values;
 using SEx.Generic.Text;
 using SEx.Lex;
 using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal enum UnaryOperationKind
+public enum UnaryOperationKind
 {
     Identity,
     Negation,
@@ -13,7 +12,7 @@ internal enum UnaryOperationKind
     BitwiseComplement,
 }
 
-internal sealed class SemanticUnaryOperation : SemanticExpression
+public sealed class SemanticUnaryOperation : SemanticExpression
 {
     public SemanticExpression Operand       { get; }
     public UnaryOperationKind OperationKind { get; }

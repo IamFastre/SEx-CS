@@ -3,14 +3,14 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal class SemanticVariable : SemanticExpression
+public class SemanticVariable : SemanticExpression
 {
-    public VariableSymbol        Symbol { get; }
+    public NameSymbol        Symbol { get; }
 
     public override Span         Span   { get; }
     public override SemanticKind Kind => SemanticKind.Variable;
 
-    public SemanticVariable(VariableSymbol symbol, Span span)
+    public SemanticVariable(NameSymbol symbol, Span span)
         : base(symbol.Type)
     {
         Symbol = symbol;

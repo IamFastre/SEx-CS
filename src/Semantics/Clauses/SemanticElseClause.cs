@@ -3,7 +3,7 @@ using SEx.Lex;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticElseClause : SemanticClause
+public sealed class SemanticElseClause : SemanticClause
 {
     public override Span         Span { get; }
     public override SemanticKind Kind => SemanticKind.ElseClause;

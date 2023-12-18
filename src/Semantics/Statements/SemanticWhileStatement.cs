@@ -3,7 +3,7 @@ using SEx.Lex;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticWhileStatement : SemanticStatement
+public sealed class SemanticWhileStatement : SemanticStatement
 {
     public Token               While      { get; }
     public SemanticExpression  Condition  { get; }

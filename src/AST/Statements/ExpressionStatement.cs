@@ -1,9 +1,8 @@
 using SEx.Generic.Text;
-using SEx.Generic.Constants;
 
 namespace SEx.AST;
 
-internal sealed class ExpressionStatement : Statement
+public sealed class ExpressionStatement : Statement
 {
     public Expression Expression  { get; }
 

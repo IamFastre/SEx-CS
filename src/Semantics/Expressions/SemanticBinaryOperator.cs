@@ -3,7 +3,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal enum BinaryOperationKind
+public enum BinaryOperationKind
 {
     NullishCoalescence,
 
@@ -42,7 +42,7 @@ internal enum BinaryOperationKind
     ListInclusion,
 }
 
-internal class SemanticBinaryOperator
+public class SemanticBinaryOperator
 {
     public TypeSymbol LeftType             { get; }
     public TypeSymbol RightType            { get; }

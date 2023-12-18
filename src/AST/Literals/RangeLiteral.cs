@@ -2,7 +2,7 @@ using SEx.Generic.Text;
 
 namespace SEx.AST;
 
-internal sealed class RangeLiteral : Expression
+public sealed class RangeLiteral : Expression
 {
     public Expression  Start { get; }
     public Expression  End   { get; }

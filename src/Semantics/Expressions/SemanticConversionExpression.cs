@@ -3,7 +3,7 @@ using SEx.Generic.Text;
 
 namespace SEx.Semantics;
 
-internal enum ConversionKind
+public enum ConversionKind
 {
     AnyToString,
     Direct,
@@ -29,7 +29,7 @@ internal enum ConversionKind
     StringToStringList,
 }
 
-internal class SemanticConversionExpression : SemanticExpression
+public class SemanticConversionExpression : SemanticExpression
 {
     public SemanticExpression Expression     { get; }
     public TypeSymbol         Destination    { get; }

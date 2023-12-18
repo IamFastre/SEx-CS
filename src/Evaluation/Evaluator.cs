@@ -281,9 +281,12 @@ internal class Evaluator
         return value;
     }
 
-    private LiteralValue EvaluateFunction(SemanticFunction expr)
+    private LiteralValue EvaluateFunction(SemanticFunction f)
     {
-        return new FunctionValue(expr.Symbol);
+        if (!Scope.TryResolve(f.Symbol, out var value))
+            Diagnostics.Report.UndefinedVariable(f.Symbol.Name, f.Span);
+
+        return value;
     }
 
     private LiteralValue EvaluateList(SemanticList ll)
@@ -307,15 +310,21 @@ internal class Evaluator
     private LiteralValue EvaluateCallExpression(SemanticCallExpression fc)
     {
         var func = (FunctionValue) EvaluateExpression(fc.Function);
+        var args = fc.Arguments.Select(EvaluateExpression).ToArray();
 
-        if (func.Symbol == BuiltIn.Functions["log"])
-        {
-            var text = EvaluateExpression(fc.Arguments[0]);
-            Console.WriteLine((string) text.Value);
-            return VoidValue.Template;
-        }
+        if (BuiltIn.GetFunctions().Contains(func.Symbol))
+            return BuiltIn.Backend.Evaluate(func, args);
 
-        throw new Exception("Haven't done here yet");
+        Scope = new(Scope);
+
+        for (int i = 0; i < fc.Arguments.Length; i++)
+            Scope.Declare(func.Symbol.Parameters[i].ToVariableSymbol(),
+                          EvaluateExpression(fc.Arguments[i]));
+
+        var value = EvaluateStatement(func.Body);
+        Scope = Scope.Parent!;
+
+        return value;
     }
 
     private LiteralValue EvaluateIndexingExpression(SemanticIndexingExpression ie)
@@ -398,7 +407,7 @@ internal class Evaluator
     private LiteralValue EvaluateConversionExpression(SemanticConversionExpression ce)
     {
         var value = EvaluateExpression(ce.Expression);
-        return Converter.Convert(ce.ConversionKind, value, ce.Destination);
+        return Converter.Convert(ce.ConversionKind, value);
         throw new NotImplementedException();
     }
 
@@ -530,7 +539,7 @@ internal class Evaluator
 
                     : kind == BinaryOperationKind.Power
                     ? Math.Pow((double) left.Value, (double) right.Value)
-            
+
                     : throw new Exception("This shouldn't occur");
 
                 if (TypeSymbol.Integer.Matches(biop.Type))

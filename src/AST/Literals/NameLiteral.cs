@@ -3,7 +3,7 @@ using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class NameLiteral : Expression
+public sealed class NameLiteral : Expression
 {
     public Token  Token           { get; }
     public string Value           { get; }

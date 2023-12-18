@@ -3,7 +3,7 @@ using SEx.Lex;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticIfStatement : SemanticStatement
+public sealed class SemanticIfStatement : SemanticStatement
 {
     public Token               If         { get; }
     public SemanticExpression  Condition  { get; }

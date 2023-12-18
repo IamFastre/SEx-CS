@@ -3,7 +3,7 @@ using SEx.Lex;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticBlockStatement : SemanticStatement
+public sealed class SemanticBlockStatement : SemanticStatement
 {
     public Token               OpenBrace  { get; }
     public SemanticStatement[] Body       { get; }

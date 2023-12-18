@@ -1,9 +1,8 @@
-using SEx.Generic.Constants;
 using SEx.Generic.Text;
 
 namespace SEx.AST;
 
-internal sealed class ProgramStatement : Statement
+public sealed class ProgramStatement : Statement
 {
     public Statement[] Body { get; }
 

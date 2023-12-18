@@ -1,10 +1,9 @@
-using SEx.Evaluate.Values;
 using SEx.Generic.Text;
 using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticIndexingExpression : SemanticExpression
+public sealed class SemanticIndexingExpression : SemanticExpression
 {
     public SemanticExpression Iterable { get; }
     public SemanticExpression Index    { get; }

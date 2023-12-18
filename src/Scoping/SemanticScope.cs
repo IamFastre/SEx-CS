@@ -4,8 +4,8 @@ namespace SEx.Scoping;
 
 internal class SemanticScope
 {
-    public Dictionary<string, Symbol> Symbols { get; }
-    public SemanticScope?             Parent  { get; }
+    public Dictionary<string, NameSymbol> Symbols { get; }
+    public SemanticScope?                 Parent  { get; }
 
     public SemanticScope(SemanticScope? parent = null)
     {
@@ -18,16 +18,17 @@ internal class SemanticScope
 
     private void DeclareBuiltIns()
     {
-        foreach (var func in BuiltIn.Functions.Values)
+        foreach (var func in BuiltIn.GetFunctions())
             TryDeclare(func);
     }
 
     public VariableSymbol[] Variables => Symbols.Values.OfType<VariableSymbol>().ToArray();
+    public FunctionSymbol[] Functions => Symbols.Values.OfType<FunctionSymbol>().ToArray();
 
     public bool IsDeclared(string name)
         => Symbols.ContainsKey(name);
 
-    public bool TryDeclare(Symbol symbol)
+    public bool TryDeclare(NameSymbol symbol)
     {
         if (IsDeclared(symbol.Name))
             return false;
@@ -36,13 +37,13 @@ internal class SemanticScope
         return true;
     }
 
-    public void Assign(VariableSymbol name)
+    public void Assign(NameSymbol name)
     {
         if (Symbols.ContainsKey(name.Name))
             Symbols[name.Name] = name;
     }
 
-    public bool TryResolve(string name, out Symbol? symbol)
+    public bool TryResolve(string name, out NameSymbol? symbol)
     {
         if (Symbols.TryGetValue(name, out var sym))
         {
@@ -54,7 +55,7 @@ internal class SemanticScope
         return false;
     }
 
-    public Symbol? Resolve(string name)
+    public NameSymbol? Resolve(string name)
     {
         if (Symbols.TryGetValue(name, out var sym))
             return sym;

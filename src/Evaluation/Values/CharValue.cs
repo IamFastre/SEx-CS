@@ -16,8 +16,8 @@ public sealed class CharValue : LiteralValue
     public override string ToString()
         => $"{C.BLUE2}'{GetString()}'{C.END}";
 
-    public override bool Equals(object? obj) => obj is CharValue @char && _value == @char._value;
-    public override int GetHashCode() => _value.GetHashCode();
+    public override bool Equals(object? obj) => obj is CharValue chr && _value == chr._value;
+    public override int GetHashCode()        => _value.GetHashCode();
 
     public override string GetString()
         => _value.ToString().Escape();

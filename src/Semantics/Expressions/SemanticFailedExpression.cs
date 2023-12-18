@@ -3,7 +3,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Semantics;
 
-internal sealed class SemanticFailedExpression : SemanticExpression
+public sealed class SemanticFailedExpression : SemanticExpression
 {
     public override Span Span { get; }
 

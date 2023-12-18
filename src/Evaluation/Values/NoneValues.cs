@@ -12,8 +12,7 @@ public class NullValue : LiteralValue
         => C.RED2 + GetString() + C.END;
 
     public override bool Equals(object? obj) => obj is NullValue;
-
-    public override int GetHashCode() => 0;
+    public override int GetHashCode()        => 0;
 
     public override string GetString()
         => CONSTS.NULL;
@@ -30,8 +29,7 @@ public sealed class VoidValue : LiteralValue
         => GetString();
 
     public override bool Equals(object? obj) => obj is VoidValue;
-
-    public override int GetHashCode() => 0;
+    public override int GetHashCode()        => 0;
 
     public override string GetString()
         => "";
@@ -48,8 +46,7 @@ public sealed class UnknownValue : LiteralValue
         => C.RED2 + GetString() + C.END;
 
     public override bool Equals(object? obj) => obj is UnknownValue;
-
-    public override int GetHashCode() => 0;
+    public override int GetHashCode()        => 0;
 
     public override string GetString()
         => CONSTS.UNKNOWN;
@@ -66,9 +63,8 @@ public sealed class UndefinedValue : LiteralValue
     public override string ToString()
         => C.RED2 + GetString() + C.END;
 
-    public override bool Equals(object? obj) => obj is UndefinedValue;
-
-    public override int GetHashCode() => 0;
+    public override bool Equals(object? obj) => obj is UndefinedValue und && Type == und.Type;
+    public override int GetHashCode()        => 0;
 
     public override string GetString()
         => CONSTS.UNDEFINED;

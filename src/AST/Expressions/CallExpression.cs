@@ -4,7 +4,7 @@ using SEx.Generic.Text;
 
 namespace SEx.Parse;
 
-internal class CallExpression : Expression
+public class CallExpression : Expression
 {
     public Expression       Function    { get; }
     public Token            OpenParen   { get; }

@@ -4,7 +4,7 @@ using SEx.Generic.Text;
 
 namespace SEx.Parse;
 
-internal class SeparatedClause : Clause
+public class SeparatedClause : Clause
 {
     public Expression[] Expressions { get; }
     public Token[]      Separators  { get; }

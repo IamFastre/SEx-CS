@@ -1,9 +1,8 @@
-using SEx.Generic.Constants;
 using SEx.Generic.Text;
 
 namespace SEx.AST;
 
-internal class TernaryOperation : Expression
+public class TernaryOperation : Expression
 {
     public Expression Condition       { get; }
     public Expression TrueExpression  { get; }

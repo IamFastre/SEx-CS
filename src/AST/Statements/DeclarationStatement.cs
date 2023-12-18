@@ -1,10 +1,9 @@
-using SEx.Generic.Constants;
 using SEx.Generic.Text;
 using SEx.Lex;
 
 namespace SEx.AST;
 
-internal sealed class DeclarationStatement : Statement
+public sealed class DeclarationStatement : Statement
 {
     public Token       Hash       { get; }
     public NameLiteral Variable   { get; }
