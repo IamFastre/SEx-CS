@@ -16,13 +16,13 @@ public enum CountingKind
 
 public class SemanticCountingOperation : SemanticExpression
 {
-    public SemanticVariable Name          { get; }
-    public CountingKind     OperationKind { get; }
+    public SemanticName Name          { get; }
+    public CountingKind OperationKind { get; }
 
     public override Span         Span     { get; }
     public override SemanticKind Kind => SemanticKind.CountingOperation;
 
-    public SemanticCountingOperation(SemanticVariable name, CountingKind kind, Span span)
+    public SemanticCountingOperation(SemanticName name, CountingKind kind, Span span)
         : base(name.Type)
     {
         Name          = name;

@@ -203,11 +203,8 @@ internal class Evaluator
                 case SemanticKind.Range:
                     return EvaluateRange((SemanticRange) expr);
 
-                case SemanticKind.Variable:
-                    return EvaluateVariable((SemanticVariable) expr);
-
-                case SemanticKind.Function:
-                    return EvaluateFunction((SemanticFunction) expr);
+                case SemanticKind.Name:
+                    return EvaluateName((SemanticName) expr);
 
                 case SemanticKind.List:
                     return EvaluateList((SemanticList) expr);
@@ -273,18 +270,10 @@ internal class Evaluator
         return value;
     }
 
-    private LiteralValue EvaluateVariable(SemanticVariable n)
+    private LiteralValue EvaluateName(SemanticName n)
     {
         if (!Scope.TryResolve(n.Symbol, out var value))
-            Diagnostics.Report.UndefinedVariable(n.Symbol.Name, n.Span);
-
-        return value;
-    }
-
-    private LiteralValue EvaluateFunction(SemanticFunction f)
-    {
-        if (!Scope.TryResolve(f.Symbol, out var value))
-            Diagnostics.Report.UndefinedVariable(f.Symbol.Name, f.Span);
+            Diagnostics.Report.UndefinedName(n.Symbol.Name, n.Span);
 
         return value;
     }
@@ -370,7 +359,7 @@ internal class Evaluator
 
     private LiteralValue EvaluateCountingOperation(SemanticCountingOperation co)
     {
-        var name = EvaluateVariable(co.Name);
+        var name = EvaluateName(co.Name);
         var kind = co.OperationKind;
 
         double _double = TypeSymbol.Char.Matches(co.Name.Type)
@@ -425,10 +414,10 @@ internal class Evaluator
             return UnknownValue.Template;
 
         if (!left.IsDefined)
-            return UseOfUndefined((SemanticVariable) biop.Left);
+            return UseOfUndefined((SemanticName) biop.Left);
 
         if (!right.IsDefined)
-            return UseOfUndefined((SemanticVariable) biop.Right);
+            return UseOfUndefined((SemanticName) biop.Right);
 
         switch (kind)
         {
@@ -749,7 +738,7 @@ internal class Evaluator
         return null;
     }
 
-    private LiteralValue UseOfUndefined(SemanticVariable n)
+    private LiteralValue UseOfUndefined(SemanticName n)
     {
         Except($"Name '{n.Symbol.Name}' (of type '{n.Type.ToString()}') not assigned to yet", n.Span);
         return UnknownValue.Template;

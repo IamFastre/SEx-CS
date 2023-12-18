@@ -45,7 +45,7 @@ public abstract class SemanticNode
         string header = this switch
         {
             SemanticLiteral              l => $"<{C.BLUE2}{l.Kind}:{C.GREEN2}{l.Type}{C.END} => {C.YELLOW2}'{l.Value}'{C.END}>",
-            SemanticVariable             l => $"<{C.BLUE2}{l.Kind}:{C.GREEN2}{l.Type}{C.END} => {C.YELLOW2}{l.Symbol.Name}{C.END}>",
+            SemanticName                 l => $"<{C.BLUE2}{l.Kind}:{C.GREEN2}{l.Type}{C.END} => {C.YELLOW2}{l.Symbol.Name}{C.END}>",
 
             SemanticAssignment           a => $"<{C.BLUE2}{a.Kind}({C.YELLOW2}{a.Operator}{C.BLUE2}):{C.GREEN2}{a.Type}{C.END}>",
             SemanticUnaryOperation       u => $"<{C.BLUE2}{u.Kind}({C.YELLOW2}{u.OperationKind}{C.BLUE2}):{C.GREEN2}{u.Type}{C.END}>",

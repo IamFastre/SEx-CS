@@ -148,15 +148,16 @@ internal sealed class Analyzer
             else
                 Diagnostics.Report.ValuelessConstant(ds.Variable.Value, ds.Variable.Span);
         }
-
         else if (expr is not null && !(hint, expr.Type).IsAssignable())
+        {
             if (expr.Type.IsKnown)
                 Diagnostics.Report.TypesDoNotMatch(hint.ToString(), expr.Type.ToString(), ds.Span);
-
+        }
         else if (expr is not null && !TypeSymbol.Any.Matches(expr.Type))
+        {
             if (expr.Type.IsKnown)
                 Diagnostics.Report.CannotAssignType(expr.Type.ToString(), ds.Expression!.Span);
-
+        }
         else if (!Scope.TryDeclare(var))
             Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
 
@@ -216,7 +217,7 @@ internal sealed class Analyzer
         if (result is not null)
             return result;
 
-        Diagnostics.Report.UndefinedVariable(n.Value, n.Span);
+        Diagnostics.Report.UndefinedName(n.Value, n.Span);
         return null;
     }
 
@@ -303,7 +304,7 @@ internal sealed class Analyzer
         var symbol = GetNameSymbol(n);
 
         if (symbol is not null)
-            return new SemanticVariable(symbol, n.Span);
+            return new SemanticName(symbol, n.Span);
 
         return new SemanticFailedExpression(n.Span);
     }
@@ -440,7 +441,7 @@ internal sealed class Analyzer
 
     private SemanticExpression BindCountingOperation(CountingOperation co)
     {
-        var name = (SemanticVariable) BindName(co.Name);
+        var name = (SemanticName) BindName(co.Name);
 
         if (name is null)
             return new SemanticFailedExpression(co.Span);
@@ -509,7 +510,7 @@ internal sealed class Analyzer
 
         var name = BindName(aexpr.Assignee);
 
-        if (name is SemanticVariable var)
+        if (name is SemanticName var)
         {
             if (var.Symbol.IsConstant)
             {
