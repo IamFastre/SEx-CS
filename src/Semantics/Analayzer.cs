@@ -252,7 +252,7 @@ internal sealed class Analyzer
                 return BindList((ListLiteral) expr);
 
             case NodeKind.CallExpression:
-                return BindFunctionCallExpression((CallExpression) expr);
+                return BindCallExpression((CallExpression) expr);
 
             case NodeKind.ParenthesizedExpression:
                 return BindParenExpression((ParenthesizedExpression) expr);
@@ -341,7 +341,7 @@ internal sealed class Analyzer
         return new SemanticList(Array.Empty<SemanticExpression>(), TypeSymbol.Any, ll.Span);
     }
 
-    private SemanticExpression BindFunctionCallExpression(CallExpression fce)
+    private SemanticExpression BindCallExpression(CallExpression fce)
     {
         var func = BindExpression(fce.Function);
 
@@ -371,7 +371,7 @@ internal sealed class Analyzer
 
             if (faulty) return new SemanticFailedExpression(fce.Span);
 
-            return new SemanticCallExpression(func, fs, args, fce.Span);
+            return new SemanticCallExpression(func, fs.Parameters[0], args, fce.Span);
         }
         else if (func is null)
             return new SemanticFailedExpression(fce.Span);
