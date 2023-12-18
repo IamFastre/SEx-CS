@@ -1,5 +1,4 @@
 using SEx.Diagnose;
-using SEx.Generic.Constants;
 using SEx.Generic.Text;
 
 namespace SEx.Lex;
@@ -46,11 +45,6 @@ internal class Lexer
 
         Token FabricateToken(TokenKind kind, bool sync = true)
             => new(sync ? SyncValue() : value, kind, span!);
-    
-        void Except(string message,
-                    ExceptionType type = ExceptionType.SyntaxError,
-                    Span? givenSpan = null)
-            => Diagnostics.Add(type, message, givenSpan ?? span);
 
         string AddValue(int advanceWhen = 0)
         {
@@ -78,6 +72,7 @@ internal class Lexer
         if (Current == '\0' || EOF)
             return new Token("\0", TokenKind.EOF, Source.GetLastPosition());
 
+        // Whitespaces
         if (Current == '\n')
             return FabricateToken(TokenKind.NewLine);
 
@@ -89,6 +84,7 @@ internal class Lexer
             return FabricateToken(value.Length > 1 ? TokenKind.BigWhiteSpace : TokenKind.WhiteSpace);
         }
 
+        // Operators etc
         switch (Current)
         {
             case char when IsUpcoming("+="):
@@ -198,6 +194,7 @@ internal class Lexer
                 return FabricateToken(TokenKind.CloseCurlyBracket);
         }
 
+        // Numbers
         if (char.IsAsciiDigit(Current) || (Current == '.' && char.IsAsciiDigit(Peek())))
         {
             int dots() => value.Count(s => s == '.');
@@ -216,6 +213,7 @@ internal class Lexer
             return FabricateToken(type);
         }
 
+        // Identifiers
         if (char.IsLetter(Current) || Current == '_')
         {
             while (char.IsLetterOrDigit(Peek()) || Peek() == '_')
@@ -224,28 +222,7 @@ internal class Lexer
             return FabricateToken(Checker.GetIdentifierKind(value));
         }
 
-        if (Checker.OpnDQuotes.Contains(Current))
-        {
-
-            char clsQuote = Checker.GetOtherPair(Current);
-            Index++;
-
-            while (Current != clsQuote)
-            {
-                if (EOF || EOL)
-                {
-                    Except($"Unterminated string literal");
-                    return FabricateToken(TokenKind.Unknown, false);
-                }
-
-                if (Current == '\\')
-                    Index++;
-                Index++;
-            }
-
-            return FabricateToken(TokenKind.String);
-        }
-
+        // Characters
         if (Checker.OpnSQuotes.Contains(Current))
         {
 
@@ -256,7 +233,7 @@ internal class Lexer
             {
                 if (EOF || EOL)
                 {
-                    Except($"Unterminated string literal");
+                    Diagnostics.Report.UnterminatedString(span);
                     return FabricateToken(TokenKind.Unknown, false);
                 }
 
@@ -268,10 +245,33 @@ internal class Lexer
             return FabricateToken(TokenKind.Char);
         }
 
+        // Strings
+        if (Checker.OpnDQuotes.Contains(Current))
+        {
+
+            char clsQuote = Checker.GetOtherPair(Current);
+            Index++;
+
+            while (Current != clsQuote)
+            {
+                if (EOF || EOL)
+                {
+                    Diagnostics.Report.UnterminatedString(span);
+                    return FabricateToken(TokenKind.Unknown, false);
+                }
+
+                if (Current == '\\')
+                    Index++;
+                Index++;
+            }
+
+            return FabricateToken(TokenKind.String);
+        }
+
         if (Checker.Separators.Contains(Current))
             return FabricateToken(TokenKind.Separator);
 
-        Except($"Unrecognized character '{Current}' (U+{(int)Current:X4})");
+        Diagnostics.Report.UnrecognizedChar(Current, span);
         return FabricateToken(TokenKind.Unknown);
     }
 

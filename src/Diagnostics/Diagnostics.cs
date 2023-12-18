@@ -40,6 +40,12 @@ public class Report
         => Diagnostics.Add(type, message, span, rereadLine);
 
 
+    internal void UnrecognizedChar(char current, Span span)
+        => Except(ExceptionType.SyntaxError, $"Unrecognized character '{Current}' (U+{(int)Current:X4})", span)
+
+    internal void UnterminatedString(Span span)
+        => Except(ExceptionType.SyntaxError, $"Unterminated string literal", span);
+
     internal void ValuelessConstant(string name, Span span)
         => Except(ExceptionType.SyntaxError, $"No value was given to constant '{name}'", span);
 
