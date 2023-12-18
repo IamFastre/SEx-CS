@@ -44,16 +44,17 @@ public abstract class SemanticNode
         var children  = GetChildren().ToArray();
         string header = this switch
         {
-            SemanticLiteral              l => $"<{C.BLUE2}{l.Kind}:{C.GREEN2}{l.Type}{C.END} => {C.YELLOW2}'{l.Value}'{C.END}>",
-            SemanticName                 l => $"<{C.BLUE2}{l.Kind}:{C.GREEN2}{l.Type}{C.END} => {C.YELLOW2}{l.Symbol.Name}{C.END}>",
+            SemanticLiteral              l => $"<{C.BLUE2}{l.Kind}({C.YELLOW2}{l.Value         }{C.BLUE2}):{C.GREEN2}{l.Type}{C.END}>",
+            SemanticName                 l => $"<{C.BLUE2}{l.Kind}({C.YELLOW2}{l.Symbol.Name   }{C.BLUE2}):{C.GREEN2}{l.Type}{C.END}>",
 
-            SemanticAssignment           a => $"<{C.BLUE2}{a.Kind}({C.YELLOW2}{a.Operator}{C.BLUE2}):{C.GREEN2}{a.Type}{C.END}>",
-            SemanticUnaryOperation       u => $"<{C.BLUE2}{u.Kind}({C.YELLOW2}{u.OperationKind}{C.BLUE2}):{C.GREEN2}{u.Type}{C.END}>",
-            SemanticCountingOperation    c => $"<{C.BLUE2}{c.Kind}({C.YELLOW2}{c.OperationKind}{C.BLUE2}):{C.GREEN2}{c.Type}{C.END}>",
-            SemanticBinaryOperation      b => $"<{C.BLUE2}{b.Kind}({C.YELLOW2}{b.Operator.Kind}{C.BLUE2}):{C.GREEN2}{b.Type}{C.END}>",
+            SemanticAssignment           a => $"<{C.BLUE2}{a.Kind}({C.YELLOW2}{a.Operator      }{C.BLUE2}):{C.GREEN2}{a.Type}{C.END}>",
+            SemanticUnaryOperation       u => $"<{C.BLUE2}{u.Kind}({C.YELLOW2}{u.OperationKind }{C.BLUE2}):{C.GREEN2}{u.Type}{C.END}>",
+            SemanticCountingOperation    c => $"<{C.BLUE2}{c.Kind}({C.YELLOW2}{c.OperationKind }{C.BLUE2}):{C.GREEN2}{c.Type}{C.END}>",
+            SemanticBinaryOperation      b => $"<{C.BLUE2}{b.Kind}({C.YELLOW2}{b.Operator.Kind }{C.BLUE2}):{C.GREEN2}{b.Type}{C.END}>",
+            SemanticConversionExpression c => $"<{C.BLUE2}{c.Kind}({C.YELLOW2}{c.ConversionKind}{C.BLUE2}):{C.GREEN2}{c.Type}{C.END}>",
 
-            SemanticDeclarationStatement d => $"<{C.MAGENTA2}{d.Kind}({C.YELLOW2}{d.Variable.Name}{C.MAGENTA2}:{C.GREEN2}{d.Variable.Type}{C.MAGENTA2}){C.END}>",
-            SemanticForStatement         f => $"<{C.MAGENTA2}{f.Kind}({C.YELLOW2}{f.Variable.Name}{C.MAGENTA2}:{C.GREEN2}{f.Variable.Type}{C.MAGENTA2}){C.END}>",
+            SemanticDeclarationStatement d => $"<{C.MAGENTA2}{d.Kind}({C.RED2}{(d.Variable.IsConstant ? "*" : "")}{C.YELLOW2}{d.Variable.Name}{C.MAGENTA2}:{C.GREEN2}{d.Variable.Type}{C.MAGENTA2}){C.END}>",
+            SemanticForStatement         f => $"<{C.MAGENTA2}{f.Kind}({C.RED2}*{C.YELLOW2}{f.Variable.Name}{C.MAGENTA2}:{C.GREEN2}{f.Variable.Type}{C.MAGENTA2}){C.END}>",
 
             SemanticFailedExpression     f => $"<{C.GREEN2}{f.Type}{C.END}>",
             SemanticExpression           e => $"<{C.BLUE2}{e.Kind}:{C.GREEN2}{e.Type}{C.END}>",

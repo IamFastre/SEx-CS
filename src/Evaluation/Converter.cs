@@ -13,7 +13,7 @@ internal static class Converter
 
         switch (kind)
         {
-            case ConversionKind.Direct:
+            case ConversionKind.Implicit:
                 return value;
 
             case ConversionKind.AnyToString:

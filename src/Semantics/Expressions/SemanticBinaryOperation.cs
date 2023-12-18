@@ -26,7 +26,8 @@ public sealed class SemanticBinaryOperation : SemanticExpression
     public static BinaryOperationKind? GetOperationKind(TokenKind op, TypeSymbol left, TypeSymbol right)
     {
         if (op is TokenKind.NullishCoalescing)
-            return BinaryOperationKind.NullishCoalescence;
+            if (left.Matches(right) || right.Matches(left))
+                return BinaryOperationKind.NullishCoalescence;
 
         if (left.IsKnown && right.IsKnown)
         {
@@ -115,7 +116,7 @@ public sealed class SemanticBinaryOperation : SemanticExpression
 
 
 
-        if ((left, right).Match(TypeSymbol.TypedList(left.ElementType!)))
+        if ((left, right).Match(left.Matches(right) ? left : right))
             if (op is TokenKind.Plus)
                 return BinaryOperationKind.ListConcatenation;
 

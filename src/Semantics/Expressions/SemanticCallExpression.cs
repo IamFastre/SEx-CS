@@ -8,7 +8,7 @@ public class SemanticCallExpression : SemanticExpression
     public SemanticExpression   Function  { get; }
     public SemanticExpression[] Arguments { get; }
 
-    public override Span         Span        { get; }
+    public override Span         Span     { get; }
     public override SemanticKind Kind => SemanticKind.CallExpression;
 
     public SemanticCallExpression(SemanticExpression fs, TypeSymbol returnType, SemanticExpression[] arguments, Span span)
@@ -20,5 +20,10 @@ public class SemanticCallExpression : SemanticExpression
         Span      = span;
     }
 
-    public override IEnumerable<SemanticNode> GetChildren() => Arguments;
+    public override IEnumerable<SemanticNode> GetChildren()
+    {
+        yield return Function;
+        foreach (var arg in Arguments)
+            yield return arg;
+    }
 }

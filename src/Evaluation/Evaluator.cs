@@ -413,11 +413,14 @@ internal class Evaluator
         if (!left.IsKnown || !right.IsKnown)
             return UnknownValue.Template;
 
-        if (!left.IsDefined)
-            return UseOfUndefined((SemanticName) biop.Left);
+        if (kind is not BinaryOperationKind.NullishCoalescence or BinaryOperationKind.Equality or BinaryOperationKind.Inequality)
+        {
+            if (!left.IsDefined)
+                return UseOfUndefined((SemanticName) biop.Left);
 
-        if (!right.IsDefined)
-            return UseOfUndefined((SemanticName) biop.Right);
+            if (!right.IsDefined)
+                return UseOfUndefined((SemanticName) biop.Right);
+        }
 
         switch (kind)
         {

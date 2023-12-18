@@ -5,8 +5,8 @@ namespace SEx.Semantics;
 
 public enum ConversionKind
 {
+    Implicit,
     AnyToString,
-    Direct,
 
     NumberToInt,
     NumberToFloat,
@@ -56,7 +56,7 @@ public class SemanticConversionExpression : SemanticExpression
     public static ConversionKind? GetConversionKind(TypeSymbol from, TypeSymbol to)
     {
         if (to.Matches(from))
-            return ConversionKind.Direct;
+            return ConversionKind.Implicit;
 
         return (from.ID, to.ID) switch
         {
