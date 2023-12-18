@@ -41,7 +41,7 @@ public class Report
 
 
     internal void UnrecognizedChar(char current, Span span)
-        => Except(ExceptionType.SyntaxError, $"Unrecognized character '{current}' (U+{(int)current:X4})", span)
+        => Except(ExceptionType.SyntaxError, $"Unrecognized character '{current}' (U+{(int)current:X4})", span);
 
     internal void UnterminatedString(Span span)
         => Except(ExceptionType.SyntaxError, $"Unterminated string literal", span);
