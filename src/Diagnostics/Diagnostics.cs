@@ -1,10 +1,11 @@
-using SEx.Evaluate.Values;
 using SEx.Generic.Text;
+using SEx.Lex;
 
 namespace SEx.Diagnose;
 
 public class Diagnostics
 {
+    public Source?               Source     { get; set; }
     public List<SyntaxException> Exceptions { get; }
     public Report                Report     { get; }
 
@@ -40,19 +41,52 @@ public class Report
         => Diagnostics.Add(type, message, span, rereadLine);
 
 
-    internal void UnrecognizedChar(char current, Span span)
-        => Except(ExceptionType.SyntaxError, $"Unrecognized character '{current}' (U+{(int)current:X4})", span);
+    internal void UnrecognizedChar(char chr, Span span)
+        => Except(ExceptionType.SyntaxError, $"Unrecognized character '{chr}' (U+{(int)chr:X4})", span);
 
     internal void UnterminatedString(Span span)
         => Except(ExceptionType.SyntaxError, $"Unterminated string literal", span);
 
-    internal void ValuelessConstant(string name, Span span)
-        => Except(ExceptionType.SyntaxError, $"No value was given to constant '{name}'", span);
+    internal void InvalidSyntax(string token, Span span)
+        => Except(ExceptionType.SyntaxError, $"Invalid syntax '{token}'", span);
+
+    internal void ExpectedToken(string token, string got, Span span)
+        => Except(ExceptionType.SymbolError, $"Expected '{token}' got '{got}'", span);
+
+    internal void StatementExpected(Span span)
+        => Except(ExceptionType.SyntaxError, $"Expected a statement", span);
+
+    internal void ExpressionExpected(Span span)
+        => Except(ExceptionType.SyntaxError, $"Expected an expression", span);
+
+    internal void ExpressionExpectedAfter(string after, Span span)
+        => Except(ExceptionType.SyntaxError, $"Expected an expression after '{after}'", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
+
+    internal void ExpressionExpectedBefore(string before, Span span)
+        => Except(ExceptionType.SyntaxError, $"Expected an expression before '{before}'", span);
+
+    internal void NameExpected(Span span)
+        => Except(ExceptionType.SyntaxError, $"Expected a name", span);
+
+    internal void NameExpected(string after, Span span)
+        => Except(ExceptionType.SyntaxError, $"Expected a name after '{after}'", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
+
+    internal void ValuelessConstant(string constant, Span span)
+        => Except(ExceptionType.SyntaxError, $"No value was given to constant '{constant}'", span);
+
+    internal void InvalidAssignee(Span span)
+        => Except(ExceptionType.SyntaxError, $"Assignee is invalid", span);
 
     internal void UselessTypeAdded(string type, Span span)
         => Except(ExceptionType.SyntaxError, $"No need for added type '{type}'", span);
 
-    internal void ExpectedType(string type1, string type2, Span span)
+    internal void UnexpectedEOF(Span span)
+        => Except(ExceptionType.SyntaxError, $"Didn't expect program to end yet", span);
+
+    internal void OperandMustBeName(string op, Span span)
+        => Except(ExceptionType.TypeError, $"Operand of '{op}' must be a name", span);
+
+    internal void TypeExpected(string type1, string type2, Span span)
         => Except(ExceptionType.TypeError, $"Expected {("aeiou".Contains(type1[0]) ? "an" : "a")} '{type1}' got {("aeiou".Contains(type2[0]) ? "an" : "a")} '{type2}'", span);
 
     internal void CannotConvert(string type1, string type2, Span span)
@@ -70,8 +104,8 @@ public class Report
     internal void CannotIterate(string type, Span span)
         => Except(ExceptionType.TypeError, $"Type '{type}' is not iterable", span);
 
-    internal void NotCallable(string name, Span span)
-        => Except(ExceptionType.TypeError, $"Type '{name}' is not callable", span);
+    internal void NotCallable(string type, Span span)
+        => Except(ExceptionType.TypeError, $"Type '{type}' is not callable", span);
 
     internal void InvalidArgumentCount(string function, int expected, int gotten, Span span)
         => Except(ExceptionType.TypeError, $"Function '{function}' takes {expected} arguments got {gotten}", span);
@@ -85,8 +119,8 @@ public class Report
     internal void IndexOutOfBoundary(Span span)
         => Except(ExceptionType.IndexError, $"Index is out of boundary", span);
 
-    internal void CannotAssignToConst(string name, Span span)
-        => Except(ExceptionType.SymbolError, $"Cannot assign to constant '{name}'", span);
+    internal void CannotAssignToConst(string constant, Span span)
+        => Except(ExceptionType.SymbolError, $"Cannot assign to constant '{constant}'", span);
 
     internal void UndefinedName(string name, Span span)
         => Except(ExceptionType.SymbolError, $"Name '{name}' is not defined", span);

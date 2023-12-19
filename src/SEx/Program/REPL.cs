@@ -130,6 +130,7 @@ internal class REPL
             else
             {
                 Script.Append(Line);
+                Diagnostics.Source = Source;
 
                 var lexer  = new Lexer(Source, Diagnostics);
                 Tokens     = lexer.Lex();

@@ -228,7 +228,7 @@ internal sealed class Analyzer
         var val = BindExpression(expr);
         if (!expected.Matches(val.Type))
             if (val.Type.IsKnown)
-                Diagnostics.Report.ExpectedType(expected.ToString(), val.Type.ToString(), expr.Span);
+                Diagnostics.Report.TypeExpected(expected.ToString(), val.Type.ToString(), expr.Span);
 
         return val;
     }

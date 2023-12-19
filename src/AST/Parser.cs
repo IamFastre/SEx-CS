@@ -47,19 +47,15 @@ internal class Parser
         return current;
     }
 
-    private void Except(string message,
-                        ExceptionType type = ExceptionType.SyntaxError,
-                        Span? span = null,
-                        bool rereadLine = true)
-        => Diagnostics.Add(type, message, span ?? Current.Span, rereadLine);
-
-    private Token Expect(TokenKind kind, string? message = null, bool eatAnyway = false, bool reread = true, Span? span = null)
+    private Token Expect(TokenKind kind, bool eatAnyway = false, bool reread = true, Span? span = null)
     {
         if (Current.Kind == kind)
             return Eat();
 
-        message ??= EOF ? "Expression not expected to end yet" : $"Unexpected '{Current.Value}'";
-        Except(message, span:span, rereadLine: !EOF || reread);
+        if (EOF)
+            Diagnostics.Report.UnexpectedEOF(Current.Span);
+        else
+            Diagnostics.Report.ExpectedToken(kind.ToString(), Current.Value, span ?? Current.Span);
 
         if (eatAnyway && !EOF)
             Eat();
@@ -113,7 +109,7 @@ internal class Parser
                 return GetList();
 
             default:
-                Except($"Invalid syntax '{Current.Value}'", rereadLine:false);
+                Diagnostics.Report.InvalidSyntax(Current.Value, Current.Span);
                 Eat();
                 return GetPrimary();
         }
@@ -125,12 +121,10 @@ internal class Parser
         var expression = Current.Kind != TokenKind.CloseParenthesis
                        ? GetRange()
                        : null;
-        var closeParen = Expect(TokenKind.CloseParenthesis, $"'(' was never closed");
+        var closeParen = Expect(TokenKind.CloseParenthesis);
 
         if (expression is null)
-            Except($"Expression expected before close parenthesis",
-                   span:new(openParen.Span, closeParen.Span),
-                   rereadLine:false);
+            Diagnostics.Report.ExpressionExpectedAfter(openParen.Value, openParen.Span);
 
         return new(openParen, expression, closeParen);
     }
@@ -168,7 +162,7 @@ internal class Parser
     {
         var openBracket  = Eat();
         var exprs        = GetSeparated(TokenKind.CloseSquareBracket);
-        var closeBracket = Expect(TokenKind.CloseSquareBracket, $"'[' was never closed");
+        var closeBracket = Expect(TokenKind.CloseSquareBracket);
 
         return new(openBracket, exprs, closeBracket);
     }
@@ -185,7 +179,7 @@ internal class Parser
 
             if (end is null)
             {
-                Except("An end expression expected for range", span:colon1.Span);
+                Diagnostics.Report.ExpressionExpectedAfter(colon1.Value, colon1.Span);
                 return Literal.Unknown(new(start.Span, colon1.Span));
             }
 
@@ -202,7 +196,7 @@ internal class Parser
     {
         var openParen  = Eat();
         var args       = GetSeparated(TokenKind.CloseParenthesis);
-        var closeParen = Expect(TokenKind.CloseParenthesis, $"'(' was never closed");
+        var closeParen = Expect(TokenKind.CloseParenthesis);
 
         return new CallExpression(func, openParen, args, closeParen);
     }
@@ -213,13 +207,11 @@ internal class Parser
         var index        = Current.Kind != TokenKind.CloseSquareBracket
                          ? GetRange()
                          : null;
-        var closeBracket = Expect(TokenKind.CloseSquareBracket, $"'[' was never closed");
+        var closeBracket = Expect(TokenKind.CloseSquareBracket);
 
         if (index is null)
         {
-            Except($"Index expected before close bracket",
-                   span:new(openBracket.Span, closeBracket.Span),
-                   rereadLine:false);
+            Diagnostics.Report.ExpressionExpectedAfter(openBracket.Value, openBracket.Span);
             return Literal.Unknown(new(iterable.Span, closeBracket.Span));
         }
 
@@ -239,14 +231,14 @@ internal class Parser
 
         if (name is null)
         {
-            Except($"Expected a name before/after operator '{op.Value}'", span:op.Span);
+            Diagnostics.Report.NameExpected(op.Value, op.Span);
             return Literal.Unknown(op.Span);
         }
 
         if (name is NameLiteral nm)
             return new CountingOperation(op, nm, returnAfter);
 
-        Except($"Operand of '{op.Value}' must be a name", span:name.Span, rereadLine:false);
+        Diagnostics.Report.OperandMustBeName(op.Value, name.Span);
         return Literal.Unknown(new(op.Span, name.Span));
     }
 
@@ -301,7 +293,7 @@ internal class Parser
 
             if (left is null)
             {
-                Except($"Expected an expression after operator '{uOp.Value}'", span:uOp.Span);
+                Diagnostics.Report.ExpressionExpectedAfter(uOp.Value, uOp.Span);
                 return Literal.Unknown(uOp.Span);
             }
 
@@ -320,7 +312,7 @@ internal class Parser
 
             if (right is null)
             {
-                Except($"Expected an expression after operator '{binOp.Value}'", span:binOp.Span);
+                Diagnostics.Report.ExpressionExpectedAfter(binOp.Value, binOp.Span);
                 return Literal.Unknown(new(left!.Span, binOp.Span));
             }
 
@@ -335,16 +327,16 @@ internal class Parser
             var trueExpr  = GetSecondary();
             if (trueExpr is null)
             {
-                Except($"Expected an expression after '{mark.Value}'", span:mark.Span);
+                Diagnostics.Report.ExpressionExpectedAfter(mark.Value, mark.Span);
                 return Literal.Unknown(left!.Span);
             }
 
-            var colon     = Expect(TokenKind.Colon, $"Expected a colon after if true expression");
+            var colon     = Expect(TokenKind.Colon);
 
             var falseExpr = GetSecondary();
             if (falseExpr is null)
             {
-                Except($"Expected an expression after '{colon.Value}'", span:colon.Span);
+                Diagnostics.Report.ExpressionExpectedAfter(colon.Value, colon.Span);
                 return trueExpr;
             }
 
@@ -358,20 +350,20 @@ internal class Parser
     {
         var left = GetSecondary();
 
-        if (Current.Kind.IsAssignment())
+        if (left is not null && Current.Kind.IsAssignment())
         {
             var eq   = Eat();
             var expr = GetExpression();
 
             if (left is not NameLiteral)
             {
-                Except($"Invalid left-hand side assignee", span:left!.Span, rereadLine:false);
+                Diagnostics.Report.InvalidAssignee(left.Span);
                 return left;
             }
 
             if (expr is null)
             {
-                Except($"Expected an expression after equal", span:eq.Span);
+                Diagnostics.Report.ExpressionExpectedAfter(eq.Value, eq.Span);
                 return Literal.Unknown(new(left!.Span, eq.Span));
             }
 
@@ -409,7 +401,7 @@ internal class Parser
 
     private TypeClause GetTypeClause()
     {
-        var type = Expect(TokenKind.Type, "Expected a type", true);
+        var type = Expect(TokenKind.Type, true);
         var dimension = 0;
 
         if (IsNextKind(TokenKind.Less))
@@ -429,7 +421,7 @@ internal class Parser
         var isConst = Current.Kind == TokenKind.Asterisk;
         if (isConst) Eat();
 
-        var name = Expect(TokenKind.Identifier, "Expected a name to declare");
+        var name = Expect(TokenKind.Identifier);
 
         if (IsNextKind(TokenKind.Colon))
             type = GetTypeClause();
@@ -439,7 +431,7 @@ internal class Parser
             var eq = Eat();
             expr = GetExpression();
             if (expr is null)
-                Except($"Expected an expression after equal", span:eq.Span);
+                Diagnostics.Report.ExpressionExpectedAfter(eq.Value, eq.Span);
         }
 
         return new(hash, new(name), type, expr, isConst);
@@ -454,7 +446,7 @@ internal class Parser
         while (Current.Kind != TokenKind.CloseCurlyBracket && !EOF)
             block.Add(GetStatement());
 
-        var closeBrace = Expect(TokenKind.CloseCurlyBracket, "'{' was never closed");
+        var closeBrace = Expect(TokenKind.CloseCurlyBracket);
 
         return new(openBrace, block.ToArray(), closeBrace);
     }
@@ -464,13 +456,13 @@ internal class Parser
         var elseKeyword = Eat();
 
         if (Current.Kind is not (TokenKind.If or TokenKind.While))
-            Expect(TokenKind.Colon, $"Expected a colon after 'else'");
+            Expect(TokenKind.Colon);
 
         var statement   = GetStatement();
 
         if (statement is ExpressionStatement exprStmt)
             if (exprStmt.Expression.Kind is NodeKind.Unknown)
-                Except("Expected an else statement");
+                Diagnostics.Report.StatementExpected(elseKeyword.Span);
 
         return new(elseKeyword, statement);
     }
@@ -478,15 +470,15 @@ internal class Parser
     private ForStatement GetForStatement()
     {
         var forKeyword = Eat();
-        var variable   = Expect(TokenKind.Identifier, "Expected an identifier");
+        var variable   = Expect(TokenKind.Identifier);
         Expect(TokenKind.InOperator);
         var iterable   = GetExpression() ?? Literal.Unknown(Current.Span);
-        Expect(TokenKind.Colon, $"Expected a colon after 'for' clause", span:forKeyword.Span);
+        Expect(TokenKind.Colon, span:forKeyword.Span);
         var statement = GetStatement();
 
         if (statement is ExpressionStatement exprStmt)
             if (exprStmt.Expression.Kind is NodeKind.Unknown)
-                Except("Expected a statement", span:forKeyword.Span);
+                Diagnostics.Report.StatementExpected(forKeyword.Span);
     
         return new(forKeyword, new(variable), iterable, statement);
     }
@@ -498,14 +490,14 @@ internal class Parser
         var condition    = GetExpression() ?? Literal.Unknown(Current.Span);
 
         if (condition.Kind is NodeKind.Unknown)
-                Except($"Expected an expression after 'while' keyword", span:whileKeyword.Span);
+                Diagnostics.Report.ExpressionExpectedAfter(whileKeyword.Value, whileKeyword.Span);
 
-        Expect(TokenKind.Colon, $"Expected a colon after 'while' condition", span:whileKeyword.Span);
+        Expect(TokenKind.Colon, span:whileKeyword.Span);
         var statement = GetStatement();
 
         if (statement is ExpressionStatement exprStmt)
             if (exprStmt.Expression.Kind is NodeKind.Unknown)
-                Except("Expected a statement", span:whileKeyword.Span);
+                Diagnostics.Report.StatementExpected(whileKeyword.Span);
 
         if (Current.Kind == TokenKind.Else)
             elseClause = GetElseClause();
@@ -520,14 +512,14 @@ internal class Parser
         var condition = GetExpression() ?? Literal.Unknown(Current.Span);
 
         if (condition.Kind is NodeKind.Unknown)
-                Except($"Expected an expression after 'if' keyword", span:ifKeyword.Span);
+                Diagnostics.Report.ExpressionExpectedAfter(ifKeyword.Value, ifKeyword.Span);
 
-        Expect(TokenKind.Colon, $"Expected a colon after 'if' condition", span:ifKeyword.Span);
+        Expect(TokenKind.Colon, span:ifKeyword.Span);
         var statement = GetStatement();
 
         if (statement is ExpressionStatement exprStmt)
             if (exprStmt.Expression.Kind is NodeKind.Unknown)
-                Except("Expected a statement", span:ifKeyword.Span);
+                Diagnostics.Report.StatementExpected(ifKeyword.Span);
 
         if (Current.Kind == TokenKind.Else)
             elseClause = GetElseClause();

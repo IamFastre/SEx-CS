@@ -1,10 +1,10 @@
 namespace SEx.Generic.Text;
 
-public class Position
+public sealed class Position
 {
-    public int Line;
-    public int Column;
-    public int Index;
+    public int Line   { get; }
+    public int Column { get; }
+    public int Index  { get; }
 
     public Position(int line = 1, int column = 1, int index = 0)
     {
@@ -13,8 +13,15 @@ public class Position
         Index  = index;
     }
 
-     public override string ToString()
-     {
+    public override bool Equals(object? obj) => obj is Position pos
+                                             && Line   == pos.Line
+                                             && Column == pos.Column
+                                             && Index  == pos.Index;
+
+    public override int GetHashCode() => HashCode.Combine(Line, Column, Index);
+
+    public override string ToString()
+    {
         return $"{Line}:{Column}";
-     }
+    }
 }
