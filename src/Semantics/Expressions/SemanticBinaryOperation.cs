@@ -116,7 +116,7 @@ public sealed class SemanticBinaryOperation : SemanticExpression
 
 
 
-        if ((left, right).Match(left.Matches(right) ? left : right))
+        if ((left, right).Match(TypeSymbol.List) && (left, right).Match(left.Matches(right) ? left : right))
             if (op is TokenKind.Plus)
                 return BinaryOperationKind.ListConcatenation;
 

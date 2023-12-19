@@ -4,15 +4,15 @@ using SEx.Generic.Text;
 
 namespace SEx.Parse;
 
-public class SeparatedClause : Clause
+public class SeparatedClause<T> : Clause where T : Node
 {
-    public Node[]  Nodes      { get; }
+    public T[]  Nodes      { get; }
     public Token[] Separators { get; }
 
     public override Span     Span   { get; }
     public override NodeKind Kind => NodeKind.SeparatedClause;
 
-    public SeparatedClause(Node[] exprs, Token[] separators)
+    public SeparatedClause(T[] exprs, Token[] separators)
     {
         Nodes = exprs;
         Separators  = separators;
@@ -24,7 +24,7 @@ public class SeparatedClause : Clause
 
     public Node this[int i] => Nodes[i];
 
-    public static readonly SeparatedClause Empty = new(Array.Empty<Node>(), Array.Empty<Token>());
+    public static SeparatedClause<T> Empty => new(Array.Empty<T>(), Array.Empty<Token>());
 
     public override IEnumerable<Node> GetChildren()
     {

@@ -129,13 +129,13 @@ internal class Parser
         return new(openParen, expression, closeParen);
     }
 
-    private SeparatedClause GetSeparated(TokenKind endToken)
+    private SeparatedClause<Expression> GetSeparated(TokenKind endToken)
         => GetSeparated(GetExpression, endToken);
 
-    private SeparatedClause GetSeparated<T>(Func<T?> func, TokenKind endToken) where T : Node
+    private SeparatedClause<T> GetSeparated<T>(Func<T?> func, TokenKind endToken) where T : Node
     {
         if (Current.Kind == endToken)
-            return SeparatedClause.Empty;
+            return SeparatedClause<T>.Empty;
 
         var expressions = ImmutableArray.CreateBuilder<T>();
         var separators  = ImmutableArray.CreateBuilder<Token>();
@@ -466,11 +466,14 @@ internal class Parser
         TypeClause? type = null;
         var funcSymbol   = Eat();
         var name         = Expect(TokenKind.Identifier);
+        Expect(TokenKind.OpenParenthesis);
         var parameters   = GetSeparated(GetParameterClause, TokenKind.CloseParenthesis);
+        Expect(TokenKind.CloseParenthesis);
 
-        if (IsNextKind(TokenKind.Colon))
+        if (IsNextKind(TokenKind.RightArrow))
             type = GetTypeClause();
 
+        Expect(TokenKind.Colon);
         var statement    = GetStatement();
 
         return new(funcSymbol, new(name), type, parameters, statement);
@@ -478,13 +481,7 @@ internal class Parser
 
     private ParameterClause? GetParameterClause()
     {
-        var name  = GetExpression();
-
-        if (name is not NameLiteral)
-        {
-            Diagnostics.Report.NameExpected(name?.Span ?? Current.Span);
-            return null;
-        }
+        var name  = Expect(TokenKind.Identifier);
 
         var colon = Expect(TokenKind.Colon);
         if (colon.IsFabricated)
@@ -492,7 +489,7 @@ internal class Parser
 
         var type  = GetTypeClause();
 
-        return new((NameLiteral) name, type);
+        return new(new(name), type);
     }
 
     private ForStatement GetForStatement()

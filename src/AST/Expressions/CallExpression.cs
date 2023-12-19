@@ -6,15 +6,15 @@ namespace SEx.Parse;
 
 public class CallExpression : Expression
 {
-    public Expression       Function    { get; }
-    public Token            OpenParen   { get; }
-    public SeparatedClause  Arguments   { get; }
-    public Token            CloseParen  { get; }
+    public Expression                   Function    { get; }
+    public Token                        OpenParen   { get; }
+    public SeparatedClause<Expression>  Arguments   { get; }
+    public Token                        CloseParen  { get; }
 
-    public override Span     Span       { get; }
+    public override Span     Span                   { get; }
     public override NodeKind Kind => NodeKind.CallExpression;
 
-    public CallExpression(Expression func, Token openParen, SeparatedClause arguments, Token closeParen)
+    public CallExpression(Expression func, Token openParen, SeparatedClause<Expression> arguments, Token closeParen)
     {
         Function   = func;
         OpenParen  = openParen;

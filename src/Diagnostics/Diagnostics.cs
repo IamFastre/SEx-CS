@@ -54,25 +54,25 @@ public class Report
         => Except(ExceptionType.SymbolError, $"Expected '{token}' got '{got}'", span);
 
     internal void StatementExpected(Span span)
-        => Except(ExceptionType.SyntaxError, $"Expected a statement", span);
+        => Except(ExceptionType.SyntaxError, $"Expected a statement", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
 
     internal void ExpressionExpected(Span span)
-        => Except(ExceptionType.SyntaxError, $"Expected an expression", span);
+        => Except(ExceptionType.SyntaxError, $"Expected an expression", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
 
     internal void ExpressionExpectedAfter(string after, Span span)
         => Except(ExceptionType.SyntaxError, $"Expected an expression after '{after}'", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
 
     internal void ExpressionExpectedBefore(string before, Span span)
-        => Except(ExceptionType.SyntaxError, $"Expected an expression before '{before}'", span);
+        => Except(ExceptionType.SyntaxError, $"Expected an expression before '{before}'", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
 
     internal void NameExpected(Span span)
-        => Except(ExceptionType.SyntaxError, $"Expected a name", span);
+        => Except(ExceptionType.SyntaxError, $"Expected a name", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
 
     internal void NameExpected(string after, Span span)
         => Except(ExceptionType.SyntaxError, $"Expected a name after '{after}'", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
 
     internal void ValuelessConstant(string constant, Span span)
-        => Except(ExceptionType.SyntaxError, $"No value was given to constant '{constant}'", span);
+        => Except(ExceptionType.SyntaxError, $"No value was given to constant '{constant}'", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
 
     internal void InvalidAssignee(Span span)
         => Except(ExceptionType.SyntaxError, $"Assignee is invalid", span);
@@ -81,7 +81,7 @@ public class Report
         => Except(ExceptionType.SyntaxError, $"No need for added type '{type}'", span);
 
     internal void UnexpectedEOF(Span span)
-        => Except(ExceptionType.SyntaxError, $"Didn't expect program to end yet", span);
+        => Except(ExceptionType.SyntaxError, $"Didn't expect program to end yet", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
 
     internal void OperandMustBeName(string op, Span span)
         => Except(ExceptionType.TypeError, $"Operand of '{op}' must be a name", span);

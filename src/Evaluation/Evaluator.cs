@@ -55,6 +55,9 @@ internal class Evaluator
                 case SemanticKind.BlockStatement:
                     return EvaluateBlockStatement((SemanticBlockStatement) stmt);
 
+                case SemanticKind.FunctionStatement:
+                    return EvaluateFunctionStatement((SemanticFunctionStatement) stmt);
+
                 case SemanticKind.IfStatement:
                     return EvaluateIfStatement((SemanticIfStatement) stmt);
 
@@ -67,6 +70,13 @@ internal class Evaluator
                 default:
                     throw new Exception($"Unexpected statement type {stmt?.Kind}");
         }
+    }
+
+    private LiteralValue EvaluateFunctionStatement(SemanticFunctionStatement fs)
+    {
+        var val = new FunctionValue(fs.Function, fs.Body);
+        Scope.Declare(fs.Function, val);
+        return VoidValue.Template;
     }
 
     private LiteralValue EvaluateIfStatement(SemanticIfStatement @is)

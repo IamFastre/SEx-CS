@@ -6,14 +6,14 @@ namespace SEx.Parse;
 
 public sealed class ListLiteral : Expression
 {
-    public Token           OpenBracket  { get; }
-    public SeparatedClause Elements     { get; }
-    public Token           CloseBracket { get; }
+    public Token                       OpenBracket  { get; }
+    public SeparatedClause<Expression> Elements     { get; }
+    public Token                       CloseBracket { get; }
 
-    public override Span     Span       { get; }
+    public override Span     Span                   { get; }
     public override NodeKind Kind  => NodeKind.List;
 
-    public ListLiteral(Token open, SeparatedClause elements, Token close)
+    public ListLiteral(Token open, SeparatedClause<Expression> elements, Token close)
     {
         OpenBracket  = open;
         Elements     = elements;

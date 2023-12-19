@@ -7,6 +7,7 @@ public enum SemanticKind
     BlockStatement,
     DeclarationStatement,
     ExpressionStatement,
+    FunctionStatement,
     // Conditional
     IfStatement,
     WhileStatement,
@@ -32,7 +33,4 @@ public enum SemanticKind
 
     FailedOperation,
     FailedExpression,
-
-    // Others
-    SeparatedClause,
 }

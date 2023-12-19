@@ -6,16 +6,16 @@ namespace SEx.Parse;
 
 internal class FunctionStatement : Statement
 {
-    public Token             Symbol     { get; }
-    public NameLiteral       Name       { get; }
-    public TypeClause?       Hint       { get; }
-    public SeparatedClause   Parameters { get; }
-    public Statement         Body       { get; }
+    public Token                            Symbol     { get; }
+    public NameLiteral                      Name       { get; }
+    public TypeClause?                      Hint       { get; }
+    public SeparatedClause<ParameterClause> Parameters { get; }
+    public Statement                        Body       { get; }
 
-    public override Span     Span       { get; }
+    public override Span     Span                      { get; }
     public override NodeKind Kind => NodeKind.FunctionStatement;
 
-    public FunctionStatement(Token symbol, NameLiteral name, TypeClause? typeHint, SeparatedClause parameters, Statement body)
+    public FunctionStatement(Token symbol, NameLiteral name, TypeClause? typeHint, SeparatedClause<ParameterClause> parameters, Statement body)
     {
         Symbol     = symbol;
         Name       = name;

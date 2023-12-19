@@ -53,6 +53,9 @@ internal sealed class Analyzer
             case NodeKind.BlockStatement:
                 return BindBlockStatement((BlockStatement) stmt);
 
+            case NodeKind.FunctionStatement:
+                return BindFunctionStatement((FunctionStatement) stmt);
+
             case NodeKind.IfStatement:
                 return BindIfStatement((IfStatement) stmt);
 
@@ -65,6 +68,24 @@ internal sealed class Analyzer
             default:
                 throw new Exception($"Unrecognized statement kind: {stmt.Kind}");
         }
+    }
+
+    private SemanticFunctionStatement BindFunctionStatement(FunctionStatement fs)
+    {
+        var type       = fs.Hint is not null ? BindTypeClause(fs.Hint) : TypeSymbol.Void;
+        var parameters = fs.Parameters.Nodes.Select(BindParameter).ToArray();
+        var name       = new FunctionSymbol(fs.Name.Value, type, true, parameters);
+
+        Scope = new(Scope);
+        foreach (var p in parameters)
+            Scope.TryDeclare(p);
+        var body       = BindStatement(fs.Body);
+        Scope = Scope.Parent!;
+
+        if (!Scope.TryDeclare(name))
+            Diagnostics.Report.AlreadyDefined(name.Name, fs.Name.Span);
+
+        return new(name, type, parameters, body, fs.Span);
     }
 
     private SemanticIfStatement BindIfStatement(IfStatement @is)
@@ -131,7 +152,7 @@ internal sealed class Analyzer
     private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement ds)
     {
         var expr = ds.Expression is not null ? BindExpression(ds.Expression) : null;
-        var hint = ds.TypeClause is not null ? GetTypeSymbol(ds.TypeClause) : (expr?.Type ?? TypeSymbol.Any);
+        var hint = ds.TypeClause is not null ? BindTypeClause(ds.TypeClause) : (expr?.Type ?? TypeSymbol.Any);
         var var  = new VariableSymbol(ds.Variable.Value, hint, ds.IsConstant);
 
         if (ds.IsConstant && expr is null)
@@ -179,12 +200,12 @@ internal sealed class Analyzer
         return symbol;
     }
 
-    private TypeSymbol[] GetTypeSymbols(TypeClause[] tcs)
+    private TypeSymbol[] BindTypeClauses(TypeClause[] tcs)
     {
         List<TypeSymbol> types = new();
         foreach (var tc in tcs)
         {
-            var type = GetTypeSymbol(tc);
+            var type = BindTypeClause(tc);
             if (!TypeSymbol.Unknown.Matches(type))
                 types.Add(type);
         }
@@ -192,11 +213,11 @@ internal sealed class Analyzer
         return types.ToArray();
     }
 
-    private TypeSymbol GetTypeSymbol(TypeClause tc)
+    private TypeSymbol BindTypeClause(TypeClause tc)
     {
         var type = tc.Kind == NodeKind.TypeClause
                  ? TypeSymbol.GetTypeByString(tc.Type.Value)
-                 : GenericTypeSymbol.GetTypeByString(tc.Type.Value, GetTypeSymbols(((GenericTypeClause) tc).Parameters));
+                 : GenericTypeSymbol.GetTypeByString(tc.Type.Value, BindTypeClauses(((GenericTypeClause) tc).Parameters));
 
         if (type is null || !type.IsKnown)
         {
@@ -209,6 +230,9 @@ internal sealed class Analyzer
         
         return type;
     }
+
+    private ParameterSymbol BindParameter(ParameterClause pc)
+        => new(pc.Name.Value, BindTypeClause(pc.Type));
 
     private NameSymbol? GetNameSymbol(NameLiteral n)
     {
@@ -358,7 +382,7 @@ internal sealed class Analyzer
                 return new SemanticFailedExpression(fce.Span);
             }
 
-            var args = BindSeparatedClause(fce.Arguments);
+            var args = BindSeparatedExpression(fce.Arguments);
             var faulty = false;
             for (int i = 0; i < args.Length; i++)
             {
@@ -386,10 +410,10 @@ internal sealed class Analyzer
         return new SemanticFailedExpression(fce.Span);
     }
 
-    private SemanticExpression[] BindSeparatedClause(SeparatedClause sc)
+    private SemanticExpression[] BindSeparatedExpression(SeparatedClause<Expression> sc)
     {
         var exprs = ImmutableArray.CreateBuilder<SemanticExpression>();
-        foreach (var expr in (Expression[]) sc.Nodes)
+        foreach (var expr in sc.Nodes)
             exprs.Add(BindExpression(expr));
 
         return exprs.ToArray();
@@ -460,7 +484,7 @@ internal sealed class Analyzer
     private SemanticExpression BindConversionExpression(ConversionExpression ce)
     {
         var expr   = BindExpression(ce.Expression);
-        var dest   = GetTypeSymbol(ce.Destination);
+        var dest   = BindTypeClause(ce.Destination);
         var cvKind = SemanticConversionExpression.GetConversionKind(expr.Type, dest);
     
         if (cvKind is null)

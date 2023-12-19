@@ -54,6 +54,7 @@ public abstract class SemanticNode
             SemanticConversionExpression c => $"<{C.BLUE2}{c.Kind}({C.YELLOW2}{c.ConversionKind}{C.BLUE2}):{C.GREEN2}{c.Type}{C.END}>",
 
             SemanticDeclarationStatement d => $"<{C.MAGENTA2}{d.Kind}({C.RED2}{(d.Variable.IsConstant ? "*" : "")}{C.YELLOW2}{d.Variable.Name}{C.MAGENTA2}:{C.GREEN2}{d.Variable.Type}{C.MAGENTA2}){C.END}>",
+            SemanticFunctionStatement    f => $"<{C.MAGENTA2}{f.Kind}({C.YELLOW2}{f.Function}{C.MAGENTA2}){C.END}>",
             SemanticForStatement         f => $"<{C.MAGENTA2}{f.Kind}({C.RED2}*{C.YELLOW2}{f.Variable.Name}{C.MAGENTA2}:{C.GREEN2}{f.Variable.Type}{C.MAGENTA2}){C.END}>",
 
             SemanticFailedExpression     f => $"<{C.GREEN2}{f.Type}{C.END}>",
