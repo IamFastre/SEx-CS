@@ -25,6 +25,8 @@ public enum NodeKind
     TypeClause,
     GenericTypeClause,
     BlockStatement,
+    FunctionStatement,
+    ParameterClause,
     // Conditional
     IfStatement,
     WhileStatement,

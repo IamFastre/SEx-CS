@@ -43,7 +43,7 @@ internal class Lexer
         var value = Current.ToString();
         var span  = new Span(GetPosition());
 
-        Token FabricateToken(TokenKind kind, bool sync = true)
+        Token CreateToken(TokenKind kind, bool sync = true)
             => new(sync ? SyncValue() : value, kind, span!);
 
         string AddValue(int advanceWhen = 0)
@@ -74,124 +74,127 @@ internal class Lexer
 
         // Whitespaces
         if (Current == '\n')
-            return FabricateToken(TokenKind.NewLine);
+            return CreateToken(TokenKind.NewLine);
 
         if (char.IsWhiteSpace(Current))
         {
             while (Peek() == Current && char.IsWhiteSpace(Peek()))
                 AddValue(-1);
 
-            return FabricateToken(value.Length > 1 ? TokenKind.BigWhiteSpace : TokenKind.WhiteSpace);
+            return CreateToken(value.Length > 1 ? TokenKind.BigWhiteSpace : TokenKind.WhiteSpace);
         }
 
         // Operators etc
         switch (Current)
         {
+            case char when IsUpcoming(">>>"):
+                return CreateToken(TokenKind.FunctionSymbol);
+
             case char when IsUpcoming("+="):
-                return FabricateToken(TokenKind.PlusEqual);
+                return CreateToken(TokenKind.PlusEqual);
             case char when IsUpcoming("-="):
-                return FabricateToken(TokenKind.MinusEqual);
+                return CreateToken(TokenKind.MinusEqual);
             case char when IsUpcoming("*="):
-                return FabricateToken(TokenKind.AsteriskEqual);
+                return CreateToken(TokenKind.AsteriskEqual);
             case char when IsUpcoming("/="):
-                return FabricateToken(TokenKind.ForwardSlashEqual);
+                return CreateToken(TokenKind.ForwardSlashEqual);
             case char when IsUpcoming("%="):
-                return FabricateToken(TokenKind.PercentEqual);
+                return CreateToken(TokenKind.PercentEqual);
             case char when IsUpcoming("&="):
-                return FabricateToken(TokenKind.ANDEqual);
+                return CreateToken(TokenKind.ANDEqual);
             case char when IsUpcoming("|="):
-                return FabricateToken(TokenKind.OREqual);
+                return CreateToken(TokenKind.OREqual);
             case char when IsUpcoming("^="):
-                return FabricateToken(TokenKind.XOREqual);
+                return CreateToken(TokenKind.XOREqual);
             case char when IsUpcoming("**="):
-                return FabricateToken(TokenKind.PowerEqual);
+                return CreateToken(TokenKind.PowerEqual);
             case char when IsUpcoming("&&="):
-                return FabricateToken(TokenKind.LogicalANDEqual);
+                return CreateToken(TokenKind.LogicalANDEqual);
             case char when IsUpcoming("||="):
-                return FabricateToken(TokenKind.LogicalOREqual);
+                return CreateToken(TokenKind.LogicalOREqual);
             case char when IsUpcoming("??="):
-                return FabricateToken(TokenKind.NullishCoalescingEqual);
+                return CreateToken(TokenKind.NullishCoalescingEqual);
 
             case char when IsUpcoming("=="):
-                return FabricateToken(TokenKind.EqualEqual);
+                return CreateToken(TokenKind.EqualEqual);
             case char when IsUpcoming("!="):
-                return FabricateToken(TokenKind.NotEqual);
+                return CreateToken(TokenKind.NotEqual);
             case char when IsUpcoming("<="):
-                return FabricateToken(TokenKind.LessEqual);
+                return CreateToken(TokenKind.LessEqual);
             case char when IsUpcoming(">="):
-                return FabricateToken(TokenKind.GreaterEqual);
+                return CreateToken(TokenKind.GreaterEqual);
 
             case char when IsUpcoming("**"):
-                return FabricateToken(TokenKind.Power);
+                return CreateToken(TokenKind.Power);
             case char when IsUpcoming("++"):
-                return FabricateToken(TokenKind.Increment);
+                return CreateToken(TokenKind.Increment);
             case char when IsUpcoming("--"):
-                return FabricateToken(TokenKind.Decrement);
+                return CreateToken(TokenKind.Decrement);
             case char when IsUpcoming("&&"):
-                return FabricateToken(TokenKind.LogicalAND);
+                return CreateToken(TokenKind.LogicalAND);
             case char when IsUpcoming("||"):
-                return FabricateToken(TokenKind.LogicalOR);
+                return CreateToken(TokenKind.LogicalOR);
             case char when IsUpcoming("??"):
-                return FabricateToken(TokenKind.NullishCoalescing);
+                return CreateToken(TokenKind.NullishCoalescing);
 
             case char when IsUpcoming("->"):
-                return FabricateToken(TokenKind.RightArrow);
+                return CreateToken(TokenKind.RightArrow);
 
             case '=':
-                return FabricateToken(TokenKind.Equal);
+                return CreateToken(TokenKind.Equal);
             case '+':
-                return FabricateToken(TokenKind.Plus);
+                return CreateToken(TokenKind.Plus);
             case '-':
-                return FabricateToken(TokenKind.Minus);
+                return CreateToken(TokenKind.Minus);
             case '*':
-                return FabricateToken(TokenKind.Asterisk);
+                return CreateToken(TokenKind.Asterisk);
             case '/':
-                return FabricateToken(TokenKind.ForwardSlash);
+                return CreateToken(TokenKind.ForwardSlash);
             case '%':
-                return FabricateToken(TokenKind.Percent);
+                return CreateToken(TokenKind.Percent);
             case '!':
-                return FabricateToken(TokenKind.BangMark);
+                return CreateToken(TokenKind.BangMark);
             case '~':
-                return FabricateToken(TokenKind.Tilde);
+                return CreateToken(TokenKind.Tilde);
             case '&':
-                return FabricateToken(TokenKind.Ampersand);
+                return CreateToken(TokenKind.Ampersand);
             case '|':
-                return FabricateToken(TokenKind.Pipe);
+                return CreateToken(TokenKind.Pipe);
             case '^':
-                return FabricateToken(TokenKind.Caret);
+                return CreateToken(TokenKind.Caret);
 
             case '<':
-                return FabricateToken(TokenKind.Less);
+                return CreateToken(TokenKind.Less);
             case '>':
-                return FabricateToken(TokenKind.Greater);
+                return CreateToken(TokenKind.Greater);
 
             case '.' when !char.IsDigit(Peek()):
-                return FabricateToken(TokenKind.Dot);
+                return CreateToken(TokenKind.Dot);
             case ',':
-                return FabricateToken(TokenKind.Comma);
+                return CreateToken(TokenKind.Comma);
             case ':':
-                return FabricateToken(TokenKind.Colon);
+                return CreateToken(TokenKind.Colon);
             case ';':
-                return FabricateToken(TokenKind.Semicolon);
+                return CreateToken(TokenKind.Semicolon);
             case '$':
-                return FabricateToken(TokenKind.DollarSign);
+                return CreateToken(TokenKind.DollarSign);
             case '#':
-                return FabricateToken(TokenKind.Hash);
+                return CreateToken(TokenKind.Hash);
             case '?':
-                return FabricateToken(TokenKind.QuestionMark);
+                return CreateToken(TokenKind.QuestionMark);
 
             case '(':
-                return FabricateToken(TokenKind.OpenParenthesis);
+                return CreateToken(TokenKind.OpenParenthesis);
             case '[':
-                return FabricateToken(TokenKind.OpenSquareBracket);
+                return CreateToken(TokenKind.OpenSquareBracket);
             case '{':
-                return FabricateToken(TokenKind.OpenCurlyBracket);
+                return CreateToken(TokenKind.OpenCurlyBracket);
             case ')':
-                return FabricateToken(TokenKind.CloseParenthesis);
+                return CreateToken(TokenKind.CloseParenthesis);
             case ']':
-                return FabricateToken(TokenKind.CloseSquareBracket);
+                return CreateToken(TokenKind.CloseSquareBracket);
             case '}':
-                return FabricateToken(TokenKind.CloseCurlyBracket);
+                return CreateToken(TokenKind.CloseCurlyBracket);
         }
 
         // Numbers
@@ -210,7 +213,7 @@ internal class Lexer
                 AddValue(-1);
 
             var type =  dots() == 1 || "fF".Contains(value[^1]) ? TokenKind.Float : TokenKind.Integer;
-            return FabricateToken(type);
+            return CreateToken(type);
         }
 
         // Identifiers
@@ -219,7 +222,7 @@ internal class Lexer
             while (char.IsLetterOrDigit(Peek()) || Peek() == '_')
                 AddValue(-1);
 
-            return FabricateToken(Checker.GetIdentifierKind(value));
+            return CreateToken(Checker.GetIdentifierKind(value));
         }
 
         // Characters
@@ -234,7 +237,7 @@ internal class Lexer
                 if (EOF || EOL)
                 {
                     Diagnostics.Report.UnterminatedString(span);
-                    return FabricateToken(TokenKind.Unknown, false);
+                    return CreateToken(TokenKind.Unknown, false);
                 }
 
                 if (Current == '\\')
@@ -242,7 +245,7 @@ internal class Lexer
                 Index++;
             }
 
-            return FabricateToken(TokenKind.Char);
+            return CreateToken(TokenKind.Char);
         }
 
         // Strings
@@ -257,7 +260,7 @@ internal class Lexer
                 if (EOF || EOL)
                 {
                     Diagnostics.Report.UnterminatedString(span);
-                    return FabricateToken(TokenKind.Unknown, false);
+                    return CreateToken(TokenKind.Unknown, false);
                 }
 
                 if (Current == '\\')
@@ -265,14 +268,14 @@ internal class Lexer
                 Index++;
             }
 
-            return FabricateToken(TokenKind.String);
+            return CreateToken(TokenKind.String);
         }
 
         if (Checker.Separators.Contains(Current))
-            return FabricateToken(TokenKind.Separator);
+            return CreateToken(TokenKind.Separator);
 
         Diagnostics.Report.UnrecognizedChar(Current, span);
-        return FabricateToken(TokenKind.Unknown);
+        return CreateToken(TokenKind.Unknown);
     }
 
 

@@ -311,16 +311,16 @@ internal sealed class Analyzer
 
     private SemanticExpression BindList(ListLiteral ll)
     {
-        if (ll.Elements.Expressions.Length > 0)
+        if (ll.Elements.Nodes.Length > 0)
         {
             List<SemanticExpression> expressions = new();
-            var arRef = BindExpression(ll.Elements.Expressions.First());
+            var arRef = BindExpression((Expression) ll.Elements.Nodes.First());
             TypeSymbol type = arRef.Type;
             expressions.Add(arRef);
 
-            foreach (var elem in ll.Elements.Expressions[1..])
+            foreach (var elem in ll.Elements.Nodes[1..])
             {
-                var expr = BindExpression(elem);
+                var expr = BindExpression((Expression) elem);
 
                 if (type.Matches(expr.Type))
                     expressions.Add(expr);
@@ -334,7 +334,7 @@ internal sealed class Analyzer
                         Diagnostics.Report.HeteroList(type.ToString(), expr.Type.ToString(), ll.Span);
             }
 
-            if (ll.Elements.Expressions.Length != expressions.Count)
+            if (ll.Elements.Nodes.Length != expressions.Count)
                 return new SemanticFailedOperation(expressions.ToArray(), ll.Span);
 
             return new SemanticList(expressions.ToArray(), type, ll.Span);
@@ -352,9 +352,9 @@ internal sealed class Analyzer
             var fs = (GenericTypeSymbol) func.Type;
             var funcParams = fs.Parameters[1..];
 
-            if (funcParams.Length != fce.Arguments.Expressions.Length)
+            if (funcParams.Length != fce.Arguments.Nodes.Length)
             {
-                Diagnostics.Report.InvalidArgumentCount(fs.ToString(), funcParams.Length, fce.Arguments.Expressions.Length, fce.Span);
+                Diagnostics.Report.InvalidArgumentCount(fs.ToString(), funcParams.Length, fce.Arguments.Nodes.Length, fce.Span);
                 return new SemanticFailedExpression(fce.Span);
             }
 
@@ -389,7 +389,7 @@ internal sealed class Analyzer
     private SemanticExpression[] BindSeparatedClause(SeparatedClause sc)
     {
         var exprs = ImmutableArray.CreateBuilder<SemanticExpression>();
-        foreach (var expr in sc.Expressions)
+        foreach (var expr in (Expression[]) sc.Nodes)
             exprs.Add(BindExpression(expr));
 
         return exprs.ToArray();

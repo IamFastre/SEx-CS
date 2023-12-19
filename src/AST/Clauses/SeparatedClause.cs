@@ -6,15 +6,15 @@ namespace SEx.Parse;
 
 public class SeparatedClause : Clause
 {
-    public Expression[] Expressions { get; }
-    public Token[]      Separators  { get; }
+    public Node[]  Nodes      { get; }
+    public Token[] Separators { get; }
 
     public override Span     Span   { get; }
     public override NodeKind Kind => NodeKind.SeparatedClause;
 
-    public SeparatedClause(Expression[] exprs, Token[] separators)
+    public SeparatedClause(Node[] exprs, Token[] separators)
     {
-        Expressions = exprs;
+        Nodes = exprs;
         Separators  = separators;
 
         Span        = exprs.Length > 0
@@ -22,17 +22,17 @@ public class SeparatedClause : Clause
                     : new();
     }
 
-    public Expression this[int i] => Expressions[i];
+    public Node this[int i] => Nodes[i];
 
-    public static readonly SeparatedClause Empty = new(Array.Empty<Expression>(), Array.Empty<Token>());
+    public static readonly SeparatedClause Empty = new(Array.Empty<Node>(), Array.Empty<Token>());
 
     public override IEnumerable<Node> GetChildren()
     {
         int n = 0, s = 0;
-        for (int i = 0; i < Expressions.Length + Separators.Length; i++)
+        for (int i = 0; i < Nodes.Length + Separators.Length; i++)
         {
             if (int.IsEvenInteger(i))
-                yield return Expressions[n++];
+                yield return Nodes[n++];
             else
                 yield return Separators[s++].Node;
         }

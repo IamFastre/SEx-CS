@@ -11,7 +11,8 @@ public class Token
     public string    Value { get; }
     public Span      Span  { get; }
     public TokenKind Kind  { get; }
-    public TokenNode Node  => new(this);
+    public TokenNode Node       => new(this);
+    public bool      IsFabricated => Value == CONSTS.EMPTY;
 
     public Token(string value, TokenKind kind, Position pos)
         : this(value, kind, new Span(pos)) {}

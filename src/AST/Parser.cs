@@ -35,7 +35,7 @@ internal class Parser
     {
         var stmts = new List<Statement>();
         while (!EOF)
-            stmts.Add(GetStatement() ?? ExpressionStatement.Empty(Tokens[^1].Span));
+            stmts.Add(GetStatement());
 
         return Tree = new(stmts.ToArray());
     }
@@ -60,7 +60,7 @@ internal class Parser
         if (eatAnyway && !EOF)
             Eat();
 
-        return new Token(CONSTS.VOID, kind, Current.Span);
+        return new Token(CONSTS.EMPTY, kind, Current.Span);
     }
 
     private bool IsNextKind(TokenKind kind)
@@ -130,16 +130,19 @@ internal class Parser
     }
 
     private SeparatedClause GetSeparated(TokenKind endToken)
+        => GetSeparated(GetExpression, endToken);
+
+    private SeparatedClause GetSeparated<T>(Func<T?> func, TokenKind endToken) where T : Node
     {
         if (Current.Kind == endToken)
             return SeparatedClause.Empty;
 
-        var expressions = ImmutableArray.CreateBuilder<Expression>();
+        var expressions = ImmutableArray.CreateBuilder<T>();
         var separators  = ImmutableArray.CreateBuilder<Token>();
 
         do
         {
-            var expr = GetExpression();
+            var expr = func();
 
             if (expr is not null)
             {
@@ -377,7 +380,14 @@ internal class Parser
         => GetAssignment();
 
     private ExpressionStatement GetExpressionStatement()
-        => new(GetExpression() ?? Literal.Unknown(Tokens[^1].Span));
+    {
+        var expr = GetExpression();
+
+        if (expr is null)
+            Diagnostics.Report.StatementExpected(Current.Span);
+
+        return new(expr ?? Literal.Unknown(Current.Span));
+    }
 
     private GenericTypeClause GetGenericTypeClause(Token type)
     {
@@ -401,7 +411,7 @@ internal class Parser
 
     private TypeClause GetTypeClause()
     {
-        var type = Expect(TokenKind.Type, true);
+        var type      = Expect(TokenKind.Type, true);
         var dimension = 0;
 
         if (IsNextKind(TokenKind.Less))
@@ -451,20 +461,38 @@ internal class Parser
         return new(openBrace, block.ToArray(), closeBrace);
     }
 
-    private ElseClause GetElseClause()
+    private FunctionStatement GetFunctionStatement()
     {
-        var elseKeyword = Eat();
+        TypeClause? type = null;
+        var funcSymbol   = Eat();
+        var name         = Expect(TokenKind.Identifier);
+        var parameters   = GetSeparated(GetParameterClause, TokenKind.CloseParenthesis);
 
-        if (Current.Kind is not (TokenKind.If or TokenKind.While))
-            Expect(TokenKind.Colon);
+        if (IsNextKind(TokenKind.Colon))
+            type = GetTypeClause();
 
-        var statement   = GetStatement();
+        var statement    = GetStatement();
 
-        if (statement is ExpressionStatement exprStmt)
-            if (exprStmt.Expression.Kind is NodeKind.Unknown)
-                Diagnostics.Report.StatementExpected(elseKeyword.Span);
+        return new(funcSymbol, new(name), type, parameters, statement);
+    }
 
-        return new(elseKeyword, statement);
+    private ParameterClause? GetParameterClause()
+    {
+        var name  = GetExpression();
+
+        if (name is not NameLiteral)
+        {
+            Diagnostics.Report.NameExpected(name?.Span ?? Current.Span);
+            return null;
+        }
+
+        var colon = Expect(TokenKind.Colon);
+        if (colon.IsFabricated)
+            return null;
+
+        var type  = GetTypeClause();
+
+        return new((NameLiteral) name, type);
     }
 
     private ForStatement GetForStatement()
@@ -474,12 +502,8 @@ internal class Parser
         Expect(TokenKind.InOperator);
         var iterable   = GetExpression() ?? Literal.Unknown(Current.Span);
         Expect(TokenKind.Colon, span:forKeyword.Span);
-        var statement = GetStatement();
+        var statement  = GetStatement();
 
-        if (statement is ExpressionStatement exprStmt)
-            if (exprStmt.Expression.Kind is NodeKind.Unknown)
-                Diagnostics.Report.StatementExpected(forKeyword.Span);
-    
         return new(forKeyword, new(variable), iterable, statement);
     }
 
@@ -494,10 +518,6 @@ internal class Parser
 
         Expect(TokenKind.Colon, span:whileKeyword.Span);
         var statement = GetStatement();
-
-        if (statement is ExpressionStatement exprStmt)
-            if (exprStmt.Expression.Kind is NodeKind.Unknown)
-                Diagnostics.Report.StatementExpected(whileKeyword.Span);
 
         if (Current.Kind == TokenKind.Else)
             elseClause = GetElseClause();
@@ -517,14 +537,22 @@ internal class Parser
         Expect(TokenKind.Colon, span:ifKeyword.Span);
         var statement = GetStatement();
 
-        if (statement is ExpressionStatement exprStmt)
-            if (exprStmt.Expression.Kind is NodeKind.Unknown)
-                Diagnostics.Report.StatementExpected(ifKeyword.Span);
-
         if (Current.Kind == TokenKind.Else)
             elseClause = GetElseClause();
 
         return new(ifKeyword, condition, statement, elseClause);
+    }
+
+    private ElseClause GetElseClause()
+    {
+        var elseKeyword = Eat();
+
+        if (Current.Kind is not (TokenKind.If or TokenKind.While))
+            Expect(TokenKind.Colon);
+
+        var statement   = GetStatement();
+
+        return new(elseKeyword, statement);
     }
 
     private Statement GetStatement()
@@ -536,6 +564,9 @@ internal class Parser
 
             case TokenKind.OpenCurlyBracket:
                 return GetBlockStatement();
+
+            case TokenKind.FunctionSymbol:
+                return GetFunctionStatement();
 
             case TokenKind.If:
                 return GetIfStatement();

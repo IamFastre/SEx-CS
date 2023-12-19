@@ -1,10 +1,8 @@
-
-using SEx.Lex;
-
 namespace SEx.Generic.Constants;
 
 internal static class CONSTS
 {
+    public const string EMPTY     = "";
     public const string NULL      = "null";
     public const string UNKNOWN   = "?";
     public const string UNDEFINED = UNKNOWN;

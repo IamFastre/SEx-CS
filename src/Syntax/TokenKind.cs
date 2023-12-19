@@ -94,9 +94,10 @@ public enum TokenKind
     Colon,
     Semicolon,
     DollarSign,
-    Hash,
     QuestionMark,
+    Hash,
     RightArrow,
+    FunctionSymbol,
 
     // Other kinds
     Separator,
