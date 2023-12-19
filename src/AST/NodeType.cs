@@ -3,7 +3,6 @@ namespace SEx.AST;
 public enum NodeKind
 {
     // Others
-    Bad,
     Unknown,
     Token,
 

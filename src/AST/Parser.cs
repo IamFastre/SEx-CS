@@ -35,7 +35,15 @@ internal class Parser
     {
         var stmts = new List<Statement>();
         while (!EOF)
-            stmts.Add(GetStatement());
+        {
+            var start = Current;
+            var statement = GetStatement();
+
+            stmts.Add(statement);
+
+            if (start == Current)
+                Eat();
+        }
 
         return Tree = new(stmts.ToArray());
     }
@@ -110,8 +118,7 @@ internal class Parser
 
             default:
                 Diagnostics.Report.InvalidSyntax(Current.Value, Current.Span);
-                Eat();
-                return GetPrimary();
+                return Literal.Unknown(Current.Span);
         }
     }
 
