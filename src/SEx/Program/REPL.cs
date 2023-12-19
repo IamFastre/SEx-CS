@@ -151,11 +151,8 @@ internal class REPL
 
                 PrintDebugs();
 
-                if (!Diagnostics.Exceptions.Any())
-                {
-                    var evaluator = new Evaluator(SemanticTree, Scope, Diagnostics);
-                    Value         = evaluator.Evaluate();
-                }
+                var evaluator = new Evaluator(SemanticTree, Scope, Diagnostics);
+                Value         = evaluator.Evaluate();
 
                 Throw();
 

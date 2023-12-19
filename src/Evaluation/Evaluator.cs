@@ -272,7 +272,7 @@ internal class Evaluator
             if (((RangeValue) value).Length is null)
             {
                 Except($"Range end point and step direction don't match", r.Span, ExceptionType.MathError);
-                value = UnknownValue.Template;
+                value = UndefinedValue.New(TypeSymbol.Range);
             }
         }
 
@@ -298,7 +298,7 @@ internal class Evaluator
             if (value.IsKnown)
                 values.Add(value);
             else
-                return UnknownValue.Template;
+                return UndefinedValue.New(ll.Type);
         }
 
         var type = values.Count > 0 ? values[0].Type : ll.ElementType; 
@@ -335,7 +335,7 @@ internal class Evaluator
         if (elem is null)
             Diagnostics.Report.IndexOutOfBoundary(ie.Index.Span);
 
-        return elem ?? UnknownValue.Template;
+        return elem ?? UndefinedValue.New(iterable.Type.ElementType);
     }
 
     private LiteralValue EvaluateUnaryOperation(SemanticUnaryOperation uop)
@@ -407,7 +407,6 @@ internal class Evaluator
     {
         var value = EvaluateExpression(ce.Expression);
         return Converter.Convert(ce.ConversionKind, value);
-        throw new NotImplementedException();
     }
 
     private LiteralValue EvaluateBinaryOperation(SemanticBinaryOperation biop)
@@ -663,7 +662,7 @@ internal class Evaluator
             return new BoolValue(false);
 
         Except($"Error ocurred while parsing boolean", literal.Span!, ExceptionType.InternalError);
-        return UnknownValue.Template;
+        return UndefinedValue.New(TypeSymbol.Boolean);
     }
 
     private LiteralValue ParseNumber(SemanticLiteral literal)
@@ -679,7 +678,7 @@ internal class Evaluator
             Except($"Error ocurred while parsing number", literal.Span!, ExceptionType.InternalError);
         }
 
-        return UnknownValue.Template;
+        return UndefinedValue.New(TypeSymbol.Number);
     }
 
     private LiteralValue ParseInt(SemanticLiteral literal)
@@ -695,7 +694,7 @@ internal class Evaluator
             Except($"Error ocurred while parsing integer", literal.Span!, ExceptionType.InternalError);
         }
 
-        return UnknownValue.Template;
+        return UndefinedValue.New(TypeSymbol.Integer);
     }
 
     private LiteralValue ParseFloat(SemanticLiteral literal)
@@ -711,7 +710,7 @@ internal class Evaluator
             Except($"Error ocurred while parsing float", literal.Span!, ExceptionType.InternalError);
         }
 
-        return UnknownValue.Template;
+        return UndefinedValue.New(TypeSymbol.Float);
     }
 
     private LiteralValue ParseChar(SemanticLiteral literal)
@@ -719,7 +718,7 @@ internal class Evaluator
         string? str = Prepare(literal);
 
         if (str is null)
-            return UnknownValue.Template;
+            return UndefinedValue.New(TypeSymbol.Char);
 
         else if (!char.TryParse(str, out char chr))
             Except($"Invalid character string", literal.Span!);
@@ -727,7 +726,7 @@ internal class Evaluator
         else
             return new CharValue(chr);
 
-        return UnknownValue.Template;
+        return UndefinedValue.New(TypeSymbol.Char);
     }
 
     private LiteralValue ParseString(SemanticLiteral literal)
@@ -736,7 +735,7 @@ internal class Evaluator
         if (str is not null)
             return new StringValue(str);
 
-        return UnknownValue.Template;
+        return UndefinedValue.New(TypeSymbol.String);
     }
 
     //=====================================================================//
@@ -753,7 +752,7 @@ internal class Evaluator
 
     private LiteralValue UseOfUndefined(SemanticName n)
     {
-        Except($"Name '{n.Symbol.Name}' (of type '{n.Type.ToString()}') not assigned to yet", n.Span);
-        return UnknownValue.Template;
+        Except($"Name '{n.Symbol.Name}' (of type '{n.Type}') not assigned to yet", n.Span);
+        return UndefinedValue.New(n.Type);
     }
 }
