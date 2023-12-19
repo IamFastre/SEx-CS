@@ -7,7 +7,7 @@ public sealed class AssignmentExpression : Expression
 {
     public NameLiteral Assignee    { get; }
     public Token       Equal       { get; }
-    public Token?      Operation   { get; }
+    public Token?      Operator    { get; }
     public Expression  Expression  { get; }
 
     public override Span     Span  { get; }
@@ -17,7 +17,7 @@ public sealed class AssignmentExpression : Expression
     {
         Assignee   = name;
         Equal      = equal;
-        Operation  = equal.Kind != TokenKind.Equal
+        Operator   = equal.Kind != TokenKind.Equal
                    ? new(equal.Value, GetOperationKind(equal.Kind), equal.Span)
                    : null;
         Expression = expr;

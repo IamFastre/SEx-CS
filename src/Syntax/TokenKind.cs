@@ -95,7 +95,9 @@ public enum TokenKind
     Semicolon,
     DollarSign,
     QuestionMark,
+    // Others
     Hash,
+    Ellipsis,
     RightArrow,
     FunctionSymbol,
 

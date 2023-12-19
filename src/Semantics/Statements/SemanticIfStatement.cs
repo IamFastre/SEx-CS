@@ -1,11 +1,9 @@
 using SEx.Generic.Text;
-using SEx.Lex;
 
 namespace SEx.Semantics;
 
 public sealed class SemanticIfStatement : SemanticStatement
 {
-    public Token               If         { get; }
     public SemanticExpression  Condition  { get; }
     public SemanticStatement   Then       { get; }
     public SemanticElseClause? ElseClause { get; }
@@ -13,16 +11,13 @@ public sealed class SemanticIfStatement : SemanticStatement
     public override Span         Span { get; }
     public override SemanticKind Kind => SemanticKind.IfStatement;
 
-    public SemanticIfStatement(Token @if, SemanticExpression condition, SemanticStatement body, SemanticElseClause? elseClause = null)
+    public SemanticIfStatement(SemanticExpression condition, SemanticStatement body, Span span, SemanticElseClause? elseClause = null)
     {
-        If         = @if;
         Condition  = condition;
         Then       = body;
         ElseClause = elseClause;
 
-        Span = new(@if.Span, elseClause is not null
-                           ? elseClause.Span
-                           : body.Span);
+        Span       = span;
     }
 
     public override IEnumerable<SemanticNode> GetChildren()

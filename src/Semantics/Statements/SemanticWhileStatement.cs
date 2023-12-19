@@ -1,11 +1,9 @@
 using SEx.Generic.Text;
-using SEx.Lex;
 
 namespace SEx.Semantics;
 
 public sealed class SemanticWhileStatement : SemanticStatement
 {
-    public Token               While      { get; }
     public SemanticExpression  Condition  { get; }
     public SemanticStatement   Body       { get; }
     public SemanticElseClause? ElseClause { get; }
@@ -13,16 +11,13 @@ public sealed class SemanticWhileStatement : SemanticStatement
     public override Span         Span { get; }
     public override SemanticKind Kind => SemanticKind.WhileStatement;
 
-    public SemanticWhileStatement(Token @while, SemanticExpression condition, SemanticStatement body, SemanticElseClause? elseClause = null)
+    public SemanticWhileStatement(SemanticExpression condition, SemanticStatement body, Span span, SemanticElseClause? elseClause = null)
     {
-        While      = @while;
         Condition  = condition;
         Body       = body;
         ElseClause = elseClause;
 
-        Span = new(@while.Span, elseClause is not null
-                              ? elseClause.Span
-                              : body.Span);
+        Span       = span;
     }
 
     public override IEnumerable<SemanticNode> GetChildren()

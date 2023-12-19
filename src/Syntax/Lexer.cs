@@ -87,6 +87,8 @@ internal class Lexer
         // Operators etc
         switch (Current)
         {
+            case char when IsUpcoming("..."):
+                return CreateToken(TokenKind.Ellipsis);
             case char when IsUpcoming(">>>"):
                 return CreateToken(TokenKind.FunctionSymbol);
 

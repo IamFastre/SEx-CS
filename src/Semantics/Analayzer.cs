@@ -70,75 +70,6 @@ internal sealed class Analyzer
         }
     }
 
-    private SemanticFunctionStatement BindFunctionStatement(FunctionStatement fs)
-    {
-        var type       = fs.Hint is not null ? BindTypeClause(fs.Hint) : TypeSymbol.Void;
-        var parameters = fs.Parameters.Nodes.Select(BindParameter).ToArray();
-        var name       = new FunctionSymbol(fs.Name.Value, type, true, parameters);
-
-        Scope = new(Scope);
-        foreach (var p in parameters)
-            Scope.TryDeclare(p);
-        var body       = BindStatement(fs.Body);
-        Scope = Scope.Parent!;
-
-        if (!Scope.TryDeclare(name))
-            Diagnostics.Report.AlreadyDefined(name.Name, fs.Name.Span);
-
-        return new(name, type, parameters, body, fs.Span);
-    }
-
-    private SemanticIfStatement BindIfStatement(IfStatement @is)
-    {
-        SemanticElseClause? elseClause = null;
-
-        var condition = BindExpression(@is.Condition, TypeSymbol.Boolean);
-        var thenStmt  = BindStatement(@is.Then);
-
-        if (@is.ElseClause is not null)
-            elseClause = BindElseClause(@is.ElseClause);
-
-        return new(@is.If, condition, thenStmt, elseClause);
-    }
-
-    private SemanticWhileStatement BindWhileStatement(WhileStatement ws)
-    {
-        SemanticElseClause? elseClause = null;
-
-        var condition = BindExpression(ws.Condition, TypeSymbol.Boolean);
-        var thenStmt  = BindStatement(ws.Body);
-
-        if (ws.ElseClause is not null)
-            elseClause = BindElseClause(ws.ElseClause);
-
-        return new(ws.While, condition, thenStmt, elseClause);
-    }
-
-    private SemanticElseClause BindElseClause(ElseClause ec)
-    {
-        var elseStmt = BindStatement(ec.Body);
-        return new(ec.Else, elseStmt);
-    }
-
-    private SemanticForStatement BindForStatement(ForStatement fs)
-    {
-        var iterable = BindExpression(fs.Iterable);
-        var elemType = iterable.Type.ElementType;
-
-        if (elemType is null)
-            if (iterable.Type.IsKnown)
-                Diagnostics.Report.CannotIterate(iterable.Type.ToString(), iterable.Span);
-
-        Scope = new(Scope);
-
-        var variable = DeclareVariable(fs.Variable, elemType ?? TypeSymbol.Unknown, true);
-        var body     = BindStatement(fs.Body);
-
-        Scope = Scope.Parent!;
-
-        return new(fs.For, variable, iterable, body);
-    }
-
     private SemanticBlockStatement BindBlockStatement(BlockStatement bs)
     {
         List<SemanticStatement> statements = new();
@@ -146,7 +77,7 @@ internal sealed class Analyzer
         foreach (var statement in bs.Body)
             statements.Add(BindStatement(statement));
 
-        return new(bs.OpenBrace, statements.ToArray(), bs.CloseBrace);
+        return new(statements.ToArray(), bs.Span);
     }
 
     private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement ds)
@@ -183,6 +114,75 @@ internal sealed class Analyzer
             Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
 
         return new(var, expr, ds);
+    }
+
+    private SemanticFunctionStatement BindFunctionStatement(FunctionStatement fs)
+    {
+        var type       = fs.Hint is not null ? BindTypeClause(fs.Hint) : TypeSymbol.Void;
+        var parameters = fs.Parameters.Nodes.Select(BindParameter).ToArray();
+        var name       = new FunctionSymbol(fs.Name.Value, type, true, parameters);
+
+        Scope = new(Scope);
+        foreach (var p in parameters)
+            Scope.TryDeclare(p);
+        var body = BindStatement(fs.Body);
+        Scope = Scope.Parent!;
+
+        if (!Scope.TryDeclare(name))
+            Diagnostics.Report.AlreadyDefined(name.Name, fs.Name.Span);
+
+        return new(name, type, parameters, body, fs.Span);
+    }
+
+    private SemanticIfStatement BindIfStatement(IfStatement @is)
+    {
+        SemanticElseClause? elseClause = null;
+
+        var condition = BindExpression(@is.Condition, TypeSymbol.Boolean);
+        var thenStmt  = BindStatement(@is.Then);
+
+        if (@is.ElseClause is not null)
+            elseClause = BindElseClause(@is.ElseClause);
+
+        return new(condition, thenStmt, @is.Span, elseClause);
+    }
+
+    private SemanticWhileStatement BindWhileStatement(WhileStatement ws)
+    {
+        SemanticElseClause? elseClause = null;
+
+        var condition = BindExpression(ws.Condition, TypeSymbol.Boolean);
+        var thenStmt  = BindStatement(ws.Body);
+
+        if (ws.ElseClause is not null)
+            elseClause = BindElseClause(ws.ElseClause);
+
+        return new(condition, thenStmt, ws.Span, elseClause);
+    }
+
+    private SemanticElseClause BindElseClause(ElseClause ec)
+    {
+        var elseStmt = BindStatement(ec.Body);
+        return new(elseStmt, ec.Span);
+    }
+
+    private SemanticForStatement BindForStatement(ForStatement fs)
+    {
+        var iterable = BindExpression(fs.Iterable);
+        var elemType = iterable.Type.ElementType;
+
+        if (elemType is null)
+            if (iterable.Type.IsKnown)
+                Diagnostics.Report.CannotIterate(iterable.Type.ToString(), iterable.Span);
+
+        Scope = new(Scope);
+
+        var variable = DeclareVariable(fs.Variable, elemType ?? TypeSymbol.Unknown, true);
+        var body     = BindStatement(fs.Body);
+
+        Scope = Scope.Parent!;
+
+        return new(variable, iterable, body, fs.Span);
     }
 
     private SemanticExpressionStatement BindExpressionStatement(ExpressionStatement es)
@@ -528,9 +528,9 @@ internal sealed class Analyzer
 
     private SemanticExpression BindAssignExpression(AssignmentExpression aexpr)
     {
-        var expr = aexpr.Operation is null
+        var expr = aexpr.Operator is null
                  ? BindExpression(aexpr.Expression)
-                 : BindBinaryOperation(new(aexpr.Assignee, aexpr.Operation, aexpr.Expression));
+                 : BindBinaryOperation(new(aexpr.Assignee, aexpr.Operator, aexpr.Expression));
 
         var name = BindName(aexpr.Assignee);
 
@@ -550,8 +550,8 @@ internal sealed class Analyzer
                     Diagnostics.Report.TypesDoNotMatch(var.Symbol.Type.ToString(), expr.Type.ToString(), aexpr.Span);
                 return BindName(aexpr.Assignee);
             }
-            
-            return new SemanticAssignment(var, expr, aexpr.Operation, aexpr.Span);
+
+            return new SemanticAssignment(var, expr, aexpr.Operator?.Value, aexpr.Span);
         }
 
         return expr;
