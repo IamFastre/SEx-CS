@@ -7,8 +7,9 @@ public abstract class LiteralValue
     public abstract object     Value { get; }
     public abstract TypeSymbol Type  { get; }
 
-    public bool IsKnown   => Type.ID is not TypeID.Unknown;
+    public bool IsKnown   => Type.ID is not TypeID.Unknown && IsDefined;
     public bool IsDefined => this is not UndefinedValue;
+    public bool IsNull    => this is NullValue;
     public bool IsGeneric => Type is GenericTypeSymbol;
 
     public abstract override string ToString();

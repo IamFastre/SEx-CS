@@ -177,80 +177,52 @@ internal class Evaluator
     //=====================================================================//
 
     private LiteralValue EvaluateExpression(SemanticExpression? expr)
+        => expr is null
+        ?  UnknownValue.Template
+        :  expr.Kind switch
+        {
+            SemanticKind.Literal              => EvaluateLiteral((SemanticLiteral) expr),
+            SemanticKind.Range                => EvaluateRange((SemanticRange) expr),
+            SemanticKind.Name                 => EvaluateName((SemanticName) expr),
+            SemanticKind.List                 => EvaluateList((SemanticList) expr),
+            SemanticKind.CallExpression       => EvaluateCallExpression((SemanticCallExpression) expr),
+            SemanticKind.IndexingExpression   => EvaluateIndexingExpression((SemanticIndexingExpression) expr),
+            SemanticKind.UnaryOperation       => EvaluateUnaryOperation((SemanticUnaryOperation) expr),
+            SemanticKind.CountingOperation    => EvaluateCountingOperation((SemanticCountingOperation) expr),
+            SemanticKind.ConversionExpression => EvaluateConversionExpression((SemanticConversionExpression) expr),
+            SemanticKind.BinaryOperation      => EvaluateBinaryOperation((SemanticBinaryOperation) expr),
+            SemanticKind.TernaryOperation     => EvaluateTernaryOperation((SemanticTernaryOperation) expr),
+            SemanticKind.AssignExpression     => EvaluateAssignExpression((SemanticAssignment) expr),
+            SemanticKind.FailedOperation      => EvaluateFailedExpression((SemanticFailedOperation) expr),
+            SemanticKind.FailedExpression     => UnknownValue.Template,
+
+            _ => throw new Exception($"Unrecognized expression kind {expr.Kind}")
+        };
+
+    private LiteralValue EvaluateLiteral(SemanticLiteral expr)
     {
-        if (expr is null)
-            return UnknownValue.Template;
+        if (TypeSymbol.Null.Matches(expr.Type))
+            return ParseNull(expr);
 
-        switch (expr.Kind)
-            {
-                case SemanticKind.Literal:
-                    if (!expr.Type.IsKnown)
-                        return UnknownValue.Template;
+        if (TypeSymbol.Boolean.Matches(expr.Type))
+            return ParseBool(expr);
 
-                    if (TypeSymbol.Null.Matches(expr.Type))
-                        return ParseNull((SemanticLiteral) expr);
+        if (TypeSymbol.Integer.Matches(expr.Type))
+            return ParseInt(expr);
 
-                    if (TypeSymbol.Boolean.Matches(expr.Type))
-                        return ParseBool((SemanticLiteral) expr);
+        if (TypeSymbol.Float.Matches(expr.Type))
+            return ParseFloat(expr);
 
-                    if (TypeSymbol.Integer.Matches(expr.Type))
-                        return ParseInt((SemanticLiteral) expr);
+        if (TypeSymbol.Number.Matches(expr.Type))
+            return ParseNumber(expr);
 
-                    if (TypeSymbol.Float.Matches(expr.Type))
-                        return ParseFloat((SemanticLiteral) expr);
+        if (TypeSymbol.Char.Matches(expr.Type))
+            return ParseChar(expr);
 
-                    if (TypeSymbol.Number.Matches(expr.Type))
-                        return ParseNumber((SemanticLiteral) expr);
+        if (TypeSymbol.String.Matches(expr.Type))
+            return ParseString(expr);
 
-                    if (TypeSymbol.Char.Matches(expr.Type))
-                        return ParseChar((SemanticLiteral) expr);
-
-                    if (TypeSymbol.String.Matches(expr.Type))
-                        return ParseString((SemanticLiteral) expr);
-
-                    break;
-
-                case SemanticKind.Range:
-                    return EvaluateRange((SemanticRange) expr);
-
-                case SemanticKind.Name:
-                    return EvaluateName((SemanticName) expr);
-
-                case SemanticKind.List:
-                    return EvaluateList((SemanticList) expr);
-
-                case SemanticKind.CallExpression:
-                    return EvaluateCallExpression((SemanticCallExpression) expr);
-
-                case SemanticKind.IndexingExpression:
-                    return EvaluateIndexingExpression((SemanticIndexingExpression) expr);
-
-                case SemanticKind.UnaryOperation:
-                    return EvaluateUnaryOperation((SemanticUnaryOperation) expr);
-
-                case SemanticKind.CountingOperation:
-                    return EvaluateCountingOperation((SemanticCountingOperation) expr);
-
-                case SemanticKind.ConversionExpression:
-                    return EvaluateConversionExpression((SemanticConversionExpression) expr);
-
-                case SemanticKind.BinaryOperation:
-                    return EvaluateBinaryOperation((SemanticBinaryOperation) expr);
-
-                case SemanticKind.TernaryOperation:
-                    return EvaluateTernaryOperation((SemanticTernaryOperation) expr);
-
-                case SemanticKind.AssignExpression:
-                    return EvaluateAssignExpression((SemanticAssignment) expr);
-
-                case SemanticKind.FailedExpression:
-                    return UnknownValue.Template;
-
-                case SemanticKind.FailedOperation:
-                    return EvaluateFailedExpression((SemanticFailedOperation) expr);
-        }
-
-        throw new Exception($"Unexpected expression type {expr?.Kind}");
+        return UnknownValue.Template;
     }
 
     private LiteralValue EvaluateRange(SemanticRange r)
@@ -283,7 +255,22 @@ internal class Evaluator
     private LiteralValue EvaluateName(SemanticName n)
     {
         if (!Scope.TryResolve(n.Symbol, out var value))
+        {
             Diagnostics.Report.UndefinedName(n.Symbol.Name, n.Span);
+            return UnknownValue.Template;
+        }
+
+        if (value.IsNull)
+        {
+            Diagnostics.Report.NullReference(n.Span);
+            return UnknownValue.Template;
+        }
+
+        if (!value.IsDefined)
+        {
+            Diagnostics.Report.UseOfUndefined(n.Symbol.Name, n.Span);
+            return UnknownValue.Template;
+        }
 
         return value;
     }
@@ -308,22 +295,26 @@ internal class Evaluator
 
     private LiteralValue EvaluateCallExpression(SemanticCallExpression fc)
     {
-        var func = (FunctionValue) EvaluateExpression(fc.Function);
-        var args = fc.Arguments.Select(EvaluateExpression).ToArray();
+        var val = EvaluateExpression(fc.Function);
+        if (val is FunctionValue func)
+        {
+            var args = fc.Arguments.Select(EvaluateExpression).ToArray();
+            if (BuiltIn.GetFunctions().Contains(func.Symbol))
+                return BuiltIn.Backend.Evaluate(func, args);
 
-        if (BuiltIn.GetFunctions().Contains(func.Symbol))
-            return BuiltIn.Backend.Evaluate(func, args);
+            Scope = new(Scope);
 
-        Scope = new(Scope);
+            for (int i = 0; i < fc.Arguments.Length; i++)
+                Scope.Declare(func.Symbol.Parameters[i].ToVariableSymbol(),
+                            EvaluateExpression(fc.Arguments[i]));
 
-        for (int i = 0; i < fc.Arguments.Length; i++)
-            Scope.Declare(func.Symbol.Parameters[i].ToVariableSymbol(),
-                          EvaluateExpression(fc.Arguments[i]));
+            var value = EvaluateStatement(func.Body);
+            Scope = Scope.Parent!;
 
-        var value = EvaluateStatement(func.Body);
-        Scope = Scope.Parent!;
+            return value;
+        }
 
-        return value;
+        return UndefinedValue.New(fc.Type);
     }
 
     private LiteralValue EvaluateIndexingExpression(SemanticIndexingExpression ie)
@@ -341,6 +332,8 @@ internal class Evaluator
     private LiteralValue EvaluateUnaryOperation(SemanticUnaryOperation uop)
     {
         var operand = EvaluateExpression(uop.Operand);
+        if (!operand.IsKnown)
+            return UndefinedValue.New(uop.Type);
 
         double _double;
 
@@ -371,6 +364,9 @@ internal class Evaluator
     {
         var name = EvaluateName(co.Name);
         var kind = co.OperationKind;
+
+        if (!name.IsKnown)
+            return UnknownValue.Template;
 
         double _double = TypeSymbol.Char.Matches(co.Name.Type)
                        ? (char)   name.Value
@@ -406,7 +402,12 @@ internal class Evaluator
     private LiteralValue EvaluateConversionExpression(SemanticConversionExpression ce)
     {
         var value = EvaluateExpression(ce.Expression);
-        return Converter.Convert(ce.ConversionKind, value);
+        var after = Converter.Convert(ce.ConversionKind, value, ce.Target);
+
+        if (!after.IsDefined && value.IsKnown)
+            Diagnostics.Report.CannotConvert(value.Type.ToString(), ce.Target.ToString(), ce.Span);
+
+        return after;
     }
 
     private LiteralValue EvaluateBinaryOperation(SemanticBinaryOperation biop)
@@ -415,21 +416,12 @@ internal class Evaluator
         var kind   = biop.Operator.Kind;
         var right  = EvaluateExpression(biop.Right);
 
-        bool   _bool;
-        double _double;
-        string _string;
-
         if (!left.IsKnown || !right.IsKnown)
             return UnknownValue.Template;
 
-        if (kind is not BinaryOperationKind.NullishCoalescence or BinaryOperationKind.Equality or BinaryOperationKind.Inequality)
-        {
-            if (!left.IsDefined)
-                return UseOfUndefined((SemanticName) biop.Left);
-
-            if (!right.IsDefined)
-                return UseOfUndefined((SemanticName) biop.Right);
-        }
+        bool   _bool;
+        double _double;
+        string _string;
 
         switch (kind)
         {
@@ -748,11 +740,5 @@ internal class Evaluator
         catch { Except($"Invalid escape sequence", node.Span!, ExceptionType.StringParseError); }
 
         return null;
-    }
-
-    private LiteralValue UseOfUndefined(SemanticName n)
-    {
-        Except($"Name '{n.Symbol.Name}' (of type '{n.Type}') not assigned to yet", n.Span);
-        return UndefinedValue.New(n.Type);
     }
 }

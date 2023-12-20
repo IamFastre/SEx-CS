@@ -6,15 +6,18 @@ namespace SEx.Evaluate.Conversions;
 
 internal static class Converter
 {
-    public static LiteralValue Convert(ConversionKind kind, LiteralValue value)
+    public static LiteralValue Convert(ConversionKind kind, LiteralValue value, TypeSymbol to)
     {
         if (!value.IsKnown)
-            return UnknownValue.Template;
+            return UndefinedValue.New(to);
 
         switch (kind)
         {
             case ConversionKind.Implicit:
                 return value;
+
+            case ConversionKind.Explicit:
+                return to.Matches(value.Type) ? value : UndefinedValue.New(to);
 
             case ConversionKind.AnyToString:
                 return new StringValue(value.GetString());

@@ -6,6 +6,7 @@ namespace SEx.Semantics;
 public enum ConversionKind
 {
     Implicit,
+    Explicit,
     AnyToString,
 
     NumberToInt,
@@ -32,17 +33,17 @@ public enum ConversionKind
 public class SemanticConversionExpression : SemanticExpression
 {
     public SemanticExpression Expression     { get; }
-    public TypeSymbol         Destination    { get; }
+    public TypeSymbol         Target         { get; }
     public ConversionKind     ConversionKind { get; }
 
     public override Span         Span        { get; }
     public override SemanticKind Kind => SemanticKind.ConversionExpression;
 
-    public SemanticConversionExpression(SemanticExpression expr, TypeSymbol dest, ConversionKind cvKind, Span span)
-        : base(dest)
+    public SemanticConversionExpression(SemanticExpression expr, TypeSymbol target, ConversionKind cvKind, Span span)
+        : base(target)
     {
         Expression     = expr;
-        Destination    = dest;
+        Target         = target;
         ConversionKind = cvKind;
 
         Span           = span;
@@ -57,6 +58,9 @@ public class SemanticConversionExpression : SemanticExpression
     {
         if (to.Matches(from))
             return ConversionKind.Implicit;
+
+        if (from.ID is TypeID.Any && to.ID is not TypeID.String)
+            return ConversionKind.Explicit;
 
         return (from.ID, to.ID) switch
         {

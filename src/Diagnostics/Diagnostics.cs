@@ -122,6 +122,12 @@ public class Report
     internal void CannotAssignToConst(string constant, Span span)
         => Except(ExceptionType.SymbolError, $"Cannot assign to constant '{constant}'", span);
 
+    internal void UseOfUndefined(string name, Span span)
+        => Except(ExceptionType.SymbolError, $"Name '{name}' is not assigned to yet", span);
+
+    internal void NullReference(Span span)
+        => Except(ExceptionType.SymbolError, $"Dereference of a null reference", span);
+
     internal void UndefinedName(string name, Span span)
         => Except(ExceptionType.SymbolError, $"Name '{name}' is not defined", span);
 

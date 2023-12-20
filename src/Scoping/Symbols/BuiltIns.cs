@@ -55,7 +55,7 @@ public static class BuiltIn
         public static LiteralValue Evaluate(FunctionValue func, LiteralValue[] args)
         {
             if (func.Symbol == BuiltIn.Print)
-                return Print((string) Converter.Convert(ConversionKind.AnyToString, args[0]).Value);
+                return Print((string) Converter.Convert(ConversionKind.AnyToString, args[0], TypeSymbol.String).Value);
 
             else if (func.Symbol == BuiltIn.Add)
                 return Add((double) args[0].Value, (double) args[1].Value);
