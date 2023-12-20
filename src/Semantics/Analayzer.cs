@@ -82,38 +82,43 @@ internal sealed class Analyzer
 
     private SemanticDeclarationStatement BindDeclarationStatement(DeclarationStatement ds)
     {
-        var expr = ds.Expression is not null ? BindExpression(ds.Expression) : null;
-        var hint = ds.TypeClause is not null ? BindTypeClause(ds.TypeClause) : (expr?.Type ?? TypeSymbol.Any);
+        var expr = BindExpression(ds.Expression);
+        var hint = ds.TypeClause is null ? expr.Type : BindTypeClause(ds.TypeClause);
         var var  = new VariableSymbol(ds.Variable.Value, hint, ds.IsConstant);
 
-        if (ds.IsConstant && expr is null)
-        {
-            if (Scope.TryResolve(var.Name, out var symbol))
-            {
-                if (ds.TypeClause is not null)
-                    Diagnostics.Report.UselessTypeAdded(hint.Name, ds.TypeClause.Span);
-                else if (((VariableSymbol) symbol!).IsConstant)
-                    Diagnostics.Report.AlreadyConstant(ds.Variable.Value, ds.Variable.Span);
-                else
-                    Scope.Assign(var);
-            }
-            else
-                Diagnostics.Report.ValuelessConstant(ds.Variable.Value, ds.Variable.Span);
-        }
-        else if (expr is not null && !(hint, expr.Type).IsAssignable())
-        {
-            if (expr.Type.IsKnown)
-                Diagnostics.Report.TypesDoNotMatch(hint.ToString(), expr.Type.ToString(), ds.Span);
-        }
-        else if (expr is not null && !TypeSymbol.Any.Matches(expr.Type))
-        {
-            if (expr.Type.IsKnown)
-                Diagnostics.Report.CannotAssignType(expr.Type.ToString(), ds.Expression!.Span);
-        }
-        else if (!Scope.TryDeclare(var))
-            Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
+        if (ds.IsConstant && !expr.Type.IsKnown)
+            BindMakeConstant(ds);
 
-        return new(var, expr, ds);
+        else if (expr.Type.IsKnown)
+        {
+            if (!(hint, expr.Type).IsAssignable())
+                Diagnostics.Report.TypesDoNotMatch(hint.ToString(), expr.Type.ToString(), ds.Span);
+
+            else if (!TypeSymbol.Any.Matches(expr.Type))
+                Diagnostics.Report.CannotAssignType(expr.Type.ToString(), ds.Expression!.Span);
+
+            else if (!Scope.TryDeclare(var))
+                    Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
+        }
+
+        return new(var, ds.Variable.Span, expr, ds.Span);
+    }
+
+    private void BindMakeConstant(DeclarationStatement ds)
+    {
+        if (Scope.TryResolve(ds.Variable.Value, out var symbol))
+        {
+            if (ds.TypeClause is not null)
+                Diagnostics.Report.UselessTypeAdded(ds.TypeClause.Span);
+
+            else if (symbol!.IsConstant)
+                Diagnostics.Report.AlreadyConstant(symbol.Name, ds.Variable.Span);
+
+            else
+                Scope.Symbols[symbol.Name].MakeConstant();
+        }
+        else
+            Diagnostics.Report.ValuelessConstant(ds.Variable.Value, ds.Variable.Span);
     }
 
     private SemanticFunctionStatement BindFunctionStatement(FunctionStatement fs)

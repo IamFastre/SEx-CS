@@ -248,7 +248,6 @@ internal class Evaluator
             }
         }
 
-
         return value;
     }
 

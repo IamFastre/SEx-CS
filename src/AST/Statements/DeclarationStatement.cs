@@ -8,13 +8,13 @@ public sealed class DeclarationStatement : Statement
     public Token       Hash       { get; }
     public NameLiteral Variable   { get; }
     public TypeClause? TypeClause { get; }
-    public Expression? Expression { get; }
+    public Expression  Expression { get; }
     public bool        IsConstant { get; }
 
     public override Span     Span { get; }
     public override NodeKind Kind => NodeKind.DeclarationStatement;
 
-    public DeclarationStatement(Token hash, NameLiteral name, TypeClause? type = null, Expression? expression = null, bool isConst = false)
+    public DeclarationStatement(Token hash, NameLiteral name, Expression expression, TypeClause? type = null, bool isConst = false)
     {
         Hash       = hash;
         Variable   = name;

@@ -55,24 +55,24 @@ internal class Parser
         return current;
     }
 
-    private Token Expect(TokenKind kind, bool eatAnyway = false, bool reread = true, Span? span = null)
+    private Token Expect(TokenKind kind, bool eatAnyway = false, Span? span = null)
     {
         if (Current.Kind == kind)
             return Eat();
 
-        if (EOF)
-            Diagnostics.Report.UnexpectedEOF(Current.Span);
-        else
-            Diagnostics.Report.ExpectedToken(kind.ToString(), Current.Value, span ?? Current.Span);
+        Diagnostics.Report.ExpectedToken(kind.ToString(), Current.Value, span ?? Current.Span);
 
         if (eatAnyway && !EOF)
             Eat();
 
-        return new Token(CONSTS.EMPTY, kind, Current.Span);
+        return new(CONSTS.EMPTY, kind, Current.Span);
     }
 
     private bool IsNextKind(TokenKind kind)
-        => Optional(kind)?.Kind == kind;
+        => IsNextKind(kind, out _);
+
+    private bool IsNextKind(TokenKind kind, out Token? token)
+        => (token = Optional(kind))?.Kind == kind;
 
     private Token? Optional(TokenKind kind)
     {
@@ -118,7 +118,7 @@ internal class Parser
 
             default:
                 Diagnostics.Report.InvalidSyntax(Current.Value, Current.Span);
-                return Literal.Unknown(Current.Span);
+                return Expression.Unknown(Current.Span);
         }
     }
 
@@ -190,7 +190,7 @@ internal class Parser
             if (end is null)
             {
                 Diagnostics.Report.ExpressionExpectedAfter(colon1.Value, colon1.Span);
-                return Literal.Unknown(new(start.Span, colon1.Span));
+                return Expression.Unknown(new(start.Span, colon1.Span));
             }
 
             if (IsNextKind(TokenKind.Colon))
@@ -222,7 +222,7 @@ internal class Parser
         if (index is null)
         {
             Diagnostics.Report.ExpressionExpectedAfter(openBracket.Value, openBracket.Span);
-            return Literal.Unknown(new(iterable.Span, closeBracket.Span));
+            return Expression.Unknown(new(iterable.Span, closeBracket.Span));
         }
 
         return new IndexingExpression(iterable, openBracket, index, closeBracket);
@@ -242,14 +242,14 @@ internal class Parser
         if (name is null)
         {
             Diagnostics.Report.NameExpected(op.Value, op.Span);
-            return Literal.Unknown(op.Span);
+            return Expression.Unknown(op.Span);
         }
 
         if (name is NameLiteral nm)
             return new CountingOperation(op, nm, returnAfter);
 
         Diagnostics.Report.OperandMustBeName(op.Value, name.Span);
-        return Literal.Unknown(new(op.Span, name.Span));
+        return Expression.Unknown(new(op.Span, name.Span));
     }
 
     private Expression? GetIntermediate()
@@ -304,7 +304,7 @@ internal class Parser
             if (left is null)
             {
                 Diagnostics.Report.ExpressionExpectedAfter(uOp.Value, uOp.Span);
-                return Literal.Unknown(uOp.Span);
+                return Expression.Unknown(uOp.Span);
             }
 
             left = new UnaryOperation(uOp, left);
@@ -323,7 +323,7 @@ internal class Parser
             if (right is null)
             {
                 Diagnostics.Report.ExpressionExpectedAfter(binOp.Value, binOp.Span);
-                return Literal.Unknown(new(left!.Span, binOp.Span));
+                return Expression.Unknown(new(left!.Span, binOp.Span));
             }
 
             left = new BinaryOperation(left!, binOp, right);
@@ -338,7 +338,7 @@ internal class Parser
             if (trueExpr is null)
             {
                 Diagnostics.Report.ExpressionExpectedAfter(mark.Value, mark.Span);
-                return Literal.Unknown(left!.Span);
+                return Expression.Unknown(left!.Span);
             }
 
             var colon     = Expect(TokenKind.Colon);
@@ -374,7 +374,7 @@ internal class Parser
             if (expr is null)
             {
                 Diagnostics.Report.ExpressionExpectedAfter(eq.Value, eq.Span);
-                return Literal.Unknown(new(left!.Span, eq.Span));
+                return Expression.Unknown(new(left!.Span, eq.Span));
             }
 
             return new AssignmentExpression((NameLiteral) left, eq, expr);
@@ -393,7 +393,7 @@ internal class Parser
         if (expr is null)
             Diagnostics.Report.StatementExpected(Current.Span);
 
-        return new(expr ?? Literal.Unknown(Current.Span));
+        return new(expr ?? Expression.Unknown(Current.Span));
     }
 
     private GenericTypeClause GetGenericTypeClause(Token type)
@@ -408,7 +408,7 @@ internal class Parser
             types.Add(GetTypeClause());
         }
         while (Current.Kind == TokenKind.Comma && Current.Kind != TokenKind.Greater);
-        var close = Expect(TokenKind.Greater, reread:false);
+        var close = Expect(TokenKind.Greater);
 
         while (IsNextKind(TokenKind.OpenSquareBracket) && IsNextKind(TokenKind.CloseSquareBracket))
             dimension++;
@@ -418,7 +418,7 @@ internal class Parser
 
     private TypeClause GetTypeClause()
     {
-        var type      = Expect(TokenKind.Type, true);
+        var type      = Expect(TokenKind.Type);
         var dimension = 0;
 
         if (IsNextKind(TokenKind.Less))
@@ -443,15 +443,15 @@ internal class Parser
         if (IsNextKind(TokenKind.Colon))
             type = GetTypeClause();
 
-        if (Current.Kind == TokenKind.Equal)
+        var equal = isConst ? Optional(TokenKind.Equal) : Expect(TokenKind.Equal);
+        if (equal is not null)
         {
-            var eq = Eat();
-            expr = GetExpression();
-            if (expr is null)
-                Diagnostics.Report.ExpressionExpectedAfter(eq.Value, eq.Span);
+            expr  = GetExpression();
+            if (expr is null && !equal.IsFabricated)
+                Diagnostics.Report.ExpressionExpectedAfter(equal.Value, equal.Span);
         }
-
-        return new(hash, new(name), type, expr, isConst);
+    
+        return new(hash, new(name), expr ?? Expression.Unknown(Current.Span), type, isConst);
     }
 
     private BlockStatement GetBlockStatement()
@@ -504,7 +504,7 @@ internal class Parser
         var forKeyword = Eat();
         var variable   = Expect(TokenKind.Identifier);
         Expect(TokenKind.InOperator);
-        var iterable   = GetExpression() ?? Literal.Unknown(Current.Span);
+        var iterable   = GetExpression() ?? Expression.Unknown(Current.Span);
         Expect(TokenKind.Colon, span:forKeyword.Span);
         var statement  = GetStatement();
 
@@ -515,7 +515,7 @@ internal class Parser
     {
         ElseClause? elseClause = null;
         var whileKeyword = Eat();
-        var condition    = GetExpression() ?? Literal.Unknown(Current.Span);
+        var condition    = GetExpression() ?? Expression.Unknown(Current.Span);
 
         if (condition.Kind is NodeKind.Unknown)
                 Diagnostics.Report.ExpressionExpectedAfter(whileKeyword.Value, whileKeyword.Span);
@@ -533,7 +533,7 @@ internal class Parser
     {
         ElseClause? elseClause = null;
         var ifKeyword = Eat();
-        var condition = GetExpression() ?? Literal.Unknown(Current.Span);
+        var condition = GetExpression() ?? Expression.Unknown(Current.Span);
 
         if (condition.Kind is NodeKind.Unknown)
                 Diagnostics.Report.ExpressionExpectedAfter(ifKeyword.Value, ifKeyword.Span);

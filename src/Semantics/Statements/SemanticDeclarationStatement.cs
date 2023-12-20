@@ -1,4 +1,3 @@
-using SEx.AST;
 using SEx.Generic.Text;
 using SEx.Scoping.Symbols;
 
@@ -6,19 +5,20 @@ namespace SEx.Semantics;
 
 public sealed class SemanticDeclarationStatement : SemanticStatement
 {
-    public VariableSymbol        Variable   { get; }
-    public Span                  VarSpan    { get; }
-    public SemanticExpression?   Expression { get; }
+    public VariableSymbol     Variable   { get; }
+    public Span               VarSpan    { get; }
+    public SemanticExpression Expression { get; }
 
-    public override Span Span { get; }
+    public override Span         Span    { get; }
     public override SemanticKind Kind => SemanticKind.DeclarationStatement;
 
-    public SemanticDeclarationStatement(VariableSymbol var, SemanticExpression? expr, DeclarationStatement node)
+    public SemanticDeclarationStatement(VariableSymbol var, Span varSpan, SemanticExpression expr, Span span)
     {
         Variable   = var;
-        VarSpan    = node.Variable.Span;
+        VarSpan    = varSpan;
         Expression = expr;
-        Span       = node.Span;
+
+        Span       = span;
     }
 
     public override IEnumerable<SemanticNode> GetChildren()

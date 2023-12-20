@@ -77,8 +77,8 @@ public class Report
     internal void InvalidAssignee(Span span)
         => Except(ExceptionType.SyntaxError, $"Assignee is invalid", span);
 
-    internal void UselessTypeAdded(string type, Span span)
-        => Except(ExceptionType.SyntaxError, $"No need for added type '{type}'", span);
+    internal void UselessTypeAdded(Span span)
+        => Except(ExceptionType.SyntaxError, $"No need for added type", span);
 
     internal void UnexpectedEOF(Span span)
         => Except(ExceptionType.SyntaxError, $"Didn't expect program to end yet", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
