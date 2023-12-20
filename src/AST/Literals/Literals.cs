@@ -19,8 +19,6 @@ public sealed class Literal : Expression
         Kind  = kind;
     }
 
-    public static Literal Unknown(Span? span = null) => new(Token.Unknown(span), NodeKind.Unknown);
-
     public sealed override IEnumerable<Node> GetChildren()
     {
         yield return Token.Node;
