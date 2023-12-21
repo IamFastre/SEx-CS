@@ -20,8 +20,7 @@ public sealed class RangeValue
     {
         get
         {
-            var len = Math.Ceiling(((double) End.Value - (double) Start.Value) / (double) Step.Value) + 1D;
-            len = double.IsNaN(len) ? 0 : len;
+            var len = Math.Floor(((double) End.Value - (double) Start.Value) / (double) Step.Value) + 1D;
             return len > 0 ? new(len) : null;
         }
     }
