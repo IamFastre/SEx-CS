@@ -6,14 +6,14 @@ namespace SEx.Scoping;
 internal class Scope
 {
     public Scope? Parent { get; }
-    public Dictionary<NameSymbol, LiteralValue> Variables { get; }
+    public Dictionary<NameSymbol, LiteralValue> Names { get; }
 
-    public LiteralValue this[NameSymbol variable] => Variables[variable];
+    public LiteralValue this[NameSymbol variable] => Names[variable];
 
     public Scope(Scope? parent = null)
     {
-        Parent      = parent;
-        Variables   = new();
+        Parent = parent;
+        Names  = new();
 
         if (parent is null)
             DeclareBuiltIns();
@@ -26,66 +26,27 @@ internal class Scope
     }
 
     public void AddVariable(NameSymbol variable, LiteralValue value)
-        => Variables.Add(variable, value);
+        => Names.Add(variable, value);
 
     public void EditVariable(NameSymbol variable, LiteralValue value)
     {
-        if (Variables.ContainsKey(variable))
-            Variables[variable] = value;
+        if (Names.ContainsKey(variable))
+            Names[variable] = value;
         else
             throw new ArgumentException("This item does not exits");
     }
 
     public void Flush()
-        => Variables.Clear();
+        => Names.Clear();
 
     //=====================================================================//
     //=====================================================================//
-
-    public TypeSymbol ResolveType(NameSymbol variable)
-    {
-        if (Variables.ContainsKey(variable))
-            return Variables[variable].Type;
-
-        if (Parent is not null)
-            return Parent.ResolveType(variable);
-
-        return TypeSymbol.Unknown;
-    }
-
-    public bool TryResolveType(NameSymbol variable, out TypeSymbol value)
-    {
-        if (Variables.ContainsKey(variable))
-        {
-            value = Variables[variable].Type;
-            return true;
-        }
-
-        if (Parent is not null)
-            return Parent.TryResolveType(variable, out value);
-
-        value = TypeSymbol.Unknown;
-        return false;
-    }
-
-    //=====================================================================//
-
-    public LiteralValue Resolve(NameSymbol variable)
-    {
-        if (Variables.ContainsKey(variable))
-            return Variables[variable];
-        
-        if (Parent is not null)
-            return Parent.Resolve(variable);
-
-        return UnknownValue.Template;
-    }
 
     public bool TryResolve(NameSymbol variable, out LiteralValue value)
     {
-        if (Variables.ContainsKey(variable))
+        if (Names.ContainsKey(variable))
         {
-            value = Variables[variable];
+            value = Names[variable];
             return true;
         }
 
@@ -96,11 +57,6 @@ internal class Scope
         return false;
     }
 
-    //=====================================================================//
-
-    public bool IsDeclared(NameSymbol variable)
-        => Variables.ContainsKey(variable);
-
     public void Declare(NameSymbol variable, LiteralValue value)
     {
         if ((variable.Type, value.Type).IsAssignable())
@@ -109,7 +65,7 @@ internal class Scope
 
     public void MakeConstant(string name)
     {
-        foreach (var sym in Variables.Keys)
+        foreach (var sym in Names.Keys)
             if (sym.Name == name)
                 sym.MakeConstant();
     }
@@ -117,12 +73,12 @@ internal class Scope
     public void Assign(NameSymbol variable, LiteralValue value, bool skipDeclaration = false)
     {
         if (skipDeclaration)
-            Variables[variable] = value;
+            Names[variable] = value;
 
-        if (Variables.ContainsKey(variable))
+        if (Names.ContainsKey(variable))
                 EditVariable(variable, value);
 
-        else if (Parent is not null && Parent.Variables.ContainsKey(variable))
+        else if (Parent is not null && Parent.Names.ContainsKey(variable))
             Parent.Assign(variable, value);
     }
 }

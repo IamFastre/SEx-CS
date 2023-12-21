@@ -14,7 +14,7 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Main;
 
-internal class REPL
+internal sealed class REPL
 {
     private bool DebugShown     = false;
     private bool TokensShown    = false;
@@ -54,15 +54,16 @@ internal class REPL
         }
     }
 
-    public Diagnostics                Diagnostics   { get; }
-    public Scope                      Scope         { get; }
-    public SemanticScope              SemanticScope { get; }
-    public StringBuilder              Script        { get; }
-    public string                     Line          { get; protected set; }
-    public Token[]?                   Tokens        { get; protected set; }
-    public Statement?                 SimpleTree    { get; protected set; }
-    public SemanticProgramStatement?  SemanticTree  { get; protected set; }
-    public LiteralValue               Value         { get; protected set; }
+    public Diagnostics                Diagnostics       { get; }
+    public Scope                      Scope             { get; }
+    public SemanticScope              SemanticScope     { get; }
+    public StringBuilder              Script            { get; }
+    public string                     Line              { get; private set; }
+    public Token[]?                   Tokens            { get; private set; }
+    public Statement?                 SimpleTree        { get; private set; }
+    public SemanticProgramStatement?  SemanticTree      { get; private set; }
+    public LiteralValue               Value             { get; private set; }
+    public Exception?                 PreviousException { get; private set; }
 
     private void ParseArguments()
     {
@@ -105,13 +106,48 @@ internal class REPL
     public void PrintValue()
         => Console.WriteLine(TypeShown ? $"<{C.YELLOW2}{Value.Type}{C.END}>: {ValueString}" : ValueString);
 
-    public void Loop()
+    public void Start()
     {
         Console.WriteLine($"{C.BLUE2}SEx-{CONSTS._VERSION_} ({C.YELLOW2}{Environment.UserName} {C.BLUE2}on {C.RED2}{Environment.OSVersion.Platform}{C.BLUE2}){C.END}");
         Console.WriteLine($"{C.BLUE2}{C.DIM}{C.ITALIC}Type: {C.GREEN2}'help' {C.BLUE2}for more info.{C.END}");
 
         ParseArguments();
+        LoopWrapper();
+    }
 
+    private void LoopWrapper()
+    {
+        try
+        {
+            Loop();
+        }
+        catch (Exception e)
+        {
+            if (e.ToString() == PreviousException?.ToString())
+                Console.WriteLine($"{C.RED}Dude... {C.RED2}stop making the same mistake.{C.END}");
+            else
+                Console.WriteLine($"{C.RED}Tsk tsk tks, {C.RED2}you did an oopsie.{C.END}");
+
+            PreviousException = e;
+            Console.WriteLine($"{C.BLINK}{C.BLACK2}Press enter to get the error...{C.END}");
+
+            Console.Write(C.INVISIBLE);
+            Console.ReadLine();
+            Console.Write(C.END);
+
+            Console.WriteLine($"{C.ITALIC}{C.DIM}{e}{C.END}\n");
+
+            Console.Write($"{C.BLUE2}Continue? (y/N): {C.END}");
+            if (Console.ReadLine()?.ToLower() == "y")
+            {
+                Reset();
+                LoopWrapper();
+            }
+        }
+    }
+
+    private void Loop()
+    {
         bool NewInput() => Script.Length == 0;
         while (true)
         {
@@ -132,31 +168,31 @@ internal class REPL
                 Script.Append(Line);
                 Diagnostics.Source = Source;
 
-                var lexer  = new Lexer(Source, Diagnostics);
-                Tokens     = lexer.Lex();
+                var lexer = new Lexer(Source, Diagnostics);
+                Tokens = lexer.Lex();
 
                 var parser = new Parser(lexer);
                 SimpleTree = parser.Parse();
 
                 if (Diagnostics.Exceptions.Any((SyntaxException e) => e.ReReadLine)
-                &&  !string.IsNullOrWhiteSpace(Line))
+                && !string.IsNullOrWhiteSpace(Line))
                 {
                     Diagnostics.Flush();
                     Script.Append('\n');
                     continue;
                 }
 
-                var analyzer  = new Analyzer(parser.Tree!, SemanticScope, Diagnostics);
-                SemanticTree  = analyzer.Analyze();
+                var analyzer = new Analyzer(parser.Tree!, SemanticScope, Diagnostics);
+                SemanticTree = analyzer.Analyze();
 
                 PrintDebugs();
 
                 var evaluator = new Evaluator(SemanticTree, Scope, Diagnostics);
-                Value         = evaluator.Evaluate();
+                Value = evaluator.Evaluate();
 
                 Throw();
 
-                if (!(Value.Type == TypeSymbol.Void)) 
+                if (!(Value.Type == TypeSymbol.Void))
                     PrintValue();
 
                 Reset();

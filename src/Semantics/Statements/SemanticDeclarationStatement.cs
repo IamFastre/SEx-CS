@@ -5,14 +5,14 @@ namespace SEx.Semantics;
 
 public sealed class SemanticDeclarationStatement : SemanticStatement
 {
-    public VariableSymbol     Variable   { get; }
+    public NameSymbol         Variable   { get; }
     public Span               VarSpan    { get; }
     public SemanticExpression Expression { get; }
 
     public override Span         Span    { get; }
     public override SemanticKind Kind => SemanticKind.DeclarationStatement;
 
-    public SemanticDeclarationStatement(VariableSymbol var, Span varSpan, SemanticExpression expr, Span span)
+    public SemanticDeclarationStatement(NameSymbol var, Span varSpan, SemanticExpression expr, Span span)
     {
         Variable   = var;
         VarSpan    = varSpan;

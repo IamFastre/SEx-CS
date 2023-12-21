@@ -7,6 +7,7 @@ namespace SEx.Parse;
 internal class FunctionStatement : Statement
 {
     public Token                            Symbol     { get; }
+    public bool                             IsConstant { get; }
     public NameLiteral                      Name       { get; }
     public TypeClause?                      Hint       { get; }
     public SeparatedClause<ParameterClause> Parameters { get; }
@@ -15,9 +16,10 @@ internal class FunctionStatement : Statement
     public override Span     Span                      { get; }
     public override NodeKind Kind => NodeKind.FunctionStatement;
 
-    public FunctionStatement(Token symbol, NameLiteral name, TypeClause? typeHint, SeparatedClause<ParameterClause> parameters, Statement body)
+    public FunctionStatement(Token symbol, bool isConst, NameLiteral name, TypeClause? typeHint, SeparatedClause<ParameterClause> parameters, Statement body)
     {
         Symbol     = symbol;
+        IsConstant = isConst;
         Name       = name;
         Hint       = typeHint;
         Parameters = parameters;

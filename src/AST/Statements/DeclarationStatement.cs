@@ -14,13 +14,13 @@ public sealed class DeclarationStatement : Statement
     public override Span     Span { get; }
     public override NodeKind Kind => NodeKind.DeclarationStatement;
 
-    public DeclarationStatement(Token hash, NameLiteral name, Expression expression, TypeClause? type = null, bool isConst = false)
+    public DeclarationStatement(Token hash, bool isConst, NameLiteral name, Expression expression, TypeClause? type = null)
     {
         Hash       = hash;
+        IsConstant = isConst;
         Variable   = name;
         TypeClause = type;
         Expression = expression;
-        IsConstant = isConst;
 
         Span       = new(hash.Span, expression?.Span ?? type?.Span ?? name.Span);
     }

@@ -55,12 +55,12 @@ internal class Parser
         return current;
     }
 
-    private Token Expect(TokenKind kind, bool eatAnyway = false, Span? span = null)
+    private Token Expect(TokenKind kind, bool eatAnyway = false, Span? span = null, bool rereadLine = false)
     {
         if (Current.Kind == kind)
             return Eat();
 
-        Diagnostics.Report.ExpectedToken(kind.ToString(), Current.Value, span ?? Current.Span);
+        Diagnostics.Report.ExpectedToken(kind.ToString(), Current.Value, span ?? Current.Span, rereadLine);
 
         if (eatAnyway && !EOF)
             Eat();
@@ -430,13 +430,25 @@ internal class Parser
         return new(type, Peek(-1).Span, dimension);
     }
 
+    private BlockStatement GetBlockStatement(Token? open = null)
+    {
+        var block = ImmutableArray.CreateBuilder<Statement>();
+        var openBrace = open ?? Eat();
+
+        while (Current.Kind != TokenKind.CloseCurlyBracket && !EOF)
+            block.Add(GetStatement());
+
+        var closeBrace = Expect(TokenKind.CloseCurlyBracket, rereadLine:true);
+
+        return new(openBrace, block.ToArray(), closeBrace);
+    }
+
     private DeclarationStatement GetDeclarationStatement()
     {
         Expression? expr = null;
         TypeClause? type = null;
-        var hash = Eat();
-        var isConst = Current.Kind == TokenKind.Asterisk;
-        if (isConst) Eat();
+        var hash    = Eat();
+        var isConst = IsNextKind(TokenKind.Asterisk);
 
         var name = Expect(TokenKind.Identifier);
 
@@ -451,28 +463,16 @@ internal class Parser
                 Diagnostics.Report.ExpressionExpectedAfter(equal.Value, equal.Span);
         }
     
-        return new(hash, new(name), expr ?? Expression.Unknown(Current.Span), type, isConst);
-    }
-
-    private BlockStatement GetBlockStatement()
-    {
-        List<Statement> block = new();
-
-        var openBrace = Eat();
-
-        while (Current.Kind != TokenKind.CloseCurlyBracket && !EOF)
-            block.Add(GetStatement());
-
-        var closeBrace = Expect(TokenKind.CloseCurlyBracket);
-
-        return new(openBrace, block.ToArray(), closeBrace);
+        return new(hash, isConst, new(name), expr ?? Expression.Unknown(Current.Span), type);
     }
 
     private FunctionStatement GetFunctionStatement()
     {
         TypeClause? type = null;
         var funcSymbol   = Eat();
+        var isConst      = IsNextKind(TokenKind.Asterisk);
         var name         = Expect(TokenKind.Identifier);
+
         Expect(TokenKind.OpenParenthesis);
         var parameters   = GetSeparated(GetParameterClause, TokenKind.CloseParenthesis);
         Expect(TokenKind.CloseParenthesis);
@@ -481,9 +481,9 @@ internal class Parser
             type = GetTypeClause();
 
         Expect(TokenKind.Colon);
-        var statement    = GetStatement();
+        var statement    = GetFunctionBodyStatement();
 
-        return new(funcSymbol, new(name), type, parameters, statement);
+        return new(funcSymbol, isConst, new(name), type, parameters, statement);
     }
 
     private ParameterClause? GetParameterClause()
@@ -497,6 +497,14 @@ internal class Parser
         var type  = GetTypeClause();
 
         return new(new(name), type);
+    }
+
+    private Statement GetFunctionBodyStatement()
+    {
+        if (IsNextKind(TokenKind.OpenCurlyBracket, out var open))
+            return GetBlockStatement(open);
+
+        return GetExpressionStatement();
     }
 
     private ForStatement GetForStatement()

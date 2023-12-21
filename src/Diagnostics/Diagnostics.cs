@@ -50,8 +50,8 @@ public class Report
     internal void InvalidSyntax(string token, Span span)
         => Except(ExceptionType.SyntaxError, $"Invalid syntax '{token}'", span);
 
-    internal void ExpectedToken(string token, string got, Span span)
-        => Except(ExceptionType.SymbolError, $"Expected '{token}' got '{got}'", span);
+    internal void ExpectedToken(string token, string got, Span span, bool rereadLine)
+        => Except(ExceptionType.SymbolError, $"Expected '{token}' got '{got}'", span, rereadLine);
 
     internal void StatementExpected(Span span)
         => Except(ExceptionType.SyntaxError, $"Expected a statement", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
@@ -109,6 +109,12 @@ public class Report
 
     internal void InvalidArgumentCount(string function, int expected, int gotten, Span span)
         => Except(ExceptionType.TypeError, $"Function '{function}' takes {expected} arguments got {gotten}", span);
+
+    internal void BadRangeDirection(Span span)
+        => Except(ExceptionType.MathError, "Range end point and step direction don't match", span);
+
+    internal void RangeStepIsZero(Span span)
+        => Except(ExceptionType.MathError, "Range doesn't step much", span);
 
     internal void CannotIndex(string type, Span span)
         => Except(ExceptionType.IndexError, $"Cannot perform indexing on '{type}'", span);

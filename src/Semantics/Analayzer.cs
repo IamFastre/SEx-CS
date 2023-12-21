@@ -84,10 +84,10 @@ internal sealed class Analyzer
     {
         var expr = BindExpression(ds.Expression);
         var hint = ds.TypeClause is null ? expr.Type : BindTypeClause(ds.TypeClause);
-        var var  = new VariableSymbol(ds.Variable.Value, hint, ds.IsConstant);
+        NameSymbol var  = new VariableSymbol(ds.Variable.Value, hint, ds.IsConstant);
 
         if (ds.IsConstant && !expr.Type.IsKnown)
-            BindMakeConstant(ds);
+            var = BindMakeConstant(ds) ?? var;
 
         else if (expr.Type.IsKnown)
         {
@@ -104,7 +104,7 @@ internal sealed class Analyzer
         return new(var, ds.Variable.Span, expr, ds.Span);
     }
 
-    private void BindMakeConstant(DeclarationStatement ds)
+    private NameSymbol? BindMakeConstant(DeclarationStatement ds)
     {
         if (Scope.TryResolve(ds.Variable.Value, out var symbol))
         {
@@ -115,17 +115,23 @@ internal sealed class Analyzer
                 Diagnostics.Report.AlreadyConstant(symbol.Name, ds.Variable.Span);
 
             else
-                Scope.Symbols[symbol.Name].MakeConstant();
+            {
+                var sym = Scope.Symbols[symbol.Name];
+                sym.MakeConstant();
+                return sym;
+            }
         }
         else
             Diagnostics.Report.ValuelessConstant(ds.Variable.Value, ds.Variable.Span);
+
+        return null;
     }
 
     private SemanticFunctionStatement BindFunctionStatement(FunctionStatement fs)
     {
         var type       = fs.Hint is not null ? BindTypeClause(fs.Hint) : TypeSymbol.Void;
         var parameters = fs.Parameters.Nodes.Select(BindParameter).ToArray();
-        var name       = new FunctionSymbol(fs.Name.Value, type, true, parameters);
+        var name       = new FunctionSymbol(fs.Name.Value, type, fs.IsConstant, parameters);
 
         Scope = new(Scope);
         foreach (var p in parameters)
@@ -133,8 +139,9 @@ internal sealed class Analyzer
         var body = BindStatement(fs.Body);
         Scope = Scope.Parent!;
 
-        if (!Scope.TryDeclare(name))
-            Diagnostics.Report.AlreadyDefined(name.Name, fs.Name.Span);
+        if (type.IsKnown)
+            if (!Scope.TryDeclare(name))
+                Diagnostics.Report.AlreadyDefined(name.Name, fs.Name.Span);
 
         return new(name, type, parameters, body, fs.Span);
     }

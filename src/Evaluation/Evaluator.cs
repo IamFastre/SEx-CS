@@ -126,16 +126,15 @@ internal class Evaluator
             if (iterator is null)
                 return value;
 
-            Scope = new(Scope);
 
             foreach (var elem in iterator)
             {
-
+                Scope = new(Scope);
                 Scope.Assign(fs.Variable, elem, true);
                 value = EvaluateStatement(fs.Body);
+                Scope = Scope.Parent!;
             }
 
-            Scope = Scope.Parent!;
         }
 
         return value;
@@ -160,10 +159,8 @@ internal class Evaluator
         {
             if ((ds.Variable.Type, value.Type).IsAssignable())
                 Scope.Declare(ds.Variable, value);
-            else if (ds.Expression is null)
-                Scope.Declare(ds.Variable, UndefinedValue.New(ds.Variable.Type));
         }
-        else if (ds.Variable.IsConstant && ds.Expression is null)
+        else if (ds.Variable.IsConstant)
             Scope.MakeConstant(ds.Variable.Name);
 
         return VoidValue.Template;
@@ -241,9 +238,16 @@ internal class Evaluator
         &&  TypeSymbol.Number.Matches(step.Type))
         {
             value = new RangeValue((NumberValue) start, (NumberValue) end, (NumberValue) step);
+
             if (((RangeValue) value).Length is null)
             {
-                Except($"Range end point and step direction don't match", r.Span, ExceptionType.MathError);
+                Diagnostics.Report.BadRangeDirection(r.Span);
+                value = UndefinedValue.New(TypeSymbol.Range);
+            }
+
+            if ((double)((RangeValue) value).Step.Value == 0)
+            {
+                Diagnostics.Report.RangeStepIsZero(r.Span);
                 value = UndefinedValue.New(TypeSymbol.Range);
             }
         }
