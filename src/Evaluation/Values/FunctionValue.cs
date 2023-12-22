@@ -53,6 +53,6 @@ public class BuiltinFunctionValue : FunctionValue
 {
     public BuiltinFunctionValue(string name, TypeSymbol returnType, params NameSymbol[] parameters)
         : base(name, parameters, returnType, null!) { }
-    
+
     public NameSymbol GetSymbol() => new(Name, Type, true);
 }
