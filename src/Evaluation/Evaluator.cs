@@ -74,7 +74,7 @@ internal class Evaluator
 
     private LiteralValue EvaluateFunctionStatement(SemanticFunctionStatement fs)
     {
-        var val = new FunctionValue(fs.Function, fs.Body);
+        var val = new FunctionValue(fs.Function.Name, fs.Parameters, fs.ReturnType, fs.Body);
         Scope.Declare(fs.Function, val);
         return VoidValue.Template;
     }
@@ -302,13 +302,13 @@ internal class Evaluator
         if (val is FunctionValue func)
         {
             var args = fc.Arguments.Select(EvaluateExpression).ToArray();
-            if (BuiltIn.GetFunctions().Contains(func.Symbol))
+            if (func.IsBuiltin)
                 return BuiltIn.Backend.Evaluate(func, args);
 
             Scope = new(Scope);
 
             for (int i = 0; i < fc.Arguments.Length; i++)
-                Scope.Declare(func.Symbol.Parameters[i].ToVariableSymbol(),
+                Scope.Declare(func.Parameters[i],
                             EvaluateExpression(fc.Arguments[i]));
 
             var value = EvaluateStatement(func.Body);

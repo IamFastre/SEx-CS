@@ -22,7 +22,7 @@ internal class Scope
     private void DeclareBuiltIns()
     {
         foreach (var func in BuiltIn.GetFunctions())
-            Declare(func, new BuiltinFunctionValue(func));
+            Declare(func.GetSymbol(), func);
     }
 
     public void AddVariable(NameSymbol variable, LiteralValue value)

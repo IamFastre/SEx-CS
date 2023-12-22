@@ -7,19 +7,18 @@ namespace SEx.Scoping.Symbols;
 
 public static class BuiltIn
 {
-    public static readonly FunctionSymbol Print       = new("print", TypeSymbol.Void, true, new ParameterSymbol("value", TypeSymbol.Any));
-    public static readonly FunctionSymbol Add         = new("add", TypeSymbol.Integer, true, new ParameterSymbol("arg1", TypeSymbol.Integer), new ParameterSymbol("arg2", TypeSymbol.Integer));
-    public static readonly FunctionSymbol Floor       = new("floor", TypeSymbol.Integer, true, new ParameterSymbol("value", TypeSymbol.Number));
-    public static readonly FunctionSymbol Round       = new("round", TypeSymbol.Integer, true, new ParameterSymbol("value", TypeSymbol.Number));
-    public static readonly FunctionSymbol Ceiling     = new("ceiling", TypeSymbol.Integer, true, new ParameterSymbol("value", TypeSymbol.Number));
-    public static readonly FunctionSymbol Absolute    = new("absolute", TypeSymbol.Number, true, new ParameterSymbol("value", TypeSymbol.Number));
-    public static readonly FunctionSymbol RandomInt   = new("randomInt", TypeSymbol.Integer, true);
-    public static readonly FunctionSymbol RandomFloat = new("randomFloat", TypeSymbol.Float, true);
+    public static readonly BuiltinFunctionValue Print       = new("print", TypeSymbol.Void, new NameSymbol("value", TypeSymbol.Any));
+    public static readonly BuiltinFunctionValue Floor       = new("floor", TypeSymbol.Integer, new NameSymbol("value", TypeSymbol.Number));
+    public static readonly BuiltinFunctionValue Round       = new("round", TypeSymbol.Integer, new NameSymbol("value", TypeSymbol.Number));
+    public static readonly BuiltinFunctionValue Ceiling     = new("ceiling", TypeSymbol.Integer, new NameSymbol("value", TypeSymbol.Number));
+    public static readonly BuiltinFunctionValue Absolute    = new("absolute", TypeSymbol.Number, new NameSymbol("value", TypeSymbol.Number));
+    public static readonly BuiltinFunctionValue RandomInt   = new("randomInt", TypeSymbol.Integer);
+    public static readonly BuiltinFunctionValue RandomFloat = new("randomFloat", TypeSymbol.Float);
 
-    public static FunctionSymbol[] GetFunctions()
+    public static BuiltinFunctionValue[] GetFunctions()
         => typeof(BuiltIn).GetFields(BindingFlags.Public | BindingFlags.Static)
-                          .Where(f => f.FieldType == typeof(FunctionSymbol))
-                          .Select(f => (FunctionSymbol) f.GetValue(null)!).ToArray();
+                          .Where(f => f.FieldType == typeof(BuiltinFunctionValue))
+                          .Select(f => (BuiltinFunctionValue) f.GetValue(null)!).ToArray();
 
     internal static class Backend
     {
@@ -28,9 +27,6 @@ public static class BuiltIn
             Console.WriteLine(value);
             return VoidValue.Template;
         }
-
-        private static IntegerValue Add(double value1, double value2)
-            => new(value1 + value2);
 
         private static IntegerValue Floor(double value)
             => new(Math.Floor(value));
@@ -51,31 +47,27 @@ public static class BuiltIn
             => new(new Random().NextDouble());
 
 
-
         public static LiteralValue Evaluate(FunctionValue func, LiteralValue[] args)
         {
-            if (func.Symbol == BuiltIn.Print)
+            if (func == BuiltIn.Print)
                 return Print((string) Converter.Convert(ConversionKind.AnyToString, args[0], TypeSymbol.String).Value);
 
-            else if (func.Symbol == BuiltIn.Add)
-                return Add((double) args[0].Value, (double) args[1].Value);
-
-            else if (func.Symbol == BuiltIn.Floor)
+            else if (func == BuiltIn.Floor)
                 return Floor((double) args[0].Value);
 
-            else if (func.Symbol == BuiltIn.Round)
+            else if (func == BuiltIn.Round)
                 return Round((double) args[0].Value);
 
-            else if (func.Symbol == BuiltIn.Ceiling)
+            else if (func == BuiltIn.Ceiling)
                 return Ceiling((double) args[0].Value);
 
-            else if (func.Symbol == BuiltIn.Absolute)
+            else if (func == BuiltIn.Absolute)
                 return Absolute((double) args[0].Value);
 
-            else if (func.Symbol == BuiltIn.RandomInt)
+            else if (func == BuiltIn.RandomInt)
                 return RandomInt();
 
-            else if (func.Symbol == BuiltIn.RandomFloat)
+            else if (func == BuiltIn.RandomFloat)
                 return RandomFloat();
 
             else

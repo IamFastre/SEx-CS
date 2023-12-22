@@ -3,7 +3,6 @@ namespace SEx.Scoping.Symbols;
 public enum SymbolKind
 {
     Type,
-    Function,
     Variable,
     GenericType,
 }
@@ -18,12 +17,14 @@ public abstract class Symbol
     public override string ToString() => Name;
 }
 
-public abstract class NameSymbol : Symbol
+public sealed class NameSymbol : Symbol
 {
-    public TypeSymbol Type       { get; protected set; }
-    public bool       IsConstant { get; protected set; }
+    public TypeSymbol Type       { get; }
+    public bool       IsConstant { get; private set; }
 
-    protected NameSymbol(string name, TypeSymbol? type = null, bool isConstant = false)
+    public override SymbolKind Kind => SymbolKind.Variable;
+
+    public NameSymbol(string name, TypeSymbol? type = null, bool isConstant = false)
         : base(name)
     {
         Type       = type ?? TypeSymbol.Any;

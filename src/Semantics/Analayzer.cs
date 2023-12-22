@@ -84,7 +84,7 @@ internal sealed class Analyzer
     {
         var expr = BindExpression(ds.Expression);
         var hint = ds.TypeClause is null ? expr.Type : BindTypeClause(ds.TypeClause);
-        NameSymbol var  = new VariableSymbol(ds.Variable.Value, hint, ds.IsConstant);
+        NameSymbol var  = new NameSymbol(ds.Variable.Value, hint, ds.IsConstant);
 
         if (ds.IsConstant && !expr.Type.IsKnown)
             var = BindMakeConstant(ds) ?? var;
@@ -129,9 +129,10 @@ internal sealed class Analyzer
 
     private SemanticFunctionStatement BindFunctionStatement(FunctionStatement fs)
     {
-        var type       = fs.Hint is not null ? BindTypeClause(fs.Hint) : TypeSymbol.Void;
+        var returnType = fs.Hint is not null ? BindTypeClause(fs.Hint) : TypeSymbol.Void;
         var parameters = fs.Parameters.Nodes.Select(BindParameter).ToArray();
-        var name       = new FunctionSymbol(fs.Name.Value, type, fs.IsConstant, parameters);
+        var type       = TypeSymbol.Function(returnType, parameters.Select(p => p.Type).ToArray());
+        var name       = new NameSymbol(fs.Name.Value, type, fs.IsConstant);
 
         Scope = new(Scope);
         foreach (var p in parameters)
@@ -139,11 +140,11 @@ internal sealed class Analyzer
         var body = BindStatement(fs.Body);
         Scope = Scope.Parent!;
 
-        if (type.IsKnown)
+        if (returnType.IsKnown)
             if (!Scope.TryDeclare(name))
                 Diagnostics.Report.AlreadyDefined(name.Name, fs.Name.Span);
 
-        return new(name, type, parameters, body, fs.Span);
+        return new(name, parameters, returnType, body, fs.Span);
     }
 
     private SemanticIfStatement BindIfStatement(IfStatement @is)
@@ -205,9 +206,9 @@ internal sealed class Analyzer
 
     //=====================================================================//
     
-    private VariableSymbol DeclareVariable(NameLiteral n, TypeSymbol type, bool isConst = false)
+    private NameSymbol DeclareVariable(NameLiteral n, TypeSymbol type, bool isConst = false)
     {
-        var symbol = new VariableSymbol(n.Value, type, isConst);
+        var symbol = new NameSymbol(n.Value, type, isConst);
         Scope.Symbols.Add(n.Value, symbol);
         return symbol;
     }
@@ -243,7 +244,7 @@ internal sealed class Analyzer
         return type;
     }
 
-    private ParameterSymbol BindParameter(ParameterClause pc)
+    private NameSymbol BindParameter(ParameterClause pc)
         => new(pc.Name.Value, BindTypeClause(pc.Type));
 
     private NameSymbol? GetNameSymbol(NameLiteral n)

@@ -19,11 +19,8 @@ internal class SemanticScope
     private void DeclareBuiltIns()
     {
         foreach (var func in BuiltIn.GetFunctions())
-            TryDeclare(func);
+            TryDeclare(func.GetSymbol());
     }
-
-    public VariableSymbol[] Variables => Symbols.Values.OfType<VariableSymbol>().ToArray();
-    public FunctionSymbol[] Functions => Symbols.Values.OfType<FunctionSymbol>().ToArray();
 
     public bool IsDeclared(string name)
         => Symbols.ContainsKey(name);

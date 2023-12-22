@@ -111,11 +111,11 @@ public class TypeSymbol : Symbol
         allParams.AddRange(parameters);
 
         var paramsStr = string.Empty;
-        foreach (var param in parameters)
-        {
-            paramsStr += param.ToString();
 
-            if (param != parameters.Last())
+        for (int i = 0; i < parameters.Length; i++)
+        {
+            paramsStr += parameters[i].ToString();
+            if (i != parameters.Length - 1)
                 paramsStr += ", ";
         }
 

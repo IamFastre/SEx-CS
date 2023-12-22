@@ -5,14 +5,14 @@ namespace SEx.Semantics;
 
 public sealed class SemanticForStatement : SemanticStatement
 {
-    public VariableSymbol      Variable { get; }
+    public NameSymbol      Variable { get; }
     public SemanticExpression  Iterable { get; }
     public SemanticStatement   Body     { get; }
 
     public override Span         Span   { get; }
     public override SemanticKind Kind => SemanticKind.ForStatement;
 
-    public SemanticForStatement(VariableSymbol variable, SemanticExpression iterable, SemanticStatement body, Span span)
+    public SemanticForStatement(NameSymbol variable, SemanticExpression iterable, SemanticStatement body, Span span)
     {
         Variable = variable;
         Iterable = iterable;
