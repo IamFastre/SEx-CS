@@ -292,6 +292,9 @@ internal sealed class Analyzer
             case NodeKind.List:
                 return BindList((ListLiteral) expr);
 
+            case NodeKind.FunctionLiteral:
+                return BindFunctionExpression((FunctionLiteral) expr);
+
             case NodeKind.CallExpression:
                 return BindCallExpression((CallExpression) expr);
 
@@ -351,13 +354,13 @@ internal sealed class Analyzer
         if (ll.Elements.Nodes.Length > 0)
         {
             List<SemanticExpression> expressions = new();
-            var arRef = BindExpression((Expression) ll.Elements.Nodes.First());
+            var arRef = BindExpression(ll.Elements.Nodes.First());
             TypeSymbol type = arRef.Type;
             expressions.Add(arRef);
 
             foreach (var elem in ll.Elements.Nodes[1..])
             {
-                var expr = BindExpression((Expression) elem);
+                var expr = BindExpression(elem);
 
                 if (type.Matches(expr.Type))
                     expressions.Add(expr);
@@ -378,6 +381,21 @@ internal sealed class Analyzer
         }
 
         return new SemanticList(Array.Empty<SemanticExpression>(), TypeSymbol.Any, ll.Span);
+    }
+
+    private SemanticFunction BindFunctionExpression(FunctionLiteral fs)
+    {
+        var returnType = fs.Hint is not null ? BindTypeClause(fs.Hint) : TypeSymbol.Any;
+        var parameters = fs.Parameters.Nodes.Select(BindParameter).ToArray();
+        var type       = TypeSymbol.Function(returnType, parameters.Select(p => p.Type).ToArray());
+
+        Scope = new(Scope);
+        foreach (var p in parameters)
+            Scope.TryDeclare(p);
+        var body = BindStatement(fs.Body);
+        Scope = Scope.Parent!;
+
+        return new(parameters, body, type, fs.Span);
     }
 
     private SemanticExpression BindCallExpression(CallExpression fce)

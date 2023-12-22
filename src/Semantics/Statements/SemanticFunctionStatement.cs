@@ -5,9 +5,9 @@ namespace SEx.Semantics;
 
 public class SemanticFunctionStatement : SemanticStatement
 {
-    public NameSymbol    Function   { get; }
+    public NameSymbol        Function   { get; }
     public TypeSymbol        ReturnType { get; }
-    public NameSymbol[] Parameters { get; }
+    public NameSymbol[]      Parameters { get; }
     public SemanticStatement Body       { get; }
 
     public override Span         Span   { get; }

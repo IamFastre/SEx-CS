@@ -182,6 +182,7 @@ internal class Evaluator
             SemanticKind.Range                => EvaluateRange((SemanticRange) expr),
             SemanticKind.Name                 => EvaluateName((SemanticName) expr),
             SemanticKind.List                 => EvaluateList((SemanticList) expr),
+            SemanticKind.Function             => EvaluateFunctionExpression((SemanticFunction) expr),
             SemanticKind.CallExpression       => EvaluateCallExpression((SemanticCallExpression) expr),
             SemanticKind.IndexingExpression   => EvaluateIndexingExpression((SemanticIndexingExpression) expr),
             SemanticKind.UnaryOperation       => EvaluateUnaryOperation((SemanticUnaryOperation) expr),
@@ -242,13 +243,13 @@ internal class Evaluator
             if (((RangeValue) value).Length is null)
             {
                 Diagnostics.Report.BadRangeDirection(r.Span);
-                value = UndefinedValue.New(TypeSymbol.Range);
+                return UndefinedValue.New(TypeSymbol.Range);
             }
 
             if ((double)((RangeValue) value).Step.Value == 0)
             {
                 Diagnostics.Report.RangeStepIsZero(r.Span);
-                value = UndefinedValue.New(TypeSymbol.Range);
+                return UndefinedValue.New(TypeSymbol.Range);
             }
         }
 
@@ -295,6 +296,9 @@ internal class Evaluator
 
         return new ListValue(values, type);
     }
+
+    private FunctionValue EvaluateFunctionExpression(SemanticFunction fe)
+        => new(CONSTS.EMPTY, fe.Parameters, ((GenericTypeSymbol) fe.Type).Parameters[0], fe.Body);
 
     private LiteralValue EvaluateCallExpression(SemanticCallExpression fc)
     {

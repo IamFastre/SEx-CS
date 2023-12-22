@@ -122,18 +122,45 @@ internal class Parser
         }
     }
 
-    private ParenthesizedExpression GetParenthesized()
+    private Expression GetParenthesized()
     {
-        var openParen  = Eat();
-        var expression = Current.Kind != TokenKind.CloseParenthesis
-                       ? GetRange()
-                       : null;
+        // TODO: Fix this massive pile of shit
+        Node?  node  = null;
+        Token? arrow = null;
+
+        var openParen = Eat();
+
+        if (Current.Kind == TokenKind.Identifier && Peek().Kind == TokenKind.Colon)
+            node = GetSeparated(GetParameterClause, TokenKind.CloseParenthesis);
+        else if (Current.Kind != TokenKind.CloseParenthesis)
+            node = GetRange();
+
         var closeParen = Expect(TokenKind.CloseParenthesis);
 
-        if (expression is null)
+        if (node is Expression expr)
+            return new ParenthesizedExpression(openParen, expr, closeParen);
+
+        if (node is SeparatedClause<ParameterClause> pc)
+        {
+            var hint  = IsNextKind(TokenKind.DashArrow) ? GetTypeClause() : null;
+            arrow = Expect(TokenKind.EqualArrow);
+            var stmt  = GetFunctionBodyStatement();
+
+            return new FunctionLiteral(openParen, pc, closeParen, hint, arrow, stmt);
+        }
+
+        if (IsNextKind(TokenKind.EqualArrow, out arrow) || IsNextKind(TokenKind.DashArrow))
+        {
+            var hint  = Peek(-1).Kind == TokenKind.DashArrow ? GetTypeClause() : null;
+            arrow ??= Expect(TokenKind.EqualArrow);
+            var stmt  = GetFunctionBodyStatement();
+            return new FunctionLiteral(openParen, SeparatedClause<ParameterClause>.Empty, closeParen, hint, arrow, stmt);
+        }
+
+        if (node is null)
             Diagnostics.Report.ExpressionExpectedAfter(openParen.Value, openParen.Span);
 
-        return new(openParen, expression, closeParen);
+        return new ParenthesizedExpression(openParen, Expression.Unknown(new(openParen.Span, closeParen.Span)), closeParen);
     }
 
     private SeparatedClause<Expression> GetSeparated(TokenKind endToken)
@@ -279,7 +306,7 @@ internal class Parser
     {
         var expr = GetIntermediate();
 
-        while (IsNextKind(TokenKind.RightArrow) && expr is not null)
+        while (IsNextKind(TokenKind.DashArrow) && expr is not null)
             expr = new ConversionExpression(expr, GetTypeClause());
 
         return expr;
@@ -477,7 +504,7 @@ internal class Parser
         var parameters   = GetSeparated(GetParameterClause, TokenKind.CloseParenthesis);
         Expect(TokenKind.CloseParenthesis);
 
-        if (IsNextKind(TokenKind.RightArrow))
+        if (IsNextKind(TokenKind.DashArrow))
             type = GetTypeClause();
 
         Expect(TokenKind.Colon);

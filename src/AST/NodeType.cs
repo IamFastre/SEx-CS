@@ -35,6 +35,7 @@ public enum NodeKind
     // Expressions
     AssignmentExpression,
     ParenthesizedExpression,
+    FunctionLiteral,
     CallExpression,
     IndexingExpression,
     UnaryOperation,

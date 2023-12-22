@@ -12,7 +12,7 @@ public sealed class ParenthesizedExpression : Expression
     public override Span     Span { get; }
     public override NodeKind Kind => NodeKind.ParenthesizedExpression;
 
-    public ParenthesizedExpression(Token open, Expression? expression,Token close)
+    public ParenthesizedExpression(Token open, Expression? expression, Token close)
     {
         OpenParen  = open;
         Expression = expression;

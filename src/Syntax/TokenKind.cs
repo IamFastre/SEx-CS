@@ -98,7 +98,8 @@ public enum TokenKind
     // Others
     Hash,
     Ellipsis,
-    RightArrow,
+    DashArrow,
+    EqualArrow,
     FunctionSymbol,
 
     // Other kinds

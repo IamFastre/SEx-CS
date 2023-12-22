@@ -23,6 +23,7 @@ public enum SemanticKind
     // Expressions
     AssignExpression,
     ParenExpression,
+    Function,
     CallExpression,
     IndexingExpression,
     UnaryOperation,

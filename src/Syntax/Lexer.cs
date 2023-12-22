@@ -92,6 +92,11 @@ internal class Lexer
             case char when IsUpcoming(">>>"):
                 return CreateToken(TokenKind.FunctionSymbol);
 
+            case char when IsUpcoming("=>"):
+                return CreateToken(TokenKind.EqualArrow);
+            case char when IsUpcoming("->"):
+                return CreateToken(TokenKind.DashArrow);
+
             case char when IsUpcoming("+="):
                 return CreateToken(TokenKind.PlusEqual);
             case char when IsUpcoming("-="):
@@ -138,9 +143,6 @@ internal class Lexer
                 return CreateToken(TokenKind.LogicalOR);
             case char when IsUpcoming("??"):
                 return CreateToken(TokenKind.NullishCoalescing);
-
-            case char when IsUpcoming("->"):
-                return CreateToken(TokenKind.RightArrow);
 
             case '=':
                 return CreateToken(TokenKind.Equal);
