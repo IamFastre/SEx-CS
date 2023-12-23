@@ -36,7 +36,7 @@ public static class Checker
         if (ClsSQuotes.Contains(C))
             return OpnSQuotes[Array.IndexOf(ClsSQuotes, C)];
 
-        throw new Exception($"Char \"{C}\" seems to not having a pair.");
+        throw new Exception($"Char \"{C}\" seems to not have a valid pair.");
     }
 
     public static TokenKind GetIdentifierKind(string value)
