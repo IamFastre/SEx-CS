@@ -31,6 +31,7 @@ public enum NodeKind
     WhileStatement,
     ElseClause,
     ForStatement,
+    ReturnStatement,
 
     // Expressions
     AssignmentExpression,

@@ -15,7 +15,7 @@ public sealed class ExpressionStatement : Statement
         Span       = expression.Span;
     }
 
-    public static ExpressionStatement Empty(Span span) => new(Literal.Unknown(span));
+    public static ExpressionStatement Empty(Span span) => new(Expression.Unknown(span));
 
     public override IEnumerable<Node> GetChildren()
     {

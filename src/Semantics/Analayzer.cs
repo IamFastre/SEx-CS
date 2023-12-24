@@ -65,6 +65,9 @@ internal sealed class Analyzer
             case NodeKind.ForStatement:
                 return BindForStatement((ForStatement) stmt);
 
+            case NodeKind.ReturnStatement:
+                return BindReturnStatement((ReturnStatement) stmt);
+
             default:
                 throw new Exception($"Unrecognized statement kind: {stmt.Kind}");
         }
@@ -196,6 +199,12 @@ internal sealed class Analyzer
         Scope = Scope.Parent!;
 
         return new(variable, iterable, body, fs.Span);
+    }
+
+    private SemanticReturnStatement BindReturnStatement(ReturnStatement rs)
+    {
+        var expr = BindExpression(rs.Expression);
+        return new(expr, rs.Span);
     }
 
     private SemanticExpressionStatement BindExpressionStatement(ExpressionStatement es)

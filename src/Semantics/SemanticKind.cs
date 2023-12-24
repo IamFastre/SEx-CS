@@ -13,6 +13,7 @@ public enum SemanticKind
     WhileStatement,
     ElseClause,
     ForStatement,
+    ReturnStatement,
 
     // Literals
     Literal,

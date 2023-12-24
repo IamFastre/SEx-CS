@@ -14,14 +14,6 @@ public static class Checker
     public static readonly char[] OpnSQuotes = {'\'','‹'};
     public static readonly char[] ClsSQuotes = {'\'','›'};
 
-    public static readonly string[] Booleans = { CONSTS.TRUE, CONSTS.FALSE };
-    public static readonly string[] Keywords =
-    {
-        CONSTS.IMPORT ,CONSTS.EXPORT
-    };
-
-
-
     public static char GetOtherPair(char C)
     {
         // Double Quotation marks
@@ -49,10 +41,10 @@ public static class Checker
         CONSTS.ELSE   => TokenKind.Else,
         CONSTS.WHILE  => TokenKind.While,
         CONSTS.FOR    => TokenKind.For,
+        CONSTS.RETURN => TokenKind.Return,
 
-        string when Booleans.Contains(value) => TokenKind.Boolean,
-        string when CONSTS.TYPES.Contains(value)    => TokenKind.Type,
-        string when Keywords.Contains(value) => TokenKind.Keyword,
+        string when CONSTS.BOOLS.Contains(value) => TokenKind.Boolean,
+        string when CONSTS.TYPES.Contains(value) => TokenKind.Type,
 
         _ => TokenKind.Identifier,
     };

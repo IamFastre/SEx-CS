@@ -67,5 +67,5 @@ public sealed class UndefinedValue : LiteralValue
     public override int GetHashCode()        => 0;
 
     public override string GetString()
-        => CONSTS.UNDEFINED;
+        => CONSTS.UNKNOWN;
 }

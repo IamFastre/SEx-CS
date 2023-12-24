@@ -67,9 +67,38 @@ internal class Evaluator
                 case SemanticKind.ForStatement:
                     return EvaluateForStatement((SemanticForStatement) stmt);
 
+                case SemanticKind.ReturnStatement:
+                    return EvaluateReturnStatement((SemanticReturnStatement) stmt);
+
                 default:
                     throw new Exception($"Unexpected statement type {stmt?.Kind}");
         }
+    }
+
+    private LiteralValue EvaluateBlockStatement(SemanticBlockStatement bs)
+    {
+        LiteralValue lastValue = VoidValue.Template;
+        foreach (var statement in bs.Body)
+            lastValue = EvaluateStatement(statement);
+
+        return lastValue;
+    }
+
+    private LiteralValue EvaluateDeclarationStatement(SemanticDeclarationStatement ds)
+    {
+        var value = ds.Expression is null
+                  ? UndefinedValue.New(ds.Variable.Type)
+                  : EvaluateExpression(ds.Expression);
+
+        if (!Scope.TryResolve(ds.Variable, out _))
+        {
+            if ((ds.Variable.Type, value.Type).IsAssignable())
+                Scope.Declare(ds.Variable, value);
+        }
+        else if (ds.Variable.IsConstant)
+            Scope.MakeConstant(ds.Variable.Name);
+
+        return VoidValue.Template;
     }
 
     private LiteralValue EvaluateFunctionStatement(SemanticFunctionStatement fs)
@@ -140,31 +169,8 @@ internal class Evaluator
         return value;
     }
 
-    private LiteralValue EvaluateBlockStatement(SemanticBlockStatement bs)
-    {
-        LiteralValue lastValue = VoidValue.Template;
-        foreach (var statement in bs.Body)
-            lastValue = EvaluateStatement(statement);
-
-        return lastValue;
-    }
-
-    private LiteralValue EvaluateDeclarationStatement(SemanticDeclarationStatement ds)
-    {
-        var value = ds.Expression is null
-                  ? UndefinedValue.New(ds.Variable.Type)
-                  : EvaluateExpression(ds.Expression);
-
-        if (!Scope.TryResolve(ds.Variable, out _))
-        {
-            if ((ds.Variable.Type, value.Type).IsAssignable())
-                Scope.Declare(ds.Variable, value);
-        }
-        else if (ds.Variable.IsConstant)
-            Scope.MakeConstant(ds.Variable.Name);
-
-        return VoidValue.Template;
-    }
+    private LiteralValue EvaluateReturnStatement(SemanticReturnStatement rs)
+        => EvaluateExpression(rs.Expression);
 
     private LiteralValue EvaluateExpressionStatement(SemanticExpressionStatement es)
         => EvaluateExpression(es.Expression);

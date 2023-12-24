@@ -68,6 +68,9 @@ internal class Parser
         return new(CONSTS.EMPTY, kind, Current.Span);
     }
 
+    private Expression FabricateExpression(Span? span = null)
+        => Expression.Unknown(span ?? Current.Span);
+
     private bool IsNextKind(TokenKind kind)
         => IsNextKind(kind, out _);
 
@@ -118,7 +121,7 @@ internal class Parser
 
             default:
                 Diagnostics.Report.InvalidSyntax(Current.Value, Current.Span);
-                return Expression.Unknown(Current.Span);
+                return FabricateExpression();
         }
     }
 
@@ -160,7 +163,7 @@ internal class Parser
         if (node is null)
             Diagnostics.Report.ExpressionExpectedAfter(openParen.Value, openParen.Span);
 
-        return new ParenthesizedExpression(openParen, Expression.Unknown(new(openParen.Span, closeParen.Span)), closeParen);
+        return new ParenthesizedExpression(openParen, FabricateExpression(new(openParen.Span, closeParen.Span)), closeParen);
     }
 
     private SeparatedClause<Expression> GetSeparated(TokenKind endToken)
@@ -217,7 +220,7 @@ internal class Parser
             if (end is null)
             {
                 Diagnostics.Report.ExpressionExpectedAfter(colon1.Value, colon1.Span);
-                return Expression.Unknown(new(start.Span, colon1.Span));
+                return FabricateExpression(new(start.Span, colon1.Span));
             }
 
             if (IsNextKind(TokenKind.Colon))
@@ -249,7 +252,7 @@ internal class Parser
         if (index is null)
         {
             Diagnostics.Report.ExpressionExpectedAfter(openBracket.Value, openBracket.Span);
-            return Expression.Unknown(new(iterable.Span, closeBracket.Span));
+            return FabricateExpression(new(iterable.Span, closeBracket.IsFabricated ? openBracket.Span : closeBracket.Span));
         }
 
         return new IndexingExpression(iterable, openBracket, index, closeBracket);
@@ -261,22 +264,22 @@ internal class Parser
         Expression? name = factor;
         Token       op;
     
-        op   = Eat();
+        op = Eat();
 
         if (!returnAfter)
-            name = GetPrimary();
+            name = GetExpression();
 
         if (name is null)
         {
             Diagnostics.Report.NameExpected(op.Value, op.Span);
-            return Expression.Unknown(op.Span);
+            return FabricateExpression(op.Span);
         }
 
         if (name is NameLiteral nm)
             return new CountingOperation(op, nm, returnAfter);
 
         Diagnostics.Report.OperandMustBeName(op.Value, name.Span);
-        return Expression.Unknown(new(op.Span, name.Span));
+        return FabricateExpression(new(op.Span, name.Span));
     }
 
     private Expression? GetIntermediate()
@@ -331,7 +334,7 @@ internal class Parser
             if (left is null)
             {
                 Diagnostics.Report.ExpressionExpectedAfter(uOp.Value, uOp.Span);
-                return Expression.Unknown(uOp.Span);
+                return FabricateExpression(uOp.Span);
             }
 
             left = new UnaryOperation(uOp, left);
@@ -350,7 +353,7 @@ internal class Parser
             if (right is null)
             {
                 Diagnostics.Report.ExpressionExpectedAfter(binOp.Value, binOp.Span);
-                return Expression.Unknown(new(left!.Span, binOp.Span));
+                return FabricateExpression(new(left!.Span, binOp.Span));
             }
 
             left = new BinaryOperation(left!, binOp, right);
@@ -359,13 +362,13 @@ internal class Parser
         // Get Ternary
         if (Current.Kind == TokenKind.QuestionMark && parentPrecedence == 0)
         {
-            var mark      = Eat();
-
+            var qMark     = Eat();
             var trueExpr  = GetSecondary();
+
             if (trueExpr is null)
             {
-                Diagnostics.Report.ExpressionExpectedAfter(mark.Value, mark.Span);
-                return Expression.Unknown(left!.Span);
+                Diagnostics.Report.ExpressionExpectedAfter(qMark.Value, qMark.Span);
+                return FabricateExpression(new(left!.Span, qMark.Span));
             }
 
             var colon     = Expect(TokenKind.Colon);
@@ -401,7 +404,7 @@ internal class Parser
             if (expr is null)
             {
                 Diagnostics.Report.ExpressionExpectedAfter(eq.Value, eq.Span);
-                return Expression.Unknown(new(left!.Span, eq.Span));
+                return FabricateExpression(new(left!.Span, eq.Span));
             }
 
             return new AssignmentExpression((NameLiteral) left, eq, expr);
@@ -420,7 +423,7 @@ internal class Parser
         if (expr is null)
             Diagnostics.Report.StatementExpected(Current.Span);
 
-        return new(expr ?? Expression.Unknown(Current.Span));
+        return new(expr ?? FabricateExpression());
     }
 
     private GenericTypeClause GetGenericTypeClause(Token type)
@@ -457,13 +460,13 @@ internal class Parser
         return new(type, Peek(-1).Span, dimension);
     }
 
-    private BlockStatement GetBlockStatement(Token? open = null)
+    private BlockStatement GetBlockStatement(bool inFunction = false)
     {
-        var block = ImmutableArray.CreateBuilder<Statement>();
-        var openBrace = open ?? Eat();
+        var block     = ImmutableArray.CreateBuilder<Statement>();
+        var openBrace = Eat();
 
         while (Current.Kind != TokenKind.CloseCurlyBracket && !EOF)
-            block.Add(GetStatement());
+            block.Add(GetStatement(inFunction));
 
         var closeBrace = Expect(TokenKind.CloseCurlyBracket, rereadLine:true);
 
@@ -490,7 +493,7 @@ internal class Parser
                 Diagnostics.Report.ExpressionExpectedAfter(equal.Value, equal.Span);
         }
     
-        return new(hash, isConst, new(name), expr ?? Expression.Unknown(Current.Span), type);
+        return new(hash, isConst, new(name), expr ?? FabricateExpression(), type);
     }
 
     private FunctionStatement GetFunctionStatement()
@@ -528,47 +531,17 @@ internal class Parser
 
     private Statement GetFunctionBodyStatement()
     {
-        if (IsNextKind(TokenKind.OpenCurlyBracket, out var open))
-            return GetBlockStatement(open);
+        if (Current.Kind == TokenKind.OpenCurlyBracket)
+            return GetBlockStatement(inFunction:true);
 
         return GetExpressionStatement();
-    }
-
-    private ForStatement GetForStatement()
-    {
-        var forKeyword = Eat();
-        var variable   = Expect(TokenKind.Identifier);
-        Expect(TokenKind.InOperator);
-        var iterable   = GetExpression() ?? Expression.Unknown(Current.Span);
-        Expect(TokenKind.Colon, span:forKeyword.Span);
-        var statement  = GetStatement();
-
-        return new(forKeyword, new(variable), iterable, statement);
-    }
-
-    private WhileStatement GetWhileStatement()
-    {
-        ElseClause? elseClause = null;
-        var whileKeyword = Eat();
-        var condition    = GetExpression() ?? Expression.Unknown(Current.Span);
-
-        if (condition.Kind is NodeKind.Unknown)
-                Diagnostics.Report.ExpressionExpectedAfter(whileKeyword.Value, whileKeyword.Span);
-
-        Expect(TokenKind.Colon, span:whileKeyword.Span);
-        var statement = GetStatement();
-
-        if (Current.Kind == TokenKind.Else)
-            elseClause = GetElseClause();
-
-        return new(whileKeyword, condition, statement, elseClause);
     }
 
     private IfStatement GetIfStatement()
     {
         ElseClause? elseClause = null;
         var ifKeyword = Eat();
-        var condition = GetExpression() ?? Expression.Unknown(Current.Span);
+        var condition = GetExpression() ?? FabricateExpression();
 
         if (condition.Kind is NodeKind.Unknown)
                 Diagnostics.Report.ExpressionExpectedAfter(ifKeyword.Value, ifKeyword.Span);
@@ -580,6 +553,24 @@ internal class Parser
             elseClause = GetElseClause();
 
         return new(ifKeyword, condition, statement, elseClause);
+    }
+
+    private WhileStatement GetWhileStatement()
+    {
+        ElseClause? elseClause = null;
+        var whileKeyword = Eat();
+        var condition    = GetExpression() ?? FabricateExpression();
+
+        if (condition.Kind is NodeKind.Unknown)
+                Diagnostics.Report.ExpressionExpectedAfter(whileKeyword.Value, whileKeyword.Span);
+
+        Expect(TokenKind.Colon, span:whileKeyword.Span);
+        var statement = GetStatement();
+
+        if (Current.Kind == TokenKind.Else)
+            elseClause = GetElseClause();
+
+        return new(whileKeyword, condition, statement, elseClause);
     }
 
     private ElseClause GetElseClause()
@@ -594,7 +585,27 @@ internal class Parser
         return new(elseKeyword, statement);
     }
 
-    private Statement GetStatement()
+    private ForStatement GetForStatement()
+    {
+        var forKeyword = Eat();
+        var variable   = Expect(TokenKind.Identifier);
+        Expect(TokenKind.InOperator);
+        var iterable   = GetExpression() ?? FabricateExpression();
+        Expect(TokenKind.Colon, span:forKeyword.Span);
+        var statement  = GetStatement();
+
+        return new(forKeyword, new(variable), iterable, statement);
+    }
+
+    private ReturnStatement GetReturnStatement()
+    {
+        var returnKeyword = Eat();
+        var expr = GetExpression() ?? FabricateExpression();
+
+        return new(returnKeyword, expr);
+    }
+
+    private Statement GetStatement(bool inFunction = false)
     {
         switch (Current.Kind)
         {
@@ -615,6 +626,9 @@ internal class Parser
 
             case TokenKind.For:
                 return GetForStatement();
+
+            case TokenKind.Return when inFunction:
+                return GetReturnStatement();
 
             default:
                 return GetExpressionStatement();

@@ -1,16 +1,19 @@
+using SEx.Lex;
+
 namespace SEx.Generic.Constants;
 
 internal static class CONSTS
 {
     public const string EMPTY     = "";
-    public const string NULL      = "null";
+
     public const string UNKNOWN   = "?";
-    public const string UNDEFINED = UNKNOWN;
+    public const string NULL      = "null";
     public const string VOID      = "void";
 
     public const string TRUE      = "true";
     public const string FALSE     = "false";
 
+    public const string RETURN    = "return";
     public const string IF        = "if";
     public const string ELSE      = "else";
     public const string WHILE     = "while";
@@ -33,6 +36,8 @@ internal static class CONSTS
     public const string LIST      = "list";
     public const string FUNCTION  = "function";
     public const string ANY       = "any";
+
+    public static string[] BOOLS  = { TRUE, FALSE };
     public static string[] TYPES  = { VOID, BOOLEAN, INTEGER, FLOAT, NUMBER, CHAR, STRING, RANGE, LIST, FUNCTION, ANY };
 
     public const string _SEX_     = "SEx";

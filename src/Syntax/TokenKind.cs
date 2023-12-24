@@ -24,6 +24,7 @@ public enum TokenKind
 
     // Keyword kinds
     Keyword,
+    Return,
     Type,
     If,
     Else,
