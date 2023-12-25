@@ -30,10 +30,7 @@ internal sealed class Evaluator
         => Diagnostics.Add(type, message, span);
 
     public LiteralValue Evaluate()
-        => Value = EvaluateProgram(SemanticTree);
-
-    private LiteralValue EvaluateProgram(SemanticProgramStatement stmt)
-        => EvaluateStatement(stmt.Body);
+        => Value = EvaluateStatement(SemanticTree.Body);
 
     private LiteralValue EvaluateStatement(params SemanticStatement[] program)
     {
