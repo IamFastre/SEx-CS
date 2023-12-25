@@ -142,8 +142,10 @@ internal sealed class Analyzer
         var name       = new NameSymbol(fs.Name.Value, type, fs.IsConstant);
 
         if (returnType.IsKnown)
-            if (!Scope.TryDeclare(name))
-                Diagnostics.Report.AlreadyDefined(name.Name, fs.Name.Span);
+            if (Scope.TryResolve(name.Name, out var output) && output!.IsConstant)
+                    Diagnostics.Report.CannotAssignToConst(output.Name, fs.Name.Span);
+            else
+                Scope.Assign(name, true);
 
         Scope = new(Scope);
         foreach (var p in parameters)
@@ -234,7 +236,7 @@ internal sealed class Analyzer
                 Diagnostics.Report.ReturnValueExpected(rs.Span);
 
             else if (!FunctionType.Parameters[0].Matches(expr.Type))
-                Diagnostics.Report.TypesDoNotMatch(FunctionType.ToString(), expr.Type.ToString(), expr.Span);
+                Diagnostics.Report.TypesDoNotMatch(FunctionType.Parameters[0].ToString(), expr.Type.ToString(), expr.Span);
         }
 
         return new(expr, rs.Span);

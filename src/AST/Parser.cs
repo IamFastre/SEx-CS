@@ -123,6 +123,7 @@ internal class Parser
 
             default:
                 Diagnostics.Report.InvalidSyntax(Current.Value, Current.Span);
+                Eat();
                 return FabricateExpression();
         }
     }

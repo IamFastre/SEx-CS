@@ -34,10 +34,12 @@ internal class SemanticScope
         return true;
     }
 
-    public void Assign(NameSymbol name)
+    public void Assign(NameSymbol name, bool force = false)
     {
-        if (Symbols.ContainsKey(name.Name))
+        if (Symbols.ContainsKey(name.Name) || force)
             Symbols[name.Name] = name;
+        else
+            throw new Exception("Name not declared");
     }
 
     public bool TryResolve(string name, out NameSymbol? symbol)

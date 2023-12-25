@@ -70,9 +70,9 @@ internal class Scope
                 sym.MakeConstant();
     }
 
-    public void Assign(NameSymbol variable, LiteralValue value, bool skipDeclaration = false)
+    public void Assign(NameSymbol variable, LiteralValue value, bool force = false)
     {
-        if (skipDeclaration)
+        if (force)
             Names[variable] = value;
 
         if (Names.ContainsKey(variable))

@@ -16,6 +16,7 @@ internal sealed class Evaluator
     public SemanticProgramStatement SemanticTree { get; }
     public Scope                    Scope        { get; private set; }
     public LiteralValue             Value        { get; private set; } = VoidValue.Template;
+    public LiteralValue?            ReturnValue  { get; private set; }
 
     public Evaluator(SemanticProgramStatement stmt, Scope? scope = null, Diagnostics? diagnostics = null)
     {
@@ -36,6 +37,9 @@ internal sealed class Evaluator
     {
         foreach (var statement in program)
         {
+            if (ReturnValue is not null)
+                return ReturnValue;
+
             switch (statement.Kind)
                 {
                     case SemanticKind.ExpressionStatement:
@@ -60,7 +64,7 @@ internal sealed class Evaluator
                         EvaluateForStatement((SemanticForStatement) statement);
                         break;
                     case SemanticKind.ReturnStatement:
-                        return EvaluateReturnStatement((SemanticReturnStatement) statement);
+                        return ReturnValue = EvaluateReturnStatement((SemanticReturnStatement) statement);
                     default:
                         throw new Exception($"Unexpected statement type {statement?.Kind}");
             }
@@ -93,7 +97,7 @@ internal sealed class Evaluator
     private void EvaluateFunctionStatement(SemanticFunctionStatement fs)
     {
         var val = new FunctionValue(fs.Function.Name, fs.Parameters, fs.ReturnType, fs.Body);
-        Scope.Declare(fs.Function, val);
+        Scope.Assign(fs.Function, val, true);
     }
 
     private void EvaluateIfStatement(SemanticIfStatement @is)
@@ -295,8 +299,8 @@ internal sealed class Evaluator
                 Scope.Declare(func.Parameters[i], EvaluateExpression(fc.Arguments[i]));
 
             if (func.Body is SemanticBlockStatement blkStmt)
-                EvaluateStatement(blkStmt.Body);
-            else 
+                Value = new Evaluator(blkStmt.ToProgram(), Scope, Diagnostics).Evaluate();
+            else
                 EvaluateExpressionStatement((SemanticExpressionStatement) func.Body);
 
             Scope = Scope.Parent!;

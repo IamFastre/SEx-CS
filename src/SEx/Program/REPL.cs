@@ -187,8 +187,13 @@ internal sealed class REPL
 
                 PrintDebugs();
 
-                var evaluator = new Evaluator(SemanticTree, Scope, Diagnostics);
-                Value = evaluator.Evaluate();
+                if (!Diagnostics.Exceptions.Any())
+                {
+                    var evaluator = new Evaluator(SemanticTree, Scope, Diagnostics);
+                    Value = evaluator.Evaluate();
+                }
+                else
+                    Value = UnknownValue.Template;
 
                 Throw();
 
