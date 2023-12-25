@@ -110,6 +110,15 @@ public class Report
     internal void InvalidArgumentCount(string function, int expected, int gotten, Span span)
         => Except(ExceptionType.TypeError, $"Function '{function}' takes {expected} arguments got {gotten}", span);
 
+    internal void ReturnNotExpected(Span span)
+        => Except(ExceptionType.TypeError, $"Cannot use 'return' outside of functions", span);
+
+    internal void NoReturnValueExpected(Span span)
+        => Except(ExceptionType.TypeError, $"Didn't expect a return value", span);
+
+    internal void ReturnValueExpected(Span span)
+        => Except(ExceptionType.TypeError, $"Expected a return value", span);
+
     internal void BadRangeDirection(Span span)
         => Except(ExceptionType.MathError, "Range end point and step direction don't match", span);
 

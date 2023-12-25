@@ -35,4 +35,5 @@ public enum SemanticKind
 
     FailedOperation,
     FailedExpression,
+    FunctionBodyStatement,
 }

@@ -10,19 +10,18 @@ using SEx.Semantics;
 
 namespace SEx.Evaluate;
 
-internal class Evaluator
+internal sealed class Evaluator
 {
     public Diagnostics              Diagnostics  { get; }
     public SemanticProgramStatement SemanticTree { get; }
-    public Scope                    Scope        { get; protected set; }
-    public LiteralValue             Value        { get; protected set; }
+    public Scope                    Scope        { get; private set; }
+    public LiteralValue             Value        { get; private set; } = VoidValue.Template;
 
     public Evaluator(SemanticProgramStatement stmt, Scope? scope = null, Diagnostics? diagnostics = null)
     {
         SemanticTree = stmt;
         Scope        = scope       ?? new();
         Diagnostics  = diagnostics ?? new();
-        Value        = UnknownValue.Template;
     }
 
     private void Except(string message,
@@ -34,57 +33,52 @@ internal class Evaluator
         => Value = EvaluateProgram(SemanticTree);
 
     private LiteralValue EvaluateProgram(SemanticProgramStatement stmt)
+        => EvaluateStatement(stmt.Body);
+
+    private LiteralValue EvaluateStatement(params SemanticStatement[] program)
     {
-        LiteralValue lastValue = VoidValue.Template;
-        foreach (var statement in stmt.Body)
-            lastValue = EvaluateStatement(statement);
-
-        return lastValue;
-    }
-
-    private LiteralValue EvaluateStatement(SemanticStatement stmt)
-    {
-        switch (stmt.Kind)
-            {
-                case SemanticKind.ExpressionStatement:
-                    return EvaluateExpressionStatement((SemanticExpressionStatement) stmt);
-
-                case SemanticKind.DeclarationStatement:
-                    return EvaluateDeclarationStatement((SemanticDeclarationStatement) stmt);
-
-                case SemanticKind.BlockStatement:
-                    return EvaluateBlockStatement((SemanticBlockStatement) stmt);
-
-                case SemanticKind.FunctionStatement:
-                    return EvaluateFunctionStatement((SemanticFunctionStatement) stmt);
-
-                case SemanticKind.IfStatement:
-                    return EvaluateIfStatement((SemanticIfStatement) stmt);
-
-                case SemanticKind.WhileStatement:
-                    return EvaluateWhileStatement((SemanticWhileStatement) stmt);
-
-                case SemanticKind.ForStatement:
-                    return EvaluateForStatement((SemanticForStatement) stmt);
-
-                case SemanticKind.ReturnStatement:
-                    return EvaluateReturnStatement((SemanticReturnStatement) stmt);
-
-                default:
-                    throw new Exception($"Unexpected statement type {stmt?.Kind}");
+        foreach (var statement in program)
+        {
+            switch (statement.Kind)
+                {
+                    case SemanticKind.ExpressionStatement:
+                        EvaluateExpressionStatement((SemanticExpressionStatement) statement);
+                        break;
+                    case SemanticKind.BlockStatement:
+                        EvaluateBlockStatement((SemanticBlockStatement) statement);
+                        break;
+                    case SemanticKind.DeclarationStatement:
+                        EvaluateDeclarationStatement((SemanticDeclarationStatement) statement);
+                        break;
+                    case SemanticKind.FunctionStatement:
+                        EvaluateFunctionStatement((SemanticFunctionStatement) statement);
+                        break;
+                    case SemanticKind.IfStatement:
+                        EvaluateIfStatement((SemanticIfStatement) statement);
+                        break;
+                    case SemanticKind.WhileStatement:
+                        EvaluateWhileStatement((SemanticWhileStatement) statement);
+                        break;
+                    case SemanticKind.ForStatement:
+                        EvaluateForStatement((SemanticForStatement) statement);
+                        break;
+                    case SemanticKind.ReturnStatement:
+                        return EvaluateReturnStatement((SemanticReturnStatement) statement);
+                    default:
+                        throw new Exception($"Unexpected statement type {statement?.Kind}");
+            }
         }
+
+        return Value;
     }
 
-    private LiteralValue EvaluateBlockStatement(SemanticBlockStatement bs)
-    {
-        LiteralValue lastValue = VoidValue.Template;
-        foreach (var statement in bs.Body)
-            lastValue = EvaluateStatement(statement);
+    private void EvaluateExpressionStatement(SemanticExpressionStatement es)
+        => Value = EvaluateExpression(es.Expression);
 
-        return lastValue;
-    }
+    private void EvaluateBlockStatement(SemanticBlockStatement stmt)
+        => EvaluateStatement(stmt.Body);
 
-    private LiteralValue EvaluateDeclarationStatement(SemanticDeclarationStatement ds)
+    private void EvaluateDeclarationStatement(SemanticDeclarationStatement ds)
     {
         var value = ds.Expression is null
                   ? UndefinedValue.New(ds.Variable.Type)
@@ -97,83 +91,66 @@ internal class Evaluator
         }
         else if (ds.Variable.IsConstant)
             Scope.MakeConstant(ds.Variable.Name);
-
-        return VoidValue.Template;
     }
 
-    private LiteralValue EvaluateFunctionStatement(SemanticFunctionStatement fs)
+    private void EvaluateFunctionStatement(SemanticFunctionStatement fs)
     {
         var val = new FunctionValue(fs.Function.Name, fs.Parameters, fs.ReturnType, fs.Body);
         Scope.Declare(fs.Function, val);
-        return VoidValue.Template;
     }
 
-    private LiteralValue EvaluateIfStatement(SemanticIfStatement @is)
+    private void EvaluateIfStatement(SemanticIfStatement @is)
     {
-        LiteralValue value = VoidValue.Template;
         var conditionVal = EvaluateExpression(@is.Condition);
 
         if (TypeSymbol.Boolean.Matches(conditionVal.Type))
         {
             if ((bool) conditionVal.Value)
-                value = EvaluateStatement(@is.Then);
-            else
-                if (@is.ElseClause is not null)
-                    value = EvaluateStatement(@is.ElseClause.Body);
+                EvaluateStatement(@is.Then);
+            else if (@is.ElseClause is not null)
+                    EvaluateStatement(@is.ElseClause.Body);
         }
-
-        return value;
     }
 
-    private LiteralValue EvaluateWhileStatement(SemanticWhileStatement ws)
+    private void EvaluateWhileStatement(SemanticWhileStatement ws)
     {
-        LiteralValue value = VoidValue.Template;
         var conditionVal = EvaluateExpression(ws.Condition);
 
         if (TypeSymbol.Boolean.Matches(conditionVal.Type))
         {
             if ((bool) conditionVal.Value)
                 while ((bool) EvaluateExpression(ws.Condition).Value)
-                    value = EvaluateStatement(ws.Body);
-            else
-                if (ws.ElseClause is not null)
-                    value = EvaluateStatement(ws.ElseClause.Body);
+                    EvaluateStatement(ws.Body);
+            else if (ws.ElseClause is not null)
+                    EvaluateStatement(ws.ElseClause.Body);
         }
-
-        return value;
     }
 
-    private LiteralValue EvaluateForStatement(SemanticForStatement fs)
+    private void EvaluateForStatement(SemanticForStatement fs)
     {
-        LiteralValue value = VoidValue.Template;
-        var expr           = EvaluateExpression(fs.Iterable);
+        var expr = EvaluateExpression(fs.Iterable);
 
         if (expr.Type.IsIterable)
         {
             var iterator = IEnumerableValue.GetIterator(expr);
 
             if (iterator is null)
-                return value;
+                return;
 
 
             foreach (var elem in iterator)
             {
                 Scope = new(Scope);
                 Scope.Assign(fs.Variable, elem, true);
-                value = EvaluateStatement(fs.Body);
+                EvaluateStatement(fs.Body);
                 Scope = Scope.Parent!;
             }
 
         }
-
-        return value;
     }
 
     private LiteralValue EvaluateReturnStatement(SemanticReturnStatement rs)
-        => EvaluateExpression(rs.Expression);
-
-    private LiteralValue EvaluateExpressionStatement(SemanticExpressionStatement es)
-        => EvaluateExpression(es.Expression);
+        => Value = rs.Expression is null ? VoidValue.Template : EvaluateExpression(rs.Expression);
 
     //=====================================================================//
     //=====================================================================//
@@ -188,7 +165,7 @@ internal class Evaluator
             SemanticKind.Range                => EvaluateRange((SemanticRange) expr),
             SemanticKind.Name                 => EvaluateName((SemanticName) expr),
             SemanticKind.List                 => EvaluateList((SemanticList) expr),
-            SemanticKind.Function             => EvaluateFunctionExpression((SemanticFunction) expr),
+            SemanticKind.Function             => EvaluateFunction((SemanticFunction) expr),
             SemanticKind.CallExpression       => EvaluateCallExpression((SemanticCallExpression) expr),
             SemanticKind.IndexingExpression   => EvaluateIndexingExpression((SemanticIndexingExpression) expr),
             SemanticKind.UnaryOperation       => EvaluateUnaryOperation((SemanticUnaryOperation) expr),
@@ -303,13 +280,13 @@ internal class Evaluator
         return new ListValue(values, type);
     }
 
-    private FunctionValue EvaluateFunctionExpression(SemanticFunction fe)
+    private FunctionValue EvaluateFunction(SemanticFunction fe)
         => new(CONSTS.EMPTY, fe.Parameters, ((GenericTypeSymbol) fe.Type).Parameters[0], fe.Body);
 
     private LiteralValue EvaluateCallExpression(SemanticCallExpression fc)
     {
-        var val = EvaluateExpression(fc.Function);
-        if (val is FunctionValue func)
+        var called = EvaluateExpression(fc.Function);
+        if (called is FunctionValue func)
         {
             var args = fc.Arguments.Select(EvaluateExpression).ToArray();
             if (func.IsBuiltin)
@@ -318,13 +295,16 @@ internal class Evaluator
             Scope = new(Scope);
 
             for (int i = 0; i < fc.Arguments.Length; i++)
-                Scope.Declare(func.Parameters[i],
-                            EvaluateExpression(fc.Arguments[i]));
+                Scope.Declare(func.Parameters[i], EvaluateExpression(fc.Arguments[i]));
 
-            var value = EvaluateStatement(func.Body);
+            if (func.Body is SemanticBlockStatement blkStmt)
+                EvaluateStatement(blkStmt.Body);
+            else 
+                EvaluateExpressionStatement((SemanticExpressionStatement) func.Body);
+
             Scope = Scope.Parent!;
 
-            return value;
+            return Value;
         }
 
         return UndefinedValue.New(fc.Type);

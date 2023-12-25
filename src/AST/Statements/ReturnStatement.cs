@@ -6,23 +6,24 @@ namespace SEx.Parse;
 
 public class ReturnStatement : Statement
 {
-    public Token      Return      { get; }
-    public Expression Expression  { get; }
+    public Token       Return      { get; }
+    public Expression? Expression  { get; }
 
-    public override Span     Span { get; }
+    public override Span     Span  { get; }
     public override NodeKind Kind => NodeKind.ReturnStatement;
 
-    public ReturnStatement(Token @return, Expression expr)
+    public ReturnStatement(Token @return, Expression? expr)
     {
         Return     = @return;
         Expression = expr;
 
-        Span       = new(@return.Span, expr.Span);
+        Span       = expr is null ? @return.Span : new(@return.Span, expr.Span);
     }
 
     public override IEnumerable<Node> GetChildren()
     {
         yield return Return.Node;
-        yield return Expression;
+        if (Expression is not null)
+            yield return Expression;
     }
 }

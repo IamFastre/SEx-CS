@@ -19,7 +19,9 @@ internal class Parser
     private Token Peek(int i = 1) => Index + i < Tokens.Count ? Tokens[Index + i] : Tokens[^1];
     private Token Current         => Peek(0);
     private bool  EOF             => Current.Kind == TokenKind.EOF;
-
+    private bool  EOL             => Current.Span.Start.Line != Peek().Span.Start.Line;
+    private bool  EOS             => Current.Kind == TokenKind.CloseCurlyBracket;
+ 
     public Parser(Lexer lexer)
     {
         Source      = lexer.Source;
@@ -460,13 +462,13 @@ internal class Parser
         return new(type, Peek(-1).Span, dimension);
     }
 
-    private BlockStatement GetBlockStatement(bool inFunction = false)
+    private BlockStatement GetBlockStatement()
     {
         var block     = ImmutableArray.CreateBuilder<Statement>();
         var openBrace = Eat();
 
         while (Current.Kind != TokenKind.CloseCurlyBracket && !EOF)
-            block.Add(GetStatement(inFunction));
+            block.Add(GetStatement());
 
         var closeBrace = Expect(TokenKind.CloseCurlyBracket, rereadLine:true);
 
@@ -532,7 +534,7 @@ internal class Parser
     private Statement GetFunctionBodyStatement()
     {
         if (Current.Kind == TokenKind.OpenCurlyBracket)
-            return GetBlockStatement(inFunction:true);
+            return GetBlockStatement();
 
         return GetExpressionStatement();
     }
@@ -599,13 +601,14 @@ internal class Parser
 
     private ReturnStatement GetReturnStatement()
     {
+        var atEOL = EOL;
         var returnKeyword = Eat();
-        var expr = GetExpression() ?? FabricateExpression();
+        var expr = atEOL || EOS ? null : GetExpression();
 
         return new(returnKeyword, expr);
     }
 
-    private Statement GetStatement(bool inFunction = false)
+    private Statement GetStatement()
     {
         switch (Current.Kind)
         {
@@ -627,7 +630,7 @@ internal class Parser
             case TokenKind.For:
                 return GetForStatement();
 
-            case TokenKind.Return when inFunction:
+            case TokenKind.Return:
                 return GetReturnStatement();
 
             default:

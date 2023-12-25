@@ -7,7 +7,7 @@ namespace SEx.Evaluate.Values;
 public class FunctionValue : LiteralValue
 {
     public string            Name       { get; }
-    public NameSymbol[] Parameters { get; }
+    public NameSymbol[]      Parameters { get; }
     public SemanticStatement Body       { get; }
 
     public bool IsBuiltin => Body is null;

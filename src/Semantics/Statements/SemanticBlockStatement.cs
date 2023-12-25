@@ -16,4 +16,6 @@ public sealed class SemanticBlockStatement : SemanticStatement
     }
 
     public override IEnumerable<SemanticNode> GetChildren() => Body;
+
+    public SemanticProgramStatement ToProgram() => new(Body);
 }

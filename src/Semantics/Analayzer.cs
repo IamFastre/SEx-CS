@@ -15,11 +15,15 @@ internal sealed class Analyzer
     public SemanticScope              Scope       { get; private set; }
     public SemanticProgramStatement?  Tree        { get; private set; }
 
-    public Analyzer(ProgramStatement stmt, SemanticScope? scope = null, Diagnostics? diagnostics = null)
+    public GenericTypeSymbol?         FunctionType = null;
+
+    public Analyzer(ProgramStatement stmt, SemanticScope? scope = null, Diagnostics? diagnostics = null, GenericTypeSymbol? functionType = null)
     {
-        SimpleTree  = stmt;
-        Scope       = scope       ?? new();
-        Diagnostics = diagnostics ?? new();
+        SimpleTree   = stmt;
+        Scope        = scope       ?? new();
+        Diagnostics  = diagnostics ?? new();
+
+        FunctionType = functionType;
     }
 
     private void Except(string message,
@@ -137,17 +141,28 @@ internal sealed class Analyzer
         var type       = TypeSymbol.Function(returnType, parameters.Select(p => p.Type).ToArray());
         var name       = new NameSymbol(fs.Name.Value, type, fs.IsConstant);
 
-        Scope = new(Scope);
-        foreach (var p in parameters)
-            Scope.TryDeclare(p);
-        var body = BindStatement(fs.Body);
-        Scope = Scope.Parent!;
-
         if (returnType.IsKnown)
             if (!Scope.TryDeclare(name))
                 Diagnostics.Report.AlreadyDefined(name.Name, fs.Name.Span);
 
+        Scope = new(Scope);
+        foreach (var p in parameters)
+            Scope.TryDeclare(p);
+        var body = BindFunctionBody(fs.Body, type);
+        Scope = Scope.Parent!;
+
         return new(name, parameters, returnType, body, fs.Span);
+    }
+
+    private SemanticStatement BindFunctionBody(Statement body, GenericTypeSymbol type)
+    {
+        if (body is BlockStatement blkStmt)
+        {
+            var funcAnalyzer = new Analyzer(new(blkStmt.Body), Scope, Diagnostics, type);
+            return new SemanticBlockStatement(funcAnalyzer.Analyze().Body, blkStmt.Span);
+        }
+
+        return BindExpressionStatement((ExpressionStatement) body);
     }
 
     private SemanticIfStatement BindIfStatement(IfStatement @is)
@@ -203,7 +218,25 @@ internal sealed class Analyzer
 
     private SemanticReturnStatement BindReturnStatement(ReturnStatement rs)
     {
-        var expr = BindExpression(rs.Expression);
+        var expr = rs.Expression is null ? null : BindExpression(rs.Expression);
+
+        if (FunctionType is null)
+            Diagnostics.Report.ReturnNotExpected(rs.Span);
+
+        else if (FunctionType.Parameters[0].Matches(TypeSymbol.Void))
+        {
+            if (expr is not null)
+                Diagnostics.Report.NoReturnValueExpected(expr.Span);
+        }
+        else
+        {
+            if (expr is null)
+                Diagnostics.Report.ReturnValueExpected(rs.Span);
+
+            else if (!FunctionType.Parameters[0].Matches(expr.Type))
+                Diagnostics.Report.TypesDoNotMatch(FunctionType.ToString(), expr.Type.ToString(), expr.Span);
+        }
+
         return new(expr, rs.Span);
     }
 
@@ -392,19 +425,19 @@ internal sealed class Analyzer
         return new SemanticList(Array.Empty<SemanticExpression>(), TypeSymbol.Any, ll.Span);
     }
 
-    private SemanticFunction BindFunctionExpression(FunctionLiteral fs)
+    private SemanticFunction BindFunctionExpression(FunctionLiteral fl)
     {
-        var returnType = fs.Hint is not null ? BindTypeClause(fs.Hint) : TypeSymbol.Any;
-        var parameters = fs.Parameters.Nodes.Select(BindParameter).ToArray();
+        var returnType = fl.Hint is not null ? BindTypeClause(fl.Hint) : TypeSymbol.Any;
+        var parameters = fl.Parameters.Nodes.Select(BindParameter).ToArray();
         var type       = TypeSymbol.Function(returnType, parameters.Select(p => p.Type).ToArray());
 
         Scope = new(Scope);
         foreach (var p in parameters)
             Scope.TryDeclare(p);
-        var body = BindStatement(fs.Body);
+        var body = BindFunctionBody(fl.Body, type);
         Scope = Scope.Parent!;
 
-        return new(parameters, body, type, fs.Span);
+        return new(parameters, body, type, fl.Span);
     }
 
     private SemanticExpression BindCallExpression(CallExpression fce)
@@ -595,5 +628,21 @@ internal sealed class Analyzer
         }
 
         return expr;
+    }
+}
+
+public class SemanticFunctionBodyStatement : SemanticStatement
+{
+    public override Span         Span { get; }
+    public override SemanticKind Kind => SemanticKind.FunctionBodyStatement;
+
+    public SemanticFunctionBodyStatement(Span span)
+    {
+        Span = span;
+    }
+
+    public override IEnumerable<SemanticNode> GetChildren()
+    {
+        throw new NotImplementedException();
     }
 }
