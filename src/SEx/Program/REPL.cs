@@ -42,7 +42,7 @@ internal sealed class REPL
 
         Line          = "";
         Script        = new();
-        Diagnostics   = new();
+        Diagnostics   = new(Source);
         SemanticScope = new();
         Scope         = new();
         Value         = UnknownValue.Template;
@@ -60,7 +60,7 @@ internal sealed class REPL
     public StringBuilder              Script            { get; }
     public string                     Line              { get; private set; }
     public Token[]?                   Tokens            { get; private set; }
-    public Statement?                 SimpleTree        { get; private set; }
+    public ProgramStatement?          SimpleTree        { get; private set; }
     public SemanticProgramStatement?  SemanticTree      { get; private set; }
     public LiteralValue               Value             { get; private set; }
     public Exception?                 PreviousException { get; private set; }
@@ -171,7 +171,7 @@ internal sealed class REPL
                 var lexer = new Lexer(Source, Diagnostics);
                 Tokens = lexer.Lex();
 
-                var parser = new Parser(lexer);
+                var parser = new Parser(Tokens, Diagnostics);
                 SimpleTree = parser.Parse();
 
                 if (Diagnostics.Exceptions.Any((SyntaxException e) => e.ReReadLine)
@@ -182,7 +182,7 @@ internal sealed class REPL
                     continue;
                 }
 
-                var analyzer = new Analyzer(parser.Tree!, SemanticScope, Diagnostics);
+                var analyzer = new Analyzer(SimpleTree, SemanticScope, Diagnostics);
                 SemanticTree = analyzer.Analyze();
 
                 PrintDebugs();

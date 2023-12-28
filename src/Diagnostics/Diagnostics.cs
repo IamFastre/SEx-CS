@@ -9,8 +9,9 @@ public class Diagnostics
     public List<SyntaxException> Exceptions { get; private set; }
     public Report                Report     { get; }
 
-    public Diagnostics()
+    public Diagnostics(Source source)
     {
+        Source     = source;
         Exceptions = new();
         Report     = new(this);
     }

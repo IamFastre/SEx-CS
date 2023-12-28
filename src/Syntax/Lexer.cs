@@ -15,10 +15,10 @@ internal class Lexer
     private bool EOL             => Current == '\n';
     private char Current         => Peek(0);
 
-    public Lexer(Source source, Diagnostics? diagnostics = null)
+    public Lexer(Source source, Diagnostics diagnostics)
     {
         Source      = source;
-        Diagnostics = diagnostics ?? new();
+        Diagnostics = diagnostics;
         Tokens      = new();
     }
 

@@ -17,11 +17,11 @@ internal sealed class Analyzer
 
     public GenericTypeSymbol?         FunctionType = null;
 
-    public Analyzer(ProgramStatement stmt, SemanticScope? scope = null, Diagnostics? diagnostics = null, GenericTypeSymbol? functionType = null)
+    public Analyzer(ProgramStatement stmt, SemanticScope scope, Diagnostics diagnostics, GenericTypeSymbol? functionType = null)
     {
         SimpleTree   = stmt;
-        Scope        = scope       ?? new();
-        Diagnostics  = diagnostics ?? new();
+        Scope        = scope;
+        Diagnostics  = diagnostics;
 
         FunctionType = functionType;
     }

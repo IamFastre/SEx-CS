@@ -14,7 +14,6 @@ internal class Parser
     public ProgramStatement? Tree        { get; protected set; }
 
     private int Index;
-    public readonly Source Source;
 
     private Token Peek(int i = 1) => Index + i < Tokens.Count ? Tokens[Index + i] : Tokens[^1];
     private Token Current         => Peek(0);
@@ -22,13 +21,12 @@ internal class Parser
     private bool  EOL             => Current.Span.Start.Line != Peek().Span.Start.Line;
     private bool  EOS             => Current.Kind == TokenKind.CloseCurlyBracket;
  
-    public Parser(Lexer lexer)
+    public Parser(Token[] tokens, Diagnostics diagnostics)
     {
-        Source      = lexer.Source;
-        Diagnostics = lexer.Diagnostics;
+        Diagnostics = diagnostics;
         Tokens      = new();
 
-        foreach (var tk in lexer.Tokens)
+        foreach (var tk in tokens)
             if (!tk.Kind.IsParserIgnorable())
                 Tokens.Add(tk);
     }

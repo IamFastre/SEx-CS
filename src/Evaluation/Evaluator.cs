@@ -18,11 +18,11 @@ internal sealed class Evaluator
     public LiteralValue             Value        { get; private set; } = VoidValue.Template;
     public LiteralValue?            ReturnValue  { get; private set; }
 
-    public Evaluator(SemanticProgramStatement stmt, Scope? scope = null, Diagnostics? diagnostics = null)
+    public Evaluator(SemanticProgramStatement stmt, Scope scope, Diagnostics diagnostics)
     {
         SemanticTree = stmt;
-        Scope        = scope       ?? new();
-        Diagnostics  = diagnostics ?? new();
+        Scope        = scope;
+        Diagnostics  = diagnostics;
     }
 
     private void Except(string message,
