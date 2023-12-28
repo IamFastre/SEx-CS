@@ -296,7 +296,7 @@ internal sealed class Evaluator
             Scope = new(func.ParentScope);
 
             for (int i = 0; i < fc.Arguments.Length; i++)
-                Scope.Declare(func.Parameters[i], EvaluateExpression(fc.Arguments[i]));
+                Scope.Declare(func.Parameters[i], args[i]);
 
             if (func.Body is SemanticBlockStatement blkStmt)
                 Value = new Evaluator(blkStmt.ToProgram(), Scope, Diagnostics).Evaluate();
