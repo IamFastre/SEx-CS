@@ -21,7 +21,7 @@ public class TypeSymbol : Symbol
         ID          = typeKind;
         ElementType = elementType;
     
-        if (!IsGeneric)
+        if (!IsGeneric || name == CONSTS.ACTION)
             Types.Add(this);
     }
 
@@ -90,7 +90,8 @@ public class TypeSymbol : Symbol
     public static readonly TypeSymbol String  = new(CONSTS.STRING,  TypeID.String, Char);
     public static readonly TypeSymbol Range   = new(CONSTS.RANGE,   TypeID.Range,  Number);
 
-    public static readonly GenericTypeSymbol List = new(CONSTS.LIST, $"{Any}[]", TypeID.List, Any, Any);
+    public static readonly GenericTypeSymbol Action = new(CONSTS.ACTION, $"() -> {CONSTS.VOID}", TypeID.Function, null, Void);
+    public static readonly GenericTypeSymbol List   = new(CONSTS.LIST, $"{Any}[]", TypeID.List, Any, Any);
 
     public static GenericTypeSymbol TypedList(TypeID id)
     {
@@ -105,9 +106,9 @@ public class TypeSymbol : Symbol
     public static GenericTypeSymbol Function(TypeSymbol[] parameters)
         => Function(parameters[0], parameters[1..]);
 
-    public static GenericTypeSymbol Function(TypeSymbol type, params TypeSymbol[] parameters)
+    public static GenericTypeSymbol Function(TypeSymbol returnType, params TypeSymbol[] parameters)
     {
-        var allParams = new List<TypeSymbol> { type };
+        var allParams = new List<TypeSymbol> { returnType };
         allParams.AddRange(parameters);
 
         var paramsStr = string.Empty;
@@ -119,7 +120,7 @@ public class TypeSymbol : Symbol
                 paramsStr += ", ";
         }
 
-        return new(CONSTS.FUNCTION, $"({paramsStr}) -> {type}", TypeID.Function, null, allParams.ToArray());
+        return new(CONSTS.FUNCTION, $"({paramsStr}) -> {returnType}", TypeID.Function, null, allParams.ToArray());
     }
 }
 

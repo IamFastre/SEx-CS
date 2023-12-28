@@ -37,10 +37,11 @@ internal static class CONSTS
     public const string RANGE     = "range";
     public const string LIST      = "list";
     public const string FUNCTION  = "function";
+    public const string ACTION    = "action";
     public const string ANY       = "any";
 
     public static string[] BOOLS  = { TRUE, FALSE };
-    public static string[] TYPES  = { VOID, BOOLEAN, INTEGER, FLOAT, NUMBER, CHAR, STRING, RANGE, LIST, FUNCTION, ANY };
+    public static string[] TYPES  = { VOID, BOOLEAN, INTEGER, FLOAT, NUMBER, CHAR, STRING, RANGE, LIST, FUNCTION, ACTION, ANY };
 
     public const string _SEX_     = "SEx";
     public const string _VERSION_ = "0.0.1";
