@@ -39,6 +39,7 @@ public enum BinaryOperationKind
     StringInclusion,
 
     ListConcatenation,
+    ListMultiplication,
     ListInclusion,
 }
 
@@ -49,22 +50,19 @@ public class SemanticBinaryOperator
     public TypeSymbol ResultType           { get; private set; }
 
     public BinaryOperationKind Kind { get; }
-    public TokenKind Token          { get; }
 
-    public SemanticBinaryOperator(TokenKind token, BinaryOperationKind kind, TypeSymbol type)
-        : this(token, kind, type, type, type) {}
+    public SemanticBinaryOperator(BinaryOperationKind kind, TypeSymbol type)
+        : this(kind, type, type, type) {}
 
-    public SemanticBinaryOperator(TokenKind token, BinaryOperationKind kind, TypeSymbol operands, TypeSymbol result)
-        : this(token, kind, operands, operands, result) {}
+    public SemanticBinaryOperator(BinaryOperationKind kind, TypeSymbol operands, TypeSymbol result)
+        : this(kind, operands, operands, result) {}
 
-    public SemanticBinaryOperator(TokenKind token, BinaryOperationKind kind, TypeSymbol left, TypeSymbol right, TypeSymbol result)
+    public SemanticBinaryOperator(BinaryOperationKind kind, TypeSymbol left, TypeSymbol right, TypeSymbol result)
     {
         LeftType   = left;
         RightType  = right;
         ResultType = result;
-
-        Kind  = kind;
-        Token = token;
+        Kind       = kind;
     }
 
     public static SemanticBinaryOperator GetSemanticOperator(TypeSymbol left, BinaryOperationKind opKind, TypeSymbol right)
@@ -90,80 +88,82 @@ public class SemanticBinaryOperator
 
     private static readonly SemanticBinaryOperator[] operators =
     {
-        new(TokenKind.NullishCoalescing, BinaryOperationKind.NullishCoalescence, TypeSymbol.Any),
+        new(BinaryOperationKind.NullishCoalescence, TypeSymbol.Any),
 
-        new(TokenKind.EqualEqual, BinaryOperationKind.Equality, TypeSymbol.Any, TypeSymbol.Boolean),
-        new(TokenKind.NotEqual, BinaryOperationKind.Inequality, TypeSymbol.Any, TypeSymbol.Boolean),
-
-
-        new(TokenKind.LogicalAND, BinaryOperationKind.LogicalAND, TypeSymbol.Boolean),
-        new(TokenKind.LogicalOR, BinaryOperationKind.LogicalOR, TypeSymbol.Boolean),
-
-        new(TokenKind.Ampersand, BinaryOperationKind.BitwiseAND, TypeSymbol.Boolean),
-        new(TokenKind.Pipe, BinaryOperationKind.BitwiseOR, TypeSymbol.Boolean),
-        new(TokenKind.Caret, BinaryOperationKind.BitwiseXOR, TypeSymbol.Boolean),
-
-        new(TokenKind.Caret, BinaryOperationKind.BitwiseXOR, TypeSymbol.Boolean, TypeSymbol.Integer, TypeSymbol.Integer),
-        new(TokenKind.Caret, BinaryOperationKind.BitwiseXOR, TypeSymbol.Integer, TypeSymbol.Boolean, TypeSymbol.Integer),
-
-        new(TokenKind.Ampersand, BinaryOperationKind.BitwiseAND, TypeSymbol.Integer),
-        new(TokenKind.Pipe, BinaryOperationKind.BitwiseOR, TypeSymbol.Integer),
-        new(TokenKind.Caret, BinaryOperationKind.BitwiseXOR, TypeSymbol.Integer),
-
-        new(TokenKind.Greater, BinaryOperationKind.Greater, TypeSymbol.Number, TypeSymbol.Boolean),
-        new(TokenKind.Less, BinaryOperationKind.Less, TypeSymbol.Number, TypeSymbol.Boolean),
-        new(TokenKind.GreaterEqual, BinaryOperationKind.GreaterEqual, TypeSymbol.Number, TypeSymbol.Boolean),
-        new(TokenKind.LessEqual, BinaryOperationKind.LessEqual, TypeSymbol.Number, TypeSymbol.Boolean),
+        new(BinaryOperationKind.Equality, TypeSymbol.Any, TypeSymbol.Boolean),
+        new(BinaryOperationKind.Inequality, TypeSymbol.Any, TypeSymbol.Boolean),
 
 
-        new(TokenKind.Plus, BinaryOperationKind.Addition, TypeSymbol.Integer),
-        new(TokenKind.Plus, BinaryOperationKind.Addition, TypeSymbol.Float),
-        new(TokenKind.Plus, BinaryOperationKind.Addition, TypeSymbol.Number, TypeSymbol.Float),
+        new(BinaryOperationKind.LogicalAND, TypeSymbol.Boolean),
+        new(BinaryOperationKind.LogicalOR, TypeSymbol.Boolean),
 
-        new(TokenKind.Minus, BinaryOperationKind.Subtraction, TypeSymbol.Integer),
-        new(TokenKind.Minus, BinaryOperationKind.Subtraction, TypeSymbol.Float),
-        new(TokenKind.Minus, BinaryOperationKind.Subtraction, TypeSymbol.Number, TypeSymbol.Float),
+        new(BinaryOperationKind.BitwiseAND, TypeSymbol.Boolean),
+        new(BinaryOperationKind.BitwiseOR, TypeSymbol.Boolean),
+        new(BinaryOperationKind.BitwiseXOR, TypeSymbol.Boolean),
 
-        new(TokenKind.Asterisk, BinaryOperationKind.Multiplication, TypeSymbol.Integer),
-        new(TokenKind.Asterisk, BinaryOperationKind.Multiplication, TypeSymbol.Float),
-        new(TokenKind.Asterisk, BinaryOperationKind.Multiplication, TypeSymbol.Number, TypeSymbol.Float),
+        new(BinaryOperationKind.BitwiseXOR, TypeSymbol.Boolean, TypeSymbol.Integer, TypeSymbol.Integer),
+        new(BinaryOperationKind.BitwiseXOR, TypeSymbol.Integer, TypeSymbol.Boolean, TypeSymbol.Integer),
 
-        new(TokenKind.ForwardSlash, BinaryOperationKind.Division, TypeSymbol.Integer, TypeSymbol.Float),
-        new(TokenKind.ForwardSlash, BinaryOperationKind.Division, TypeSymbol.Float),
-        new(TokenKind.ForwardSlash, BinaryOperationKind.Division, TypeSymbol.Number, TypeSymbol.Float),
+        new(BinaryOperationKind.BitwiseAND, TypeSymbol.Integer),
+        new(BinaryOperationKind.BitwiseOR, TypeSymbol.Integer),
+        new(BinaryOperationKind.BitwiseXOR, TypeSymbol.Integer),
 
-        new(TokenKind.Power, BinaryOperationKind.Power, TypeSymbol.Integer, TypeSymbol.Float),
-        new(TokenKind.Power, BinaryOperationKind.Power, TypeSymbol.Float),
-        new(TokenKind.Power, BinaryOperationKind.Power, TypeSymbol.Number, TypeSymbol.Float),
-
-        new(TokenKind.Percent, BinaryOperationKind.Modulo, TypeSymbol.Integer),
-        new(TokenKind.Percent, BinaryOperationKind.Modulo, TypeSymbol.Float),
-        new(TokenKind.Percent, BinaryOperationKind.Modulo, TypeSymbol.Number, TypeSymbol.Float),
+        new(BinaryOperationKind.Greater, TypeSymbol.Number, TypeSymbol.Boolean),
+        new(BinaryOperationKind.Less, TypeSymbol.Number, TypeSymbol.Boolean),
+        new(BinaryOperationKind.GreaterEqual, TypeSymbol.Number, TypeSymbol.Boolean),
+        new(BinaryOperationKind.LessEqual, TypeSymbol.Number, TypeSymbol.Boolean),
 
 
-        new(TokenKind.InOperator, BinaryOperationKind.RangeInclusion, TypeSymbol.Number, TypeSymbol.Range, TypeSymbol.Boolean),
+        new(BinaryOperationKind.Addition, TypeSymbol.Integer),
+        new(BinaryOperationKind.Addition, TypeSymbol.Float),
+        new(BinaryOperationKind.Addition, TypeSymbol.Number, TypeSymbol.Float),
+
+        new(BinaryOperationKind.Subtraction, TypeSymbol.Integer),
+        new(BinaryOperationKind.Subtraction, TypeSymbol.Float),
+        new(BinaryOperationKind.Subtraction, TypeSymbol.Number, TypeSymbol.Float),
+
+        new(BinaryOperationKind.Multiplication, TypeSymbol.Integer),
+        new(BinaryOperationKind.Multiplication, TypeSymbol.Float),
+        new(BinaryOperationKind.Multiplication, TypeSymbol.Number, TypeSymbol.Float),
+
+        new(BinaryOperationKind.Division, TypeSymbol.Integer, TypeSymbol.Float),
+        new(BinaryOperationKind.Division, TypeSymbol.Float),
+        new(BinaryOperationKind.Division, TypeSymbol.Number, TypeSymbol.Float),
+
+        new(BinaryOperationKind.Power, TypeSymbol.Integer, TypeSymbol.Float),
+        new(BinaryOperationKind.Power, TypeSymbol.Float),
+        new(BinaryOperationKind.Power, TypeSymbol.Number, TypeSymbol.Float),
+
+        new(BinaryOperationKind.Modulo, TypeSymbol.Integer),
+        new(BinaryOperationKind.Modulo, TypeSymbol.Float),
+        new(BinaryOperationKind.Modulo, TypeSymbol.Number, TypeSymbol.Float),
 
 
-        new(TokenKind.Plus, BinaryOperationKind.CharAddition, TypeSymbol.Char, TypeSymbol.Integer, TypeSymbol.Char),
-        new(TokenKind.Plus, BinaryOperationKind.CharAddition, TypeSymbol.Integer, TypeSymbol.Char, TypeSymbol.Char),
-
-        new(TokenKind.Minus, BinaryOperationKind.CharSubtraction, TypeSymbol.Char, TypeSymbol.Integer, TypeSymbol.Char),
-
-        new(TokenKind.Plus, BinaryOperationKind.StringConcatenation, TypeSymbol.Char, TypeSymbol.String),
+        new(BinaryOperationKind.RangeInclusion, TypeSymbol.Number, TypeSymbol.Range, TypeSymbol.Boolean),
 
 
-        new(TokenKind.Plus, BinaryOperationKind.StringConcatenation, TypeSymbol.String, TypeSymbol.Any, TypeSymbol.String),
-        new(TokenKind.Plus, BinaryOperationKind.StringConcatenation, TypeSymbol.Any, TypeSymbol.String, TypeSymbol.String),
+        new(BinaryOperationKind.CharAddition, TypeSymbol.Char, TypeSymbol.Integer, TypeSymbol.Char),
+        new(BinaryOperationKind.CharAddition, TypeSymbol.Integer, TypeSymbol.Char, TypeSymbol.Char),
 
-        new(TokenKind.Plus, BinaryOperationKind.StringMultiplication, TypeSymbol.Integer, TypeSymbol.String, TypeSymbol.String),
-        new(TokenKind.Plus, BinaryOperationKind.StringMultiplication, TypeSymbol.String, TypeSymbol.Integer, TypeSymbol.String),
+        new(BinaryOperationKind.CharSubtraction, TypeSymbol.Char, TypeSymbol.Integer, TypeSymbol.Char),
 
-
-        new(TokenKind.InOperator, BinaryOperationKind.StringInclusion, TypeSymbol.String, TypeSymbol.String, TypeSymbol.Boolean),
-        new(TokenKind.InOperator, BinaryOperationKind.StringInclusion, TypeSymbol.Char, TypeSymbol.String, TypeSymbol.Boolean),
+        new(BinaryOperationKind.StringConcatenation, TypeSymbol.Char, TypeSymbol.String),
 
 
-        new(TokenKind.Plus, BinaryOperationKind.ListConcatenation, TypeSymbol.List),
-        new(TokenKind.InOperator, BinaryOperationKind.ListInclusion, TypeSymbol.Any, TypeSymbol.List, TypeSymbol.Boolean),
+        new(BinaryOperationKind.StringConcatenation, TypeSymbol.String, TypeSymbol.Any, TypeSymbol.String),
+        new(BinaryOperationKind.StringConcatenation, TypeSymbol.Any, TypeSymbol.String, TypeSymbol.String),
+
+        new(BinaryOperationKind.StringMultiplication, TypeSymbol.Integer, TypeSymbol.String, TypeSymbol.String),
+        new(BinaryOperationKind.StringMultiplication, TypeSymbol.String, TypeSymbol.Integer, TypeSymbol.String),
+
+
+        new(BinaryOperationKind.StringInclusion, TypeSymbol.String, TypeSymbol.String, TypeSymbol.Boolean),
+        new(BinaryOperationKind.StringInclusion, TypeSymbol.Char, TypeSymbol.String, TypeSymbol.Boolean),
+
+
+        new(BinaryOperationKind.ListConcatenation, TypeSymbol.List),
+        new(BinaryOperationKind.ListMultiplication, TypeSymbol.Integer, TypeSymbol.List, TypeSymbol.List),
+        new(BinaryOperationKind.ListMultiplication, TypeSymbol.List, TypeSymbol.Integer, TypeSymbol.List),
+        new(BinaryOperationKind.ListInclusion, TypeSymbol.Any, TypeSymbol.List, TypeSymbol.Boolean),
     };
 }

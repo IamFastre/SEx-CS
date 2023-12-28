@@ -106,7 +106,7 @@ public sealed class SemanticBinaryOperation : SemanticExpression
             if (op is TokenKind.Plus)
                 return BinaryOperationKind.StringConcatenation;
 
-        if ((left, right).Match(TypeSymbol.String, TypeSymbol.Whole, true))
+        if ((left, right).Match(TypeSymbol.String, TypeSymbol.Integer, true))
             if (op is TokenKind.Asterisk)
                 return BinaryOperationKind.StringMultiplication;
 
@@ -119,6 +119,10 @@ public sealed class SemanticBinaryOperation : SemanticExpression
         if ((left, right).Match(TypeSymbol.List) && (left, right).Match(left.Matches(right) ? left : right))
             if (op is TokenKind.Plus)
                 return BinaryOperationKind.ListConcatenation;
+
+        if ((left, right).Match(TypeSymbol.List, TypeSymbol.Integer, true))
+            if (op is TokenKind.Asterisk)
+                return BinaryOperationKind.ListMultiplication;
 
         if ((left, right).Match(TypeSymbol.Any, TypeSymbol.TypedList(right.ElementType!)))
             if (op is TokenKind.InOperator)

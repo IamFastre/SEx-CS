@@ -416,6 +416,7 @@ internal sealed class Evaluator
         bool   _bool;
         double _double;
         string _string;
+        List<LiteralValue> _list;
 
         switch (kind)
         {
@@ -561,15 +562,15 @@ internal sealed class Evaluator
                 return new StringValue(_string);
 
             case BinaryOperationKind.StringMultiplication:
-                var num = (double) (TypeSymbol.Integer.Matches(left.Type) ? left.Value : right.Value);
+                var n1  = (double) (TypeSymbol.Integer.Matches(left.Type) ? left.Value : right.Value);
                 var str = (string) (TypeSymbol.String.Matches(left.Type)  ? left.Value : right.Value);
 
                 _string = string.Empty;
 
-                if (num < 0)
+                if (n1 < 0)
                     str = new(str.Reverse().ToArray());
 
-                for (int i = 0; i < Math.Abs(num); i++)
+                for (int i = 0; i < Math.Abs(n1); i++)
                     _string += str;
 
                 return new StringValue(_string);
@@ -588,6 +589,20 @@ internal sealed class Evaluator
                 ListValue _l1, _l2;
                 (_l1, _l2) = ((ListValue) left, (ListValue) right);
                 return _l1.Concat(_l2);
+
+            case BinaryOperationKind.ListMultiplication:
+                var n2  = (double) (TypeSymbol.Integer.Matches(left.Type) ? left.Value : right.Value);
+                var lst = (List<LiteralValue>) (left is ListValue ? left.Value : right.Value);
+
+                _list = new();
+
+                if (n2 < 0)
+                    lst.Reverse();
+
+                for (int i = 0; i < Math.Abs(n2); i++)
+                    _list.AddRange(lst);
+
+                return new ListValue(_list);
 
             case BinaryOperationKind.ListInclusion:
                 _bool = ((List<LiteralValue>) right.Value).Any(left.Equals);
