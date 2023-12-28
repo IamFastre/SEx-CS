@@ -1,20 +1,15 @@
 using SEx.Generic.Text;
-using SEx.Lex;
 
 namespace SEx.Diagnose;
 
 public class Diagnostics
 {
-    public Source?               Source     { get; set; }
-    public List<SyntaxException> Exceptions { get; private set; }
+    public Source                Source     { get; set; }
     public Report                Report     { get; }
+    public List<SyntaxException> Exceptions => Report.Exceptions;
 
     public Diagnostics(Source source)
-    {
-        Source     = source;
-        Exceptions = new();
-        Report     = new(this);
-    }
+        => (Source, Report) = (source, new(source));
 
     public void Flush()
         => Exceptions.Clear();
@@ -22,27 +17,19 @@ public class Diagnostics
     public void Add(ExceptionType type, string text, Span span, bool rereadLine = false)
         => Exceptions.Add(new SyntaxException(type, text, span, rereadLine));
 
-    public void Sort()
-        => Exceptions = Exceptions.OrderBy(e => e.Span.Start.Index).ToList();
+    public SyntaxException[] Sorted()
+        => Exceptions.OrderBy(e => e.Span.Start.Index).ToArray();
 
     public void Throw()
-    {
-        Sort();
-        foreach (var error in Exceptions)
-            error.Print(Source!.Name, Source.Lines[error.Span.Start.Line - 1]);
-    }
+        => Array.ForEach(Sorted(), e => e.Print(Source!.Name, Source.Lines[e.Span.Start.Line - 1]));
 }
 
-public class Report
+public record Report(Source Source)
 {
-    private Diagnostics Diagnostics { get; }
-
-    public Report(Diagnostics diagnostics)
-        => Diagnostics = diagnostics;
+    public List<SyntaxException> Exceptions { get; } = new();
 
     private void Except(ExceptionType type, string message, Span span, bool rereadLine = false)
-        => Diagnostics.Add(type, message, span, rereadLine);
-
+        => Exceptions.Add(new SyntaxException(type, message, span, rereadLine));
 
     internal void UnrecognizedChar(char chr, Span span)
         => Except(ExceptionType.SyntaxError, $"Unrecognized character '{chr}' (U+{(int)chr:X4})", span);
@@ -57,25 +44,25 @@ public class Report
         => Except(ExceptionType.SymbolError, $"Expected '{token}' got '{got}'", span, rereadLine);
 
     internal void StatementExpected(Span span)
-        => Except(ExceptionType.SyntaxError, $"Expected a statement", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
+        => Except(ExceptionType.SyntaxError, $"Expected a statement", span, span.End.Equals(Source.GetLastPosition()));
 
     internal void ExpressionExpected(Span span)
-        => Except(ExceptionType.SyntaxError, $"Expected an expression", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
+        => Except(ExceptionType.SyntaxError, $"Expected an expression", span, span.End.Equals(Source.GetLastPosition()));
 
     internal void ExpressionExpectedAfter(string after, Span span)
-        => Except(ExceptionType.SyntaxError, $"Expected an expression after '{after}'", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
+        => Except(ExceptionType.SyntaxError, $"Expected an expression after '{after}'", span, span.End.Equals(Source.GetLastPosition()));
 
     internal void ExpressionExpectedBefore(string before, Span span)
-        => Except(ExceptionType.SyntaxError, $"Expected an expression before '{before}'", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
+        => Except(ExceptionType.SyntaxError, $"Expected an expression before '{before}'", span, span.End.Equals(Source.GetLastPosition()));
 
     internal void NameExpected(Span span)
-        => Except(ExceptionType.SyntaxError, $"Expected a name", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
+        => Except(ExceptionType.SyntaxError, $"Expected a name", span, span.End.Equals(Source.GetLastPosition()));
 
     internal void NameExpected(string after, Span span)
-        => Except(ExceptionType.SyntaxError, $"Expected a name after '{after}'", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
+        => Except(ExceptionType.SyntaxError, $"Expected a name after '{after}'", span, span.End.Equals(Source.GetLastPosition()));
 
     internal void ValuelessConstant(string constant, Span span)
-        => Except(ExceptionType.SyntaxError, $"No value was given to constant '{constant}'", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
+        => Except(ExceptionType.SyntaxError, $"No value was given to constant '{constant}'", span, span.End.Equals(Source.GetLastPosition()));
 
     internal void InvalidAssignee(Span span)
         => Except(ExceptionType.SyntaxError, $"Assignee is invalid", span);
@@ -84,7 +71,7 @@ public class Report
         => Except(ExceptionType.SyntaxError, $"No need for added type", span);
 
     internal void UnexpectedEOF(Span span)
-        => Except(ExceptionType.SyntaxError, $"Didn't expect program to end yet", span, span.End.Equals(Diagnostics.Source?.GetLastPosition()));
+        => Except(ExceptionType.SyntaxError, $"Didn't expect program to end yet", span, span.End.Equals(Source.GetLastPosition()));
 
     internal void OperandMustBeName(string op, Span span)
         => Except(ExceptionType.TypeError, $"Operand of '{op}' must be a name", span);
