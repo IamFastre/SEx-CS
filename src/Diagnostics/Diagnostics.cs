@@ -6,7 +6,7 @@ namespace SEx.Diagnose;
 public class Diagnostics
 {
     public Source?               Source     { get; set; }
-    public List<SyntaxException> Exceptions { get; }
+    public List<SyntaxException> Exceptions { get; private set; }
     public Report                Report     { get; }
 
     public Diagnostics()
@@ -21,10 +21,14 @@ public class Diagnostics
     public void Add(ExceptionType type, string text, Span span, bool rereadLine = false)
         => Exceptions.Add(new SyntaxException(type, text, span, rereadLine));
 
-    public void Throw(Source source)
+    public void Sort()
+        => Exceptions = Exceptions.OrderBy(e => e.Span.Start.Index).ToList();
+
+    public void Throw()
     {
+        Sort();
         foreach (var error in Exceptions)
-            error.Print(source.Name, source.Lines[error.Span.Start.Line - 1]);
+            error.Print(Source!.Name, Source.Lines[error.Span.Start.Line - 1]);
     }
 }
 
@@ -33,9 +37,7 @@ public class Report
     private Diagnostics Diagnostics { get; }
 
     public Report(Diagnostics diagnostics)
-    {
-        Diagnostics = diagnostics;
-    }
+        => Diagnostics = diagnostics;
 
     private void Except(ExceptionType type, string message, Span span, bool rereadLine = false)
         => Diagnostics.Add(type, message, span, rereadLine);

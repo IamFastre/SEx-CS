@@ -99,7 +99,7 @@ internal sealed class REPL
 
     public void Throw()
     {
-        Diagnostics.Throw(Source);
+        Diagnostics.Throw();
         Diagnostics.Flush();
     }
 
