@@ -34,14 +34,16 @@ public static class Checker
     public static TokenKind GetIdentifierKind(string value)
     => value switch
     {
-        CONSTS.IN     => TokenKind.InOperator,
-        CONSTS.DELETE => TokenKind.Delete,
-        CONSTS.NULL   => TokenKind.Null,
-        CONSTS.IF     => TokenKind.If,
-        CONSTS.ELSE   => TokenKind.Else,
-        CONSTS.WHILE  => TokenKind.While,
-        CONSTS.FOR    => TokenKind.For,
-        CONSTS.RETURN => TokenKind.Return,
+        CONSTS.IN       => TokenKind.InOperator,
+        CONSTS.DELETE   => TokenKind.Delete,
+        CONSTS.NULL     => TokenKind.Null,
+        CONSTS.IF       => TokenKind.If,
+        CONSTS.ELSE     => TokenKind.Else,
+        CONSTS.WHILE    => TokenKind.While,
+        CONSTS.FOR      => TokenKind.For,
+        CONSTS.BREAK    => TokenKind.Break,
+        CONSTS.CONTINUE => TokenKind.Continue,
+        CONSTS.RETURN   => TokenKind.Return,
 
         string when CONSTS.BOOLS.Contains(value) => TokenKind.Boolean,
         string when CONSTS.TYPES.Contains(value) => TokenKind.Type,

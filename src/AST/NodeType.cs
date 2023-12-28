@@ -26,12 +26,14 @@ public enum NodeKind
     BlockStatement,
     FunctionStatement,
     ParameterClause,
+    ReturnStatement,
     // Conditional
     IfStatement,
     WhileStatement,
     ElseClause,
     ForStatement,
-    ReturnStatement,
+    BreakStatement,
+    ContinueStatement,
 
     // Expressions
     AssignmentExpression,

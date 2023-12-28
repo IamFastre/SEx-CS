@@ -24,12 +24,14 @@ public enum TokenKind
 
     // Keyword kinds
     Keyword,
-    Return,
     Type,
     If,
     Else,
     While,
     For,
+    Continue,
+    Break,
+    Return,
 
     // Operational kinds
     Plus,

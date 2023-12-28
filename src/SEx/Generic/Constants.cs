@@ -13,11 +13,13 @@ internal static class CONSTS
     public const string TRUE      = "true";
     public const string FALSE     = "false";
 
-    public const string RETURN    = "return";
     public const string IF        = "if";
     public const string ELSE      = "else";
     public const string WHILE     = "while";
     public const string FOR       = "for";
+    public const string RETURN    = "return";
+    public const string BREAK     = "break";
+    public const string CONTINUE  = "continue";
 
     public const string IMPORT    = "import";
     public const string EXPORT    = "export";

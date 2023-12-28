@@ -600,6 +600,12 @@ internal class Parser
         return new(forKeyword, new(variable), iterable, statement);
     }
 
+    private ContinueStatement GetBreakStatement()
+        => new(Eat());
+
+    private BreakStatement GetContinueStatement()
+        => new(Eat());
+
     private ReturnStatement GetReturnStatement()
     {
         var atEOL = EOL;
@@ -630,6 +636,12 @@ internal class Parser
 
             case TokenKind.For:
                 return GetForStatement();
+
+            case TokenKind.Break:
+                return GetBreakStatement();
+
+            case TokenKind.Continue:
+                return GetContinueStatement();
 
             case TokenKind.Return:
                 return GetReturnStatement();
