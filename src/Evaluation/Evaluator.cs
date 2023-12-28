@@ -96,7 +96,7 @@ internal sealed class Evaluator
 
     private void EvaluateFunctionStatement(SemanticFunctionStatement fs)
     {
-        var val = new FunctionValue(fs.Function.Name, fs.Parameters, fs.ReturnType, fs.Body);
+        var val = new FunctionValue(fs.Function.Name, fs.Parameters, fs.ReturnType, fs.Body, Scope);
         Scope.Assign(fs.Function, val, true);
     }
 
@@ -282,7 +282,7 @@ internal sealed class Evaluator
     }
 
     private FunctionValue EvaluateFunction(SemanticFunction fe)
-        => new(CONSTS.EMPTY, fe.Parameters, ((GenericTypeSymbol) fe.Type).Parameters[0], fe.Body);
+        => new(CONSTS.EMPTY, fe.Parameters, ((GenericTypeSymbol) fe.Type).Parameters[0], fe.Body, Scope);
 
     private LiteralValue EvaluateCallExpression(SemanticCallExpression fc)
     {
@@ -293,7 +293,7 @@ internal sealed class Evaluator
             if (func.IsBuiltin)
                 return BuiltIn.Backend.Evaluate(func, args);
 
-            Scope = new(Scope);
+            Scope = new(func.ParentScope);
 
             for (int i = 0; i < fc.Arguments.Length; i++)
                 Scope.Declare(func.Parameters[i], EvaluateExpression(fc.Arguments[i]));

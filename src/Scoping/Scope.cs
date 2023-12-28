@@ -3,11 +3,12 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Scoping;
 
-internal class Scope
+public class Scope
 {
     public Scope? Parent { get; }
     public Dictionary<NameSymbol, LiteralValue> Names { get; }
 
+    public bool IsGlobal => Parent is null;
     public LiteralValue this[NameSymbol variable] => Names[variable];
 
     public Scope(Scope? parent = null)

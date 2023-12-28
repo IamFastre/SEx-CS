@@ -1,4 +1,5 @@
 using SEx.Generic.Constants;
+using SEx.Scoping;
 using SEx.Scoping.Symbols;
 using SEx.Semantics;
 
@@ -6,9 +7,10 @@ namespace SEx.Evaluate.Values;
 
 public class FunctionValue : LiteralValue
 {
-    public string            Name       { get; }
-    public NameSymbol[]      Parameters { get; }
-    public SemanticStatement Body       { get; }
+    public string            Name        { get; }
+    public NameSymbol[]      Parameters  { get; }
+    public SemanticStatement Body        { get; }
+    public Scope             ParentScope { get; }
 
     public bool IsBuiltin => Body is null;
 
@@ -16,12 +18,13 @@ public class FunctionValue : LiteralValue
     public override GenericTypeSymbol Type { get; }
 
 
-    public FunctionValue(string name, NameSymbol[] parameters, TypeSymbol returnType, SemanticStatement body)
+    public FunctionValue(string name, NameSymbol[] parameters, TypeSymbol returnType, SemanticStatement body, Scope parentScope)
     {
-        Name       = name;
-        Parameters = parameters;
-        Body       = body;
-        Type       = TypeSymbol.Function(returnType, parameters.Select(p => p.Type).ToArray());
+        Name        = name;
+        Parameters  = parameters;
+        Body        = body;
+        ParentScope = parentScope;
+        Type        = TypeSymbol.Function(returnType, parameters.Select(p => p.Type).ToArray());
     }
 
     public override string ToString()
@@ -52,7 +55,7 @@ public class FunctionValue : LiteralValue
 public class BuiltinFunctionValue : FunctionValue
 {
     public BuiltinFunctionValue(string name, TypeSymbol returnType, params NameSymbol[] parameters)
-        : base(name, parameters, returnType, null!) { }
+        : base(name, parameters, returnType, null!, null!) { }
 
     public NameSymbol GetSymbol() => new(Name, Type, true);
 }

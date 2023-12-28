@@ -208,6 +208,7 @@ internal sealed class REPL
     private void Reset()
     {
         Script.Clear();
+        Diagnostics.Flush();
         Value = UnknownValue.Template;
     }
 

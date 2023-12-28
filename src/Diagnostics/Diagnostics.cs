@@ -21,7 +21,7 @@ public class Diagnostics
         => Exceptions.OrderBy(e => e.Span.Start.Index).ToArray();
 
     public void Throw()
-        => Array.ForEach(Sorted(), e => e.Print(Source!.Name, Source.Lines[e.Span.Start.Line - 1]));
+        => Array.ForEach(Sorted(), e => e.Print(Source.Name, Source.Lines[e.Span.Start.Line - 1]));
 }
 
 public record Report(Source Source)
