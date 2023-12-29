@@ -47,6 +47,7 @@ internal sealed class REPL
         Scope         = new();
         Value         = UnknownValue.Template;
 
+        ParseArguments();
         if (Environment.OSVersion.Platform == PlatformID.Win32NT)
         {
             Console.OutputEncoding = Encoding.Unicode;
@@ -76,16 +77,16 @@ internal sealed class REPL
         if (AreArgs("--debug", "-d"))
             ToggleAll();
 
-        if (AreArgs("--showTokens", "-stks"))
+        if (AreArgs("--show-tokens", "-stks"))
             ToggleTokens();
 
-        if (AreArgs("--showAST", "-sast"))
+        if (AreArgs("--show-AST", "-sast"))
             ToggleTree();
 
-        if (AreArgs("--showProgram", "-sprgm"))
+        if (AreArgs("--show-program", "-sprgm"))
             ToggleProgram();
 
-        if (AreArgs("--showEscaped", "-esc"))
+        if (AreArgs("--show-escaped", "-esc"))
             ToggleEsc();
     }
 
@@ -110,8 +111,6 @@ internal sealed class REPL
     {
         Console.WriteLine($"{C.BLUE2}SEx-{CONSTS._VERSION_} ({C.YELLOW2}{Environment.UserName} {C.BLUE2}on {C.RED2}{Environment.OSVersion.Platform}{C.BLUE2}){C.END}");
         Console.WriteLine($"{C.BLUE2}{C.DIM}{C.ITALIC}Type: {C.GREEN2}'help' {C.BLUE2}for more info.{C.END}");
-
-        ParseArguments();
         LoopWrapper();
     }
 
