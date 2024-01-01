@@ -4,17 +4,13 @@ namespace SEx.Scoping.Symbols;
 
 public sealed class GenericTypeSymbol : TypeSymbol
 {
-    public string?      CustomName { get; }
     public TypeSymbol[] Parameters { get; private set; }
 
     public override SymbolKind Kind => SymbolKind.GenericType;
 
-    public GenericTypeSymbol(string name, string? customName = null, TypeID typeKind = TypeID.Any, TypeSymbol? elementType = null, params TypeSymbol[] parameters)
+    public GenericTypeSymbol(string name, TypeID typeKind = TypeID.Any, TypeSymbol? elementType = null, params TypeSymbol[] parameters)
         : base(name, typeKind, elementType)
-    {
-        CustomName = customName;
-        Parameters = parameters;
-    }
+        => Parameters = parameters;
 
     public void SetParameters(params TypeSymbol[] parameters)
         => Parameters = parameters;
@@ -39,8 +35,22 @@ public sealed class GenericTypeSymbol : TypeSymbol
 
     public override string ToString()
     {
-        if (CustomName is not null)
-            return CustomName;
+        if (ID is TypeID.Function)
+        {            
+            var paramsStr = string.Empty;
+
+            for (int i = 1; i < Parameters.Length; i++)
+            {
+                paramsStr += Parameters[i].ToString();
+                if (i != Parameters.Length - 1)
+                    paramsStr += ", ";
+            }
+
+            return $"({paramsStr}) -> {Parameters[0]}";
+        }
+
+        if (ID is TypeID.List)
+            return $"{Parameters[0]}[]";
 
         var str = Name + "<";
         for (int i = 0; i < Parameters.Length; i++)
