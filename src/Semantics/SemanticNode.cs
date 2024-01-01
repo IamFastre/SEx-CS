@@ -47,6 +47,7 @@ public abstract class SemanticNode
         {
             SemanticLiteral              l => $"<{C.BLUE2}{l.Kind}({C.YELLOW2}{l.Value         }{C.BLUE2}):{C.GREEN2}{l.Type}{C.END}>",
             SemanticName                 l => $"<{C.BLUE2}{l.Kind}({C.YELLOW2}{l.Symbol.Name   }{C.BLUE2}):{C.GREEN2}{l.Type}{C.END}>",
+            SemanticStringFragment       s => $"<{C.BLUE2}{s.Kind}({C.YELLOW2}\"{s.Value     }\"{C.BLUE2}){C.END}>",
 
             SemanticAssignment           a => $"<{C.BLUE2}{a.Kind}({C.YELLOW2}{a.Operator      }{C.BLUE2}):{C.GREEN2}{a.Type}{C.END}>",
             SemanticUnaryOperation       u => $"<{C.BLUE2}{u.Kind}({C.YELLOW2}{u.OperationKind }{C.BLUE2}):{C.GREEN2}{u.Type}{C.END}>",

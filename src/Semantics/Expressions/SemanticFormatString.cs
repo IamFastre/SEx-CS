@@ -14,7 +14,7 @@ public class SemanticFormatString : SemanticExpression
         : base(TypeSymbol.String)
     {
         Nodes = exprs;
-        Span        = span;
+        Span  = span;
     }
 
     public override IEnumerable<SemanticNode> GetChildren() => Nodes;

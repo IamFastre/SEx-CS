@@ -6,6 +6,12 @@
     <RootNamespace>SExC</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <Product>SEx</Product>
+    <Version>0.2</Version>
+    <ApplicationIcon>bin\Resources\SEx.ico</ApplicationIcon>
+    <Authors>Fastre</Authors>
+    <Company>neRIA</Company>
   </PropertyGroup>
 
   <ItemGroup>
