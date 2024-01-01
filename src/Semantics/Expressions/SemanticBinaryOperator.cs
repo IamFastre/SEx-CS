@@ -71,9 +71,16 @@ public class SemanticBinaryOperator
             if (op.LeftType.Matches(left) && op.Kind.HasFlag(opKind) && op.RightType.Matches(right))
             {
                 if (op!.ResultType is GenericTypeSymbol)
-                    op.ResultType = left.Matches(right)
-                                  ? left
-                                  : right;
+                {
+                    if (left is not GenericTypeSymbol)
+                        op.ResultType = right;
+                    else if (right is not GenericTypeSymbol)
+                        op.ResultType = left;
+                    else
+                        op.ResultType = left.Matches(right)
+                                      ? left
+                                      : right;
+                }
 
                 if (op!.Kind is BinaryOperationKind.NullishCoalescence)
                     op.ResultType = left.Matches(right)
