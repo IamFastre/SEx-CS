@@ -11,6 +11,7 @@ internal static class CONSTS
     public const string VOID      = "void";
 
     public const string TRUE      = "true";
+    public const string MAYBE     = "maybe";
     public const string FALSE     = "false";
 
     public const string IF        = "if";
@@ -40,7 +41,7 @@ internal static class CONSTS
     public const string ACTION    = "action";
     public const string ANY       = "any";
 
-    public static string[] BOOLS  = { TRUE, FALSE };
+    public static string[] BOOLS  = { TRUE, MAYBE, FALSE };
     public static string[] TYPES  = { VOID, BOOLEAN, INTEGER, FLOAT, NUMBER, CHAR, STRING, RANGE, LIST, FUNCTION, ACTION, ANY };
 
     public const string _SEX_     = "SEx";

@@ -662,6 +662,9 @@ internal sealed class Evaluator
         if (literal.Value == CONSTS.FALSE)
             return new BoolValue(false);
 
+        if (literal.Value == CONSTS.MAYBE)
+            return new BoolValue(new Random().NextDouble() > 0.5D);
+
         Except($"Error ocurred while parsing boolean", literal.Span!, ExceptionType.InternalError);
         return UndefinedValue.New(TypeSymbol.Boolean);
     }
