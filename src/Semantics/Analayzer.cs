@@ -150,13 +150,13 @@ internal sealed class Analyzer
         Scope = new(Scope);
         foreach (var p in parameters)
             Scope.TryDeclare(p);
-        var body = BindFunctionBody(fs.Body, type);
+        var body = BindFunctionBody(fs.Body, type, fs.Hint is not null);
         Scope = Scope.Parent!;
 
-        return new(name, parameters, returnType, body, fs.Span);
+        return new(name, parameters, type.Parameters[0], body, fs.Span);
     }
 
-    private SemanticStatement BindFunctionBody(Statement body, GenericTypeSymbol type)
+    private SemanticStatement BindFunctionBody(Statement body, GenericTypeSymbol type, bool hintGiven = false)
     {
         if (body is BlockStatement blkStmt)
         {
@@ -164,7 +164,13 @@ internal sealed class Analyzer
             return new SemanticBlockStatement(funcAnalyzer.Analyze().Body, blkStmt.Span);
         }
 
-        return BindExpressionStatement((ExpressionStatement) body);
+        var stmt = BindExpressionStatement((ExpressionStatement) body);
+        if (!hintGiven)
+            type.Parameters[0] = stmt.Expression.Type;
+        else if (!type.Parameters[0].Matches(stmt.Expression.Type))
+            Diagnostics.Report.TypesDoNotMatch(type.Parameters[0].ToString(), stmt.Expression.Type.ToString(), stmt.Span);
+
+        return stmt;
     }
 
     private SemanticIfStatement BindIfStatement(IfStatement @is)
@@ -340,7 +346,7 @@ internal sealed class Analyzer
                 return BindList((ListLiteral) expr);
 
             case NodeKind.FunctionLiteral:
-                return BindFunctionExpression((FunctionLiteral) expr);
+                return BindFunction((FunctionLiteral) expr);
 
             case NodeKind.CallExpression:
                 return BindCallExpression((CallExpression) expr);
@@ -444,7 +450,7 @@ internal sealed class Analyzer
         return new SemanticList(Array.Empty<SemanticExpression>(), TypeSymbol.Any, ll.Span);
     }
 
-    private SemanticFunction BindFunctionExpression(FunctionLiteral fl)
+    private SemanticFunction BindFunction(FunctionLiteral fl)
     {
         var returnType = fl.Hint is not null ? BindTypeClause(fl.Hint) : TypeSymbol.Any;
         var parameters = fl.Parameters.Nodes.Select(BindParameter).ToArray();
@@ -453,7 +459,7 @@ internal sealed class Analyzer
         Scope = new(Scope);
         foreach (var p in parameters)
             Scope.TryDeclare(p);
-        var body = BindFunctionBody(fl.Body, type);
+        var body = BindFunctionBody(fl.Body, type, fl.Hint is not null);
         Scope = Scope.Parent!;
 
         return new(parameters, body, type, fl.Span);

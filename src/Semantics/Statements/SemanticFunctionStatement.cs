@@ -13,11 +13,11 @@ public class SemanticFunctionStatement : SemanticStatement
     public override Span         Span   { get; }
     public override SemanticKind Kind => SemanticKind.FunctionStatement;
 
-    public SemanticFunctionStatement(NameSymbol func, NameSymbol[] parameters, TypeSymbol type, SemanticStatement body, Span span)
+    public SemanticFunctionStatement(NameSymbol func, NameSymbol[] parameters, TypeSymbol returnType, SemanticStatement body, Span span)
     {
         Function   = func;
         Parameters = parameters;
-        ReturnType = type;
+        ReturnType = returnType;
         Body       = body;
 
         Span       = span;
