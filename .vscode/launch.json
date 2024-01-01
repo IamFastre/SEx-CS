@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (console)",
+            "name": "Normal [Integrated]",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -16,9 +16,38 @@
             "stopAtEntry": false
         },
         {
-            "name": ".NET Core Attach",
+            "name": "(SEx Debug) [Integrated]",
             "type": "coreclr",
-            "request": "attach"
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/bin/Debug/net7.0/SEx-C.dll",
+            "args": ["--debug"],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "stopAtEntry": false
+        },
+
+        {
+            "name": "Normal [External]",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/bin/Debug/net7.0/SEx-C.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "console": "externalTerminal",
+            "stopAtEntry": false
+        },
+        {
+            "name": "(SEx Debug) [External]",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/bin/Debug/net7.0/SEx-C.dll",
+            "args": ["--debug"],
+            "cwd": "${workspaceFolder}",
+            "console": "externalTerminal",
+            "stopAtEntry": false
         }
     ]
 }
