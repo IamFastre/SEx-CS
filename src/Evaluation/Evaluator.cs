@@ -30,6 +30,16 @@ internal sealed class Evaluator
                         ExceptionType type = ExceptionType.SyntaxError)
         => Diagnostics.Add(type, message, span);
 
+    // public LiteralValue Interpret(Source source)
+    // {
+    //     var lexer     = new Lexer(source, Diagnostics);
+    //     var parser    = new Parser(lexer.Lex(), Diagnostics);
+    //     var analyzer  = new Analyzer(parser.Parse(), Scope.ToSemantic(), Diagnostics);
+    //     var evaluator = new Evaluator(analyzer.Analyze(), Scope, Diagnostics);
+
+    //     return evaluator.Evaluate();
+    // }
+
     public LiteralValue Evaluate()
         => Value = EvaluateStatement(SemanticTree.Body);
 
@@ -163,6 +173,7 @@ internal sealed class Evaluator
         :  expr.Kind switch
         {
             SemanticKind.Literal              => EvaluateLiteral((SemanticLiteral) expr),
+            SemanticKind.FormatString         => EvaluateFormatString((SemanticFormatString) expr),
             SemanticKind.Range                => EvaluateRange((SemanticRange) expr),
             SemanticKind.Name                 => EvaluateName((SemanticName) expr),
             SemanticKind.List                 => EvaluateList((SemanticList) expr),
@@ -205,6 +216,21 @@ internal sealed class Evaluator
             return ParseString(expr);
 
         return UnknownValue.Template;
+    }
+
+    private StringValue EvaluateFormatString(SemanticFormatString fs)
+    {
+        var str = string.Empty;
+
+        foreach (var node in fs.Nodes)
+        {
+            if (node is SemanticExpression expr)
+                str += (string) Converter.Convert(ConversionKind.AnyToString, EvaluateExpression(expr), TypeSymbol.String).Value;
+            else
+                str += Prepare(((SemanticStringFragment) node).Value, fs.Span, false);
+        }
+
+        return new(str);
     }
 
     private LiteralValue EvaluateRange(SemanticRange r)
@@ -747,9 +773,12 @@ internal sealed class Evaluator
     //=====================================================================//
 
     private string? Prepare(SemanticLiteral node)
+        => Prepare(node.Value, node.Span);
+
+    private string? Prepare(string value, Span span, bool removeQuotes = true)
     {
-        try { return node.Value.Unescape()[1..^1]; }
-        catch { Except($"Invalid escape sequence", node.Span!, ExceptionType.StringParseError); }
+        try   { return removeQuotes ? value.Unescape()[1..^1] : value.Unescape(); }
+        catch { Except($"Invalid escape sequence", span, ExceptionType.StringParseError); }
 
         return null;
     }

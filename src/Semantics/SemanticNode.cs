@@ -12,13 +12,14 @@ public abstract class SemanticNode
 
     public static TypeSymbol ToValueKind(NodeKind kind) => kind switch
     {
-        NodeKind.Unknown => TypeSymbol.Unknown,
-        NodeKind.Null    => TypeSymbol.Null,
-        NodeKind.Boolean => TypeSymbol.Boolean,
-        NodeKind.Integer => TypeSymbol.Integer,
-        NodeKind.Float   => TypeSymbol.Float,
-        NodeKind.Char    => TypeSymbol.Char,
-        NodeKind.String  => TypeSymbol.String,
+        NodeKind.Unknown      => TypeSymbol.Unknown,
+        NodeKind.Null         => TypeSymbol.Null,
+        NodeKind.Boolean      => TypeSymbol.Boolean,
+        NodeKind.Integer      => TypeSymbol.Integer,
+        NodeKind.Float        => TypeSymbol.Float,
+        NodeKind.Char         => TypeSymbol.Char,
+        NodeKind.String       => TypeSymbol.String,
+        NodeKind.FormatString => TypeSymbol.String,
 
         _ => throw new Exception("Unknown literal kind"),
     };

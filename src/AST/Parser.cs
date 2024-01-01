@@ -4,10 +4,11 @@ using SEx.Diagnose;
 using SEx.Generic.Constants;
 using SEx.Generic.Text;
 using System.Collections.Immutable;
+using System.Text.RegularExpressions;
 
 namespace SEx.Parse;
 
-internal class Parser
+internal partial class Parser
 {
     public List<Token>       Tokens      { get; }
     public Diagnostics       Diagnostics { get; }
@@ -110,6 +111,9 @@ internal class Parser
             case TokenKind.String:
                 return new Literal(Eat(), NodeKind.String);
 
+            case TokenKind.FormatStringOpener:
+                return GetFormatString();
+
             case TokenKind.Identifier:
                 return new NameLiteral(Eat());
 
@@ -124,6 +128,30 @@ internal class Parser
                 Eat();
                 return FabricateExpression();
         }
+    }
+
+    private Expression? GetFormatString()
+    {
+        var opener = Eat();
+        var values = ImmutableArray.CreateBuilder<Expression>();
+        
+        while (Current.Kind is not TokenKind.FormatStringCloser)
+        {
+            if (Current.Kind is TokenKind.StringFragment)
+                values.Add(new Literal(Eat(), NodeKind.StringFragment));
+
+            else
+            {
+                var expr = GetExpression();
+                if (expr is null)
+                    break;
+
+                values.Add(expr);
+            }
+        }
+        var closer = Eat();
+
+        return new FormatStringLiteral(opener, values.ToArray(), closer);
     }
 
     private Expression GetParenthesized()

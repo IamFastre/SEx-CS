@@ -20,9 +20,9 @@ public class Source
     }
 
     public char   this[int      index] => Text[index];
-    public char   this[Position pos  ] => Text[pos.Index];
+    public char   this[Position pos  ] => Text[pos.Index + 1];
     public string this[Range    range] => Text[range];
-    public string this[Span     span ] => Text[span.Start.Index..span.End.Index];
+    public string this[Span     span ] => Text[span.Start.Index..(span.End.Index + 1)];
 
 
     public int GetIndex(Position position)

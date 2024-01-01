@@ -9,24 +9,28 @@ public static class Checker
     public static readonly char[] Separators = {',','.',';',':','?'};
     public static readonly char[] Operators  = {'=','+','-','*','/','%','!','&','|','^'};
 
-    public static readonly char[] OpnDQuotes = {'"','«','“'}; // '„'
-    public static readonly char[] ClsDQuotes = {'"','»','”'}; // '“'
-    public static readonly char[] OpnSQuotes = {'\'','‹'};
-    public static readonly char[] ClsSQuotes = {'\'','›'};
+    public static readonly char[] OpnStrQuotes = {'"','«','“'}; // '„'
+    public static readonly char[] ClsStrQuotes = {'"','»','”'}; // '“'
+    public static readonly char[] OpnChrQuotes = {'\'','‹'};
+    public static readonly char[] ClsChrQuotes = {'\'','›'};
+
+    public const char UNDERSCORE = '_';
+    public const char DOT        = '.';
+    public const char DOLLAR     = '$';
 
     public static char GetOtherPair(char C)
     {
         // Double Quotation marks
-        if (OpnDQuotes.Contains(C))
-            return ClsDQuotes[Array.IndexOf(OpnDQuotes, C)];
-        if (ClsDQuotes.Contains(C))
-            return OpnDQuotes[Array.IndexOf(ClsDQuotes, C)];
+        if (OpnStrQuotes.Contains(C))
+            return ClsStrQuotes[Array.IndexOf(OpnStrQuotes, C)];
+        if (ClsStrQuotes.Contains(C))
+            return OpnStrQuotes[Array.IndexOf(ClsStrQuotes, C)];
 
         // Single Quotation marks
-        if (OpnSQuotes.Contains(C))
-            return ClsSQuotes[Array.IndexOf(OpnSQuotes, C)];
-        if (ClsSQuotes.Contains(C))
-            return OpnSQuotes[Array.IndexOf(ClsSQuotes, C)];
+        if (OpnChrQuotes.Contains(C))
+            return ClsChrQuotes[Array.IndexOf(OpnChrQuotes, C)];
+        if (ClsChrQuotes.Contains(C))
+            return OpnChrQuotes[Array.IndexOf(ClsChrQuotes, C)];
 
         throw new Exception($"Char \"{C}\" seems to not have a valid pair.");
     }

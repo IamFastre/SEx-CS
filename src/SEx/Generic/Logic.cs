@@ -19,4 +19,12 @@ internal static class StringExtension
         return new string(arr);
     }
 
+    public static string ReplaceFirst(this string str, string term, string replace)
+    {
+        int position = str.IndexOf(term);
+        if (position < 0)
+            return str;
+
+        return str[..position] + replace + str[(position + term.Length)..];
+    }
 }

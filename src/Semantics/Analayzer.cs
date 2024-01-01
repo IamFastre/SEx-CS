@@ -327,6 +327,9 @@ internal sealed class Analyzer
             case NodeKind.String:
                 return BindLiteral((Literal) expr);
 
+            case NodeKind.FormatString:
+                return BindFormatString((FormatStringLiteral) expr);
+
             case NodeKind.Range:
                 return BindRange((RangeLiteral) expr);
 
@@ -369,6 +372,20 @@ internal sealed class Analyzer
             default:
                 throw new Exception($"Unrecognized expression kind: {expr.Kind}");
         }
+    }
+
+    private SemanticFormatString BindFormatString(FormatStringLiteral fs)
+    {
+        var exprs = ImmutableArray.CreateBuilder<SemanticNode>();
+        foreach (var expr in fs.Expressions)
+        {
+            if (expr.Kind is not NodeKind.StringFragment)
+                exprs.Add(BindExpression(expr));
+            else
+                exprs.Add(new SemanticStringFragment(((Literal) expr).Value, expr.Span));
+        }
+
+        return new SemanticFormatString(exprs.ToArray(), fs.Span);
     }
 
     private SemanticLiteral BindLiteral(Literal literal)
@@ -630,21 +647,5 @@ internal sealed class Analyzer
         }
 
         return expr;
-    }
-}
-
-public class SemanticFunctionBodyStatement : SemanticStatement
-{
-    public override Span         Span { get; }
-    public override SemanticKind Kind => SemanticKind.FunctionBodyStatement;
-
-    public SemanticFunctionBodyStatement(Span span)
-    {
-        Span = span;
-    }
-
-    public override IEnumerable<SemanticNode> GetChildren()
-    {
-        throw new NotImplementedException();
     }
 }

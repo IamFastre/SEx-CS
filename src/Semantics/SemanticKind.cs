@@ -17,6 +17,7 @@ public enum SemanticKind
 
     // Literals
     Literal,
+    FormatString,
     Range,
     List,
     Name,
@@ -36,4 +37,5 @@ public enum SemanticKind
     FailedOperation,
     FailedExpression,
     FunctionBodyStatement,
+    StringFragment,
 }

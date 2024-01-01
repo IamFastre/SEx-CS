@@ -40,6 +40,9 @@ public class Scope
     public void Flush()
         => Names.Clear();
 
+    public SemanticScope ToSemantic()
+        => new(Names.Keys);
+
     //=====================================================================//
     //=====================================================================//
 

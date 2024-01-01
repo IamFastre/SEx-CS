@@ -2,10 +2,17 @@ using SEx.Scoping.Symbols;
 
 namespace SEx.Scoping;
 
-internal class SemanticScope
+public class SemanticScope
 {
     public Dictionary<string, NameSymbol> Symbols { get; }
     public SemanticScope?                 Parent  { get; }
+
+    public SemanticScope(IEnumerable<NameSymbol> nameSymbols)
+    {
+        Symbols = new();
+        foreach (var name in nameSymbols)
+            Symbols.Add(name.Name, name);
+    }
 
     public SemanticScope(SemanticScope? parent = null)
     {
@@ -38,6 +45,8 @@ internal class SemanticScope
     {
         if (Symbols.ContainsKey(name.Name) || force)
             Symbols[name.Name] = name;
+        else if (Parent is not null)
+            Parent.Assign(name);
         else
             throw new Exception("Name not declared");
     }

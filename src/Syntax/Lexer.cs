@@ -1,4 +1,7 @@
+using System.Collections.Immutable;
+using System.Text;
 using SEx.Diagnose;
+using SEx.Generic.Logic;
 using SEx.Generic.Text;
 
 namespace SEx.Lex;
@@ -40,32 +43,56 @@ internal class Lexer
 
     public Token GetToken()
     {
-        var value = Current.ToString();
+        var value = new StringBuilder();
         var span  = new Span(GetPosition());
+        value.Append(Current);
 
-        Token CreateToken(TokenKind kind, bool sync = true)
-            => new(sync ? SyncValue() : value, kind, span!);
+        Token CreateToken(TokenKind kind, string? customValue = null, bool sync = true)
+            => new(customValue ?? (sync ? SyncValue() : value.ToString()), kind, span);
 
-        string AddValue(int advanceWhen = 0)
+        void AddValue(int advanceWhen = 0)
         {
             if (advanceWhen == -1) Index++;
 
-            value += Current.ToString();
+            value.Append(Current);
             span.End = GetPosition();
 
             if (advanceWhen == 1) Index++;
-
-            return value;
         }
 
-        string SyncValue()
+        Token GetString(TokenKind kind)
         {
-            var range = span.Start.Index..(Index+1);
+            char clsQuote = Checker.GetOtherPair(Current);
+            Index++;
 
-            value    = Source[range];
-            span.End = GetPosition();
+            while (Current != clsQuote)
+            {
+                if (EOF || EOL)
+                {
+                    Diagnostics.Report.UnterminatedString(span);
+                    return CreateToken(TokenKind.Unknown, sync:false);
+                }
 
-            return value;
+                if (Current == '\\')
+                    Index++;
+                Index++;
+            }
+
+            return CreateToken(kind);
+        }
+
+        void ResetSpan()
+            => span = new(GetPosition());
+
+        string SyncValue(bool includeCurrent = true)
+        {
+            var range = span.Start.Index..(Index + (includeCurrent ? 1 : 0));
+
+            value.Clear();
+            value.Append(Source[range]);
+            span.End = GetPosition(range.End.Value - 1);
+
+            return value.ToString();
         }
 
 
@@ -82,6 +109,105 @@ internal class Lexer
                 AddValue(-1);
 
             return CreateToken(value.Length > 1 ? TokenKind.BigWhiteSpace : TokenKind.WhiteSpace);
+        }
+
+        // Numbers
+        if (char.IsAsciiDigit(Current) || (Current == Checker.DOT && char.IsAsciiDigit(Peek())))
+        {
+            int dots() => value.ToString().Count(s => s == Checker.DOT);
+
+            while (char.IsAsciiDigit(Peek()) || Peek() == Checker.DOT && !(dots() > 0))
+            {
+                if (Peek() == Checker.DOT && !char.IsAsciiDigit(Peek(2)))
+                    break;
+                AddValue(-1);
+            }
+
+            if ("fF".Contains(Peek()))
+                AddValue(-1);
+
+            var type =  dots() == 1 || "fF".Contains(value[^1]) ? TokenKind.Float : TokenKind.Integer;
+            return CreateToken(type);
+        }
+
+        // Identifiers
+        if (char.IsLetter(Current) || Current == '_')
+        {
+            while (char.IsLetterOrDigit(Peek()) || Peek() == '_')
+                AddValue(-1);
+
+            return CreateToken(Checker.GetIdentifierKind(value.ToString()));
+        }
+
+        // Characters
+        if (Checker.OpnChrQuotes.Contains(Current))
+            return GetString(TokenKind.Char);
+
+        // Strings
+        if (Checker.OpnStrQuotes.Contains(Current))
+            return GetString(TokenKind.String);
+
+        // Interpolate Strings
+        if (Checker.OpnStrQuotes.Contains(Peek()) && Current is Checker.DOLLAR)
+        {
+            Index++;
+            Tokens.Add(CreateToken(TokenKind.FormatStringOpener));
+
+            var clsQuote = Checker.GetOtherPair(Current);
+            var tokens = ImmutableArray.CreateBuilder<Token>();
+            var frags  = new StringBuilder();
+            Index++;
+
+            ResetSpan();
+            while (Current != clsQuote)
+            {
+                if (EOF || EOL)
+                {
+                    Diagnostics.Report.UnterminatedString(span);
+                    return CreateToken(TokenKind.Unknown, sync:false);
+                }
+
+                if (Current == '{')
+                {
+                    if (frags.Length > 0)
+                    {
+                        SyncValue(false);
+                        Tokens.Add(CreateToken(TokenKind.StringFragment, frags.ToString()));
+                        frags.Clear();
+                    }
+
+                    Index++;
+                    var bracketCount = 1;
+                    while (bracketCount != 0)
+                    {
+                        var tk = GetToken();
+                        if (tk.Kind == TokenKind.OpenCurlyBracket)
+                            bracketCount++;
+                        if (Peek() == '}')
+                            bracketCount--;
+
+                        Tokens.Add(tk);
+                        Index++;
+                    }
+                    Index++;
+
+                    ResetSpan();
+                }
+                else
+                {
+                    frags.Append(Current);
+                    Index++;
+                }
+            }
+
+            if (frags.Length > 0)
+            {
+                SyncValue(false);
+                Tokens.Add(CreateToken(TokenKind.StringFragment, frags.ToString()));
+                ResetSpan();
+            }
+
+            return CreateToken(TokenKind.FormatStringCloser);
         }
 
         // Operators etc
@@ -172,7 +298,7 @@ internal class Lexer
             case '>':
                 return CreateToken(TokenKind.Greater);
 
-            case '.' when !char.IsDigit(Peek()):
+            case Checker.DOT when !char.IsDigit(Peek()):
                 return CreateToken(TokenKind.Dot);
             case ',':
                 return CreateToken(TokenKind.Comma);
@@ -199,80 +325,6 @@ internal class Lexer
                 return CreateToken(TokenKind.CloseSquareBracket);
             case '}':
                 return CreateToken(TokenKind.CloseCurlyBracket);
-        }
-
-        // Numbers
-        if (char.IsAsciiDigit(Current) || (Current == '.' && char.IsAsciiDigit(Peek())))
-        {
-            int dots() => value.Count(s => s == '.');
-
-            while (char.IsAsciiDigit(Peek()) || Peek() == '.' && !(dots() > 0))
-            {
-                if (Peek() == '.' && !char.IsAsciiDigit(Peek(2)))
-                    break;
-                AddValue(-1);
-            }
-
-            if ("fF".Contains(Peek()))
-                AddValue(-1);
-
-            var type =  dots() == 1 || "fF".Contains(value[^1]) ? TokenKind.Float : TokenKind.Integer;
-            return CreateToken(type);
-        }
-
-        // Identifiers
-        if (char.IsLetter(Current) || Current == '_')
-        {
-            while (char.IsLetterOrDigit(Peek()) || Peek() == '_')
-                AddValue(-1);
-
-            return CreateToken(Checker.GetIdentifierKind(value));
-        }
-
-        // Characters
-        if (Checker.OpnSQuotes.Contains(Current))
-        {
-
-            char clsQuote = Checker.GetOtherPair(Current);
-            Index++;
-
-            while (Current != clsQuote)
-            {
-                if (EOF || EOL)
-                {
-                    Diagnostics.Report.UnterminatedString(span);
-                    return CreateToken(TokenKind.Unknown, false);
-                }
-
-                if (Current == '\\')
-                    Index++;
-                Index++;
-            }
-
-            return CreateToken(TokenKind.Char);
-        }
-
-        // Strings
-        if (Checker.OpnDQuotes.Contains(Current))
-        {
-
-            char clsQuote = Checker.GetOtherPair(Current);
-            Index++;
-
-            while (Current != clsQuote)
-            {
-                if (EOF || EOL)
-                {
-                    Diagnostics.Report.UnterminatedString(span);
-                    return CreateToken(TokenKind.Unknown, false);
-                }
-
-                if (Current == '\\')
-                    Index++;
-                Index++;
-            }
-
-            return CreateToken(TokenKind.String);
         }
 
         if (Checker.Separators.Contains(Current))

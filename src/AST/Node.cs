@@ -1,6 +1,7 @@
 using SEx.Generic.Text;
 using SEx.Generic.Constants;
 using SEx.Lex;
+using SEx.Parse;
 
 namespace SEx.AST;
 
@@ -48,7 +49,7 @@ public abstract class Node
             => $"<{C.YELLOW2}{a}: {C.GREEN2}'{b}'{C.END}>";
 
         var children = GetChildren().ToArray();
-        if (this is Literal LT)
+        if (this is Literal LT && this is not FormatStringLiteral)
         {
             writer.WriteLine(leaf(LT.Kind.ToString(), LT.Value ?? ""));
             return;

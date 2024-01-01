@@ -13,6 +13,8 @@ public enum NodeKind
     Float,
     Char,
     String,
+    FormatString,
+    StringFragment,
     Range,
     Name,
     List,

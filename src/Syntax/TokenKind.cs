@@ -20,6 +20,7 @@ public enum TokenKind
     Float,
     Char,
     String,
+    StringFragment,
     Identifier,
 
     // Keyword kinds
@@ -107,6 +108,8 @@ public enum TokenKind
 
     // Other kinds
     Separator,
+    FormatStringOpener,
+    FormatStringCloser,
 }
 
 internal static class TokenKindExtension
