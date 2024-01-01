@@ -8,7 +8,7 @@ namespace SEx.Lex;
 // storing its value, type, and position in the source code
 public class Token
 {
-    public string    Value { get; }
+    public string    Value { get; set; }
     public Span      Span  { get; }
     public TokenKind Kind  { get; }
     public TokenNode Node       => new(this);
@@ -29,11 +29,18 @@ public class Token
      public override string ToString()
      {
         var val = Kind.IsParserIgnorable() || Kind is TokenKind.EOF || Value is null
+                ? "" : $": {Value}";
+
+        return $"[{Kind}{val}]";
+     }
+
+     public string GetString()
+     {
+        var val = Kind.IsParserIgnorable() || Kind is TokenKind.EOF || Value is null
                 ? "" : $": {C.GREEN2}{Value}";
 
         return $"[{C.YELLOW2}{Kind}{val}{C.END}]";
      }
-
 }
 
 public class TokenNode : Node

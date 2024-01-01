@@ -217,7 +217,7 @@ internal sealed class REPL
         {
             Console.WriteLine($"• {C.GREEN2}Tokens{C.END} ↴");
             foreach (var tk in Tokens!)
-                Console.Write($"{tk} ");
+                Console.Write(tk.GetString());
             Console.WriteLine('\n');
         }
 
