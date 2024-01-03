@@ -6,7 +6,9 @@
     <RootNamespace>SExC</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    
     <Product>SEx</Product>
     <Version>0.1</Version>
     <!-- <ApplicationIcon>bin\Resources\SEx.ico</ApplicationIcon> -->
