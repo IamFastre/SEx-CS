@@ -10,7 +10,7 @@
     <SelfContained>true</SelfContained>
     
     <Product>SEx</Product>
-    <Version>0.1</Version>
+    <Version>0.1.0-alpha</Version>
     <!-- <ApplicationIcon>bin\Resources\SEx.ico</ApplicationIcon> -->
     <Authors>Fastre</Authors>
     <Company>neRIA</Company>
