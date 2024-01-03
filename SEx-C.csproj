@@ -9,7 +9,7 @@
 
     <Product>SEx</Product>
     <Version>0.1</Version>
-    <ApplicationIcon>bin\Resources\SEx.ico</ApplicationIcon>
+    <!-- <ApplicationIcon>bin\Resources\SEx.ico</ApplicationIcon> -->
     <Authors>Fastre</Authors>
     <Company>neRIA</Company>
   </PropertyGroup>
