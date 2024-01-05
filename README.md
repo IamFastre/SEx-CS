@@ -1,4 +1,4 @@
-# SEx-C\#
+# <img src="./res/SEx.png" alt="SEx Logo" style="height: 25px; width:25px;"/>Ex
 
 <sup>(**S**PAIME **EX**ecutable)</sup>\
 \
