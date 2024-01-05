@@ -1,19 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Product>SEx</Product>
+    <Version>0.1.1-alpha</Version>
+    <ApplicationIcon>res\SEx.ico</ApplicationIcon>
+    <Authors>Fastre</Authors>
+    <Company>neRIA</Company>
+
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
-    <RootNamespace>SExC</RootNamespace>
+    <RootNamespace>SEx</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
-    
-    <Product>SEx</Product>
-    <Version>0.1.0-alpha</Version>
-    <!-- <ApplicationIcon>bin\Resources\SEx.ico</ApplicationIcon> -->
-    <Authors>Fastre</Authors>
-    <Company>neRIA</Company>
+
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <!-- <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath> -->
+    <OutputPath>.\build\$(Version)</OutputPath>
   </PropertyGroup>
 
 </Project>
