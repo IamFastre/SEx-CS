@@ -1,5 +1,6 @@
-# SEx-C\#
+# SEx
 
+![SEx Logo](/res/SEx.png "MarineGEO logo")
 <sup>(**S**PAIME **EX**ecutable)</sup>\
 \
 It's very sharp SEx!\
