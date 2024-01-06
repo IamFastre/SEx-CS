@@ -213,6 +213,11 @@ internal class Lexer
         // Operators etc
         switch (Current)
         {
+            case char when IsUpcoming("∞f"):
+                return CreateToken(TokenKind.Float);
+            case '∞':
+                return CreateToken(TokenKind.Integer);
+
             case char when IsUpcoming("..."):
                 return CreateToken(TokenKind.Ellipsis);
             case char when IsUpcoming(">>>"):

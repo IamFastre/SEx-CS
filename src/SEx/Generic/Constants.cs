@@ -10,6 +10,9 @@ internal static class CONSTS
     public const string NULL      = "null";
     public const string VOID      = "void";
 
+    public const string NAN       = "NaN";
+    public const string NANF      = "NaNf";
+
     public const string TRUE      = "true";
     public const string MAYBE     = "maybe";
     public const string FALSE     = "false";

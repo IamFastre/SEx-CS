@@ -38,6 +38,8 @@ public static class Checker
     public static TokenKind GetIdentifierKind(string value)
     => value switch
     {
+        CONSTS.NAN      => TokenKind.Integer,
+        CONSTS.NANF     => TokenKind.Float,
         CONSTS.IN       => TokenKind.InOperator,
         CONSTS.DELETE   => TokenKind.Delete,
         CONSTS.NULL     => TokenKind.Null,
