@@ -41,18 +41,12 @@ public sealed class SemanticUnaryOperation : SemanticExpression
         }
 
         if (operand is TypeID.Integer)
-        {
             if (kind is TokenKind.Tilde)
                 return UnaryOperationKind.BitwiseComplement;
-        }
 
         if (operand is TypeID.Boolean)
-        {
             if (kind is TokenKind.BangMark or TokenKind.Tilde)
                 return UnaryOperationKind.Complement;
-            if (kind is TokenKind.Minus)
-                return UnaryOperationKind.Negation;
-        }
 
         return null;
     }
