@@ -48,7 +48,7 @@ internal static class CONSTS
     public static string[] TYPES  = { VOID, BOOLEAN, INTEGER, FLOAT, NUMBER, CHAR, STRING, RANGE, LIST, FUNCTION, ACTION, ANY };
 
     public const string _SEX_     = "SEx";
-    public const string _VERSION_ = "0.1.0-alpha";
+    public const string _VERSION_ = "0.1.2-alpha";
 }
 
 

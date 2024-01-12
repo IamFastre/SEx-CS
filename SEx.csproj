@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Product>SEx</Product>
-    <Version>0.1.1-alpha</Version>
+    <Version>0.1.2-alpha</Version>
     <ApplicationIcon>res\SEx.ico</ApplicationIcon>
     <Authors>Fastre</Authors>
     <Company>neRIA</Company>
@@ -16,8 +16,8 @@
     <SelfContained>true</SelfContained>
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <!-- <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath> -->
-    <OutputPath>.\build\$(Version)</OutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>.\build\Debug</OutputPath>
   </PropertyGroup>
 
 </Project>
