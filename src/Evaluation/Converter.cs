@@ -8,8 +8,8 @@ internal static class Converter
 {
     public static LiteralValue Convert(ConversionKind kind, LiteralValue value, TypeSymbol to)
     {
-        if (!value.IsKnown)
-            return UndefinedValue.New(to);
+        if (!value.Type.IsKnown)
+            return UnknownValue.Template;
 
         switch (kind)
         {
@@ -17,7 +17,7 @@ internal static class Converter
                 return value;
 
             case ConversionKind.Explicit:
-                return to.Matches(value.Type) ? value : UndefinedValue.New(to);
+                return to.Matches(value.Type) ? value : UnknownValue.Template;
 
             case ConversionKind.AnyToString:
                 return new StringValue(value.GetString());
