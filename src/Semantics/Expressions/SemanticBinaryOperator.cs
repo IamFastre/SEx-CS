@@ -70,7 +70,7 @@ public class SemanticBinaryOperator
         foreach (var op in operators)
             if (op.LeftType.Matches(left) && op.Kind.HasFlag(opKind) && op.RightType.Matches(right))
             {
-                if (op!.ResultType is GenericTypeSymbol)
+                if (op.ResultType is GenericTypeSymbol)
                 {
                     if (left is not GenericTypeSymbol)
                         op.ResultType = right;
@@ -82,7 +82,7 @@ public class SemanticBinaryOperator
                                       : right;
                 }
 
-                if (op!.Kind is BinaryOperationKind.NullishCoalescence)
+                if (op.Kind is BinaryOperationKind.NullishCoalescence)
                     op.ResultType = left.Matches(right)
                                   ? left
                                   : right;
