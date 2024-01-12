@@ -107,8 +107,8 @@ public sealed class ListValue
             return new(fin, ElementType);
     }
 
-    public ListValue Concat(ListValue other)
-        => new(_values.Concat(other._values));
+    public ListValue Concat(ListValue other, TypeSymbol type)
+        => new(_values.Concat(other._values), type);
 
     public IEnumerable<LiteralValue> GetEnumerator() => _values;
 }
