@@ -11,10 +11,11 @@
 |&#9745;| `char` | `'S'`, `‹X›` |
 |&#9745;| `range` | `(0:10)`, `(0:10:2)`, `(0.5:20.5:0.5)` |
 |&#9745;| `string` | `"Foo"`, `«Bar»` |
-|&#9745;| `list<t>` \| `t[]` | `[12, 57, 69, 420]`, `["SEx", "is", "cool"]`, `[[1, 2], [3, 4]]` |
-|&#9744;| `record` → `{ field1:t1... }` | `{ name = "John Doe", age = 34 }` |
-|&#9745;| `action` \| `function<void, t...>` | `(foo:string, bar:int)->void => {...}` |
-|&#9745;| `function<out, t...>` | `(x:int, y:int)->int => x + y`, `(x:string)->bool => {...}` |
+|&#9745;| `list<t>` or `t[]` | `[12, 57, 69, 420]`, `["SEx", "is", "cool"]`, `[[1, 2], [3, 4]]` |
+|&#9744;| `dict<k,v>` or `{k:v}` | `{ x1: y1, x2: y2... }` |
+|&#9744;| `record` → `{ f1: t1... }` | `{ name = "John Doe", age = 34 }` |
+|&#9745;| `action` or `function<void, t...>` | `(foo:string, bar:int)->void => {...}` |
+|&#9745;| `func<out, t...>` | `(x:int, y:int)->int => x + y`, `(x:string)->bool => {...}` |
 ||||
 |**>>>**|**Unary Operations:**||
 ||||
