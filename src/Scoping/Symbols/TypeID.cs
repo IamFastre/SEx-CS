@@ -16,13 +16,14 @@ public enum TypeID
     List     = 1 << 9,
     Function = 1 << 10,
 
-    Any      = int.MaxValue - UAVTs,
-    Whole    = Integer | Char,
-    Number   = Integer | Float,
-    Numable  = Number  | Char,
-    Iterable = String  | Range   | List,
-    Nones    = Void    | Unknown | Null,
-    UAVTs    = Void    | Unknown, // Un-assignable value types
+    Any       = int.MaxValue - UAVTs,
+    Immutable = Boolean | Integer | Float | Char | String,
+    Whole     = Integer | Char,
+    Number    = Integer | Float,
+    Numable   = Number  | Char,
+    Iterable  = String  | Range   | List,
+    Nones     = Void    | Unknown | Null,
+    UAVTs     = Void    | Unknown, // Un-assignable value types
 }
 
 public static class TypeIDExtension

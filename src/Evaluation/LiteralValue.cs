@@ -7,14 +7,15 @@ public abstract class LiteralValue
     public abstract object     Value { get; }
     public abstract TypeSymbol Type  { get; }
 
-    public bool IsKnown   => Type.ID is not TypeID.Unknown && IsDefined;
-    public bool IsDefined => this is not UndefinedValue;
-    public bool IsNull    => this is NullValue;
-    public bool IsGeneric => Type is GenericTypeSymbol;
-
     public abstract override string ToString();
     public abstract override bool   Equals(object? obj);
     public abstract override int    GetHashCode();
+
+    public static bool operator !=(LiteralValue left, LiteralValue right)
+        => !left.Equals(right);
+
+    public static bool operator ==(LiteralValue left, LiteralValue right)
+        =>  left.Equals(right);
 
     public abstract string GetString();
 }

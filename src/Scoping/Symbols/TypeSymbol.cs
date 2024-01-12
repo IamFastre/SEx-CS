@@ -9,9 +9,11 @@ public class TypeSymbol : Symbol
 
     public bool IsKnown    => ID is not TypeID.Unknown;
     public bool IsVoid     => ID is TypeID.Void;
+    public bool IsNull     => ID is TypeID.Null;
     public bool IsIterable => ElementType is not null;
     public bool IsGeneric  => this is GenericTypeSymbol;
     public bool IsCallable => ID is TypeID.Function;
+    public bool IsMutable  => ID is TypeID.List;
 
     public override SymbolKind Kind => SymbolKind.Type;
 
