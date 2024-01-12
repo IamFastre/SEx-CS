@@ -651,15 +651,15 @@ internal sealed class Evaluator
     {
         var value = EvaluateExpression(aseprx.Expression);
 
-        if (Scope.TryResolve(aseprx.Assignee.Symbol, out var output) && (!aseprx.Assignee.Symbol.IsConstant))
+        if (Scope.TryResolve(aseprx.Assignee.Symbol, out _) && (!aseprx.Assignee.Symbol.IsConstant))
         {
             if (DoPoint(value, aseprx.Expression, out var from))
                 Scope.Point(from!, aseprx.Assignee.Symbol);
             else
-                Scope.Assign(aseprx.Assignee.Symbol, output = value);
+                Scope.Assign(aseprx.Assignee.Symbol, value);
         }
 
-        return output.Type.IsKnown ? output : value;
+        return value;
     }
 
     private LiteralValue EvaluateFailedExpression(SemanticFailedOperation fe)
