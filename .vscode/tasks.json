@@ -7,11 +7,15 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/SEx-C.sln",
+                "${workspaceFolder}/SEx.sln",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "publish",
@@ -19,7 +23,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/SEx-C.sln",
+                "${workspaceFolder}/SEx.sln",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -33,7 +37,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/SEx-C.sln"
+                "${workspaceFolder}/SEx.sln"
             ],
             "problemMatcher": "$msCompile"
         }
