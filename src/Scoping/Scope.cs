@@ -85,7 +85,7 @@ public class Scope
             throw new IndexOutOfRangeException($"Name {old} isn't added");
 
         var index = Names[old];
-        Names.Add(@new, index);
+        Names[@new] = index;
 
         Return:
             CleanUp();
