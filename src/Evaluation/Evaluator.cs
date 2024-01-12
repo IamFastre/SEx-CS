@@ -91,14 +91,17 @@ internal sealed class Evaluator
 
     private void EvaluateDeclarationStatement(SemanticDeclarationStatement ds)
     {
-        var value = ds.Expression is null
-                  ? UndefinedValue.New(ds.Variable.Type)
-                  : EvaluateExpression(ds.Expression);
+        var value = EvaluateExpression(ds.Expression);
 
         if (!Scope.TryResolve(ds.Variable, out _))
         {
             if ((ds.Variable.Type, value.Type).IsAssignable())
-                Scope.Declare(ds.Variable, value);
+            {
+                if (DoPoint(value, ds.Expression, out var from))
+                    Scope.Point(from!, ds.Variable);
+                else
+                    Scope.Assign(ds.Variable, value, true);
+            }
         }
         else if (ds.Variable.IsConstant)
             Scope.MakeConstant(ds.Variable.Name);
@@ -274,15 +277,9 @@ internal sealed class Evaluator
             return UnknownValue.Template;
         }
 
-        if (value.IsNull)
+        if (value.Type.IsNull)
         {
             Diagnostics.Report.NullReference(n.Span);
-            return UnknownValue.Template;
-        }
-
-        if (!value.IsDefined)
-        {
-            Diagnostics.Report.UseOfUndefined(n.Symbol.Name, n.Span);
             return UnknownValue.Template;
         }
 
@@ -296,7 +293,7 @@ internal sealed class Evaluator
         foreach (var statement in ll.Elements)
         {
             var value = EvaluateExpression(statement);
-            if (value.IsKnown)
+            if (value.Type.IsKnown)
                 values.Add(value);
             else
                 return UndefinedValue.New(ll.Type);
@@ -322,7 +319,7 @@ internal sealed class Evaluator
             Scope = new(func.ParentScope);
 
             for (int i = 0; i < fc.Arguments.Length; i++)
-                Scope.Declare(func.Parameters[i], args[i]);
+                Scope.Set(func.Parameters[i], args[i], true);
 
             if (func.Body is SemanticBlockStatement blkStmt)
                 Value = new Evaluator(blkStmt.ToProgram(), Scope, Diagnostics).Evaluate();
@@ -352,7 +349,7 @@ internal sealed class Evaluator
     private LiteralValue EvaluateUnaryOperation(SemanticUnaryOperation uop)
     {
         var operand = EvaluateExpression(uop.Operand);
-        if (!operand.IsKnown)
+        if (!operand.Type.IsKnown)
             return UndefinedValue.New(uop.Type);
 
         double _double;
@@ -385,7 +382,7 @@ internal sealed class Evaluator
         var name = EvaluateName(co.Name);
         var kind = co.OperationKind;
 
-        if (!name.IsKnown)
+        if (!name.Type.IsKnown)
             return UnknownValue.Template;
 
         double _double = TypeSymbol.Char.Matches(co.Name.Type)
@@ -424,7 +421,7 @@ internal sealed class Evaluator
         var value = EvaluateExpression(ce.Expression);
         var after = Converter.Convert(ce.ConversionKind, value, ce.Target);
 
-        if (!after.IsDefined && value.IsKnown)
+        if (!value.Type.IsKnown)
             Diagnostics.Report.CannotConvert(value.Type.ToString(), ce.Target.ToString(), ce.Span);
 
         return after;
@@ -436,7 +433,7 @@ internal sealed class Evaluator
         var kind   = biop.Operator.Kind;
         var right  = EvaluateExpression(biop.Right);
 
-        if (!left.IsKnown || !right.IsKnown)
+        if (!left.Type.IsKnown || !right.Type.IsKnown)
             return UnknownValue.Template;
 
         bool   _bool;
@@ -614,7 +611,7 @@ internal sealed class Evaluator
             case BinaryOperationKind.ListConcatenation:
                 ListValue _l1, _l2;
                 (_l1, _l2) = ((ListValue) left, (ListValue) right);
-                return _l1.Concat(_l2);
+                return _l1.Concat(_l2, biop.Operator.ResultType.ElementType!);
 
             case BinaryOperationKind.ListMultiplication:
                 var n2  = (double) (TypeSymbol.Integer.Matches(left.Type) ? left.Value : right.Value);
@@ -652,12 +649,17 @@ internal sealed class Evaluator
 
     private LiteralValue EvaluateAssignExpression(SemanticAssignment aseprx)
     {
-        var val = EvaluateExpression(aseprx.Expression);
+        var value = EvaluateExpression(aseprx.Expression);
 
         if (Scope.TryResolve(aseprx.Assignee.Symbol, out var output) && (!aseprx.Assignee.Symbol.IsConstant))
-            Scope.Assign(aseprx.Assignee.Symbol, output = val);
+        {
+            if (DoPoint(value, aseprx.Expression, out var from))
+                Scope.Point(from!, aseprx.Assignee.Symbol);
+            else
+                Scope.Assign(aseprx.Assignee.Symbol, output = value);
+        }
 
-        return output.Type.IsKnown ? output : val;
+        return output.Type.IsKnown ? output : value;
     }
 
     private LiteralValue EvaluateFailedExpression(SemanticFailedOperation fe)
@@ -781,5 +783,18 @@ internal sealed class Evaluator
         catch { Except($"Invalid escape sequence", span, ExceptionType.StringParseError); }
 
         return null;
+    }
+
+
+    private static bool DoPoint(LiteralValue value, SemanticExpression expression, out NameSymbol? from)
+    {
+        if (expression is SemanticName name)
+        {
+            from = name.Symbol;
+            return value.Type.IsMutable;
+        }
+
+        from = null;
+        return false;
     }
 }
