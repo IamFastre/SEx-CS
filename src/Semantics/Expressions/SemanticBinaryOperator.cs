@@ -120,6 +120,10 @@ public class SemanticBinaryOperator
         new(BinaryOperationKind.GreaterEqual, TypeSymbol.Number, TypeSymbol.Boolean),
         new(BinaryOperationKind.LessEqual, TypeSymbol.Number, TypeSymbol.Boolean),
 
+        new(BinaryOperationKind.Greater, TypeSymbol.Char, TypeSymbol.Boolean),
+        new(BinaryOperationKind.Less, TypeSymbol.Char, TypeSymbol.Boolean),
+        new(BinaryOperationKind.GreaterEqual, TypeSymbol.Char, TypeSymbol.Boolean),
+        new(BinaryOperationKind.LessEqual, TypeSymbol.Char, TypeSymbol.Boolean),
 
         new(BinaryOperationKind.Addition, TypeSymbol.Integer),
         new(BinaryOperationKind.Addition, TypeSymbol.Float),

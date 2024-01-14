@@ -71,7 +71,10 @@ public sealed class SemanticBinaryOperation : SemanticExpression
                 return BinaryOperationKind.Modulo;
             if (op is TokenKind.Power)
                 return BinaryOperationKind.Power;
+        }
 
+        if ((left, right).Match(TypeSymbol.Number) || (left, right).Match(TypeSymbol.Char))
+        {
             if (op is TokenKind.Greater)
                 return BinaryOperationKind.Greater;
             if (op is TokenKind.Less)

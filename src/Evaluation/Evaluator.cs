@@ -499,10 +499,6 @@ internal sealed class Evaluator
 
             case BinaryOperationKind.LogicalAND:
             case BinaryOperationKind.LogicalOR:
-            case BinaryOperationKind.Greater:
-            case BinaryOperationKind.GreaterEqual:
-            case BinaryOperationKind.Less:
-            case BinaryOperationKind.LessEqual:
                 _bool =
                       kind == BinaryOperationKind.LogicalAND
                     ? (bool) left.Value && (bool) right.Value
@@ -510,18 +506,31 @@ internal sealed class Evaluator
                     : kind == BinaryOperationKind.LogicalOR
                     ? (bool) left.Value || (bool) right.Value
 
+                    : throw new Exception("This shouldn't occur");
 
-                    :  kind == BinaryOperationKind.Greater
-                    ? (double) left.Value > (double) right.Value
+                return new BoolValue(_bool);
+
+            case BinaryOperationKind.Greater:
+            case BinaryOperationKind.GreaterEqual:
+            case BinaryOperationKind.Less:
+            case BinaryOperationKind.LessEqual:
+                double _d1, _d2;
+
+                _d1 = left.Type.ID  is TypeID.Char ? (char) left.Value  : (double) left.Value;
+                _d2 = right.Type.ID is TypeID.Char ? (char) right.Value : (double) right.Value;
+
+                _bool =
+                      kind == BinaryOperationKind.Greater
+                    ? _d1 > _d2
 
                     : kind == BinaryOperationKind.GreaterEqual
-                    ? (double) left.Value >= (double) right.Value
+                    ? _d1 >= _d2
 
                     : kind == BinaryOperationKind.Less
-                    ? (double) left.Value < (double) right.Value
+                    ? _d1 < _d2
 
                     : kind == BinaryOperationKind.LessEqual
-                    ? (double) left.Value <= (double) right.Value
+                    ? _d1 <= _d2
                     : throw new Exception("This shouldn't occur");
 
                 return new BoolValue(_bool);
