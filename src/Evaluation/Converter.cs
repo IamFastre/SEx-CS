@@ -22,6 +22,15 @@ internal static class Converter
             case ConversionKind.AnyToString:
                 return new StringValue(value.GetString());
 
+            //==============Bools==============//
+
+            case ConversionKind.BoolToNumber:
+            case ConversionKind.BoolToInt:
+                return new IntegerValue((bool) value.Value ? 1 : 0);
+
+            case ConversionKind.BoolToFloat:
+                return new FloatValue((bool) value.Value ? 1 : 0);
+
             //=============Numbers=============//
 
             case ConversionKind.NumberToInt:
@@ -37,7 +46,7 @@ internal static class Converter
             case ConversionKind.FloatToChar:
                 return new CharValue((char) Math.Floor((double) value.Value));
 
-            //=============Chars=============//
+            //==============Chars==============//
 
             case ConversionKind.CharToInt:
                 return new IntegerValue((char) value.Value);
@@ -45,7 +54,7 @@ internal static class Converter
             case ConversionKind.CharToFloat:
                 return new FloatValue((char) value.Value);
 
-            //=============Lists=============//
+            //==============Lists==============//
 
             case ConversionKind.RangeToNumberList:
                 return new ListValue(((RangeValue) value).GetEnumerator(), TypeSymbol.TypedList(TypeID.Number));

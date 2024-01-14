@@ -9,6 +9,10 @@ public enum ConversionKind
     Explicit,
     AnyToString,
 
+    BoolToInt,
+    BoolToFloat,
+    BoolToNumber,
+
     NumberToInt,
     NumberToFloat,
     NumberToChar,
@@ -65,6 +69,10 @@ public class SemanticConversionExpression : SemanticExpression
         return (from.ID, to.ID) switch
         {
             ( _ , TypeID.String) when from.IsKnown => ConversionKind.AnyToString,
+
+            (TypeID.Boolean, TypeID.Integer)       => ConversionKind.BoolToInt,
+            (TypeID.Boolean, TypeID.Float)         => ConversionKind.BoolToFloat,
+            (TypeID.Boolean, TypeID.Number)        => ConversionKind.BoolToNumber,
 
             (TypeID.Number, TypeID.Integer)        => ConversionKind.NumberToInt,
             (TypeID.Number, TypeID.Float)          => ConversionKind.NumberToFloat,
