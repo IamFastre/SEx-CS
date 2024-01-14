@@ -52,8 +52,10 @@ public sealed class RangeValue
 
     public NumberValue? GetIndexed(IntegerValue index)
     {
-        var i = (double) index.Value < 0 ? (double) Length!.Value + (double) index.Value : (double) index.Value;
-        var val = NumberValue.Get(i * (double) Step.Value + (double) Start.Value);
+        var i = (double) index.Value;
+        var val = double.IsPositive(i)
+                ? NumberValue.Get( i    * (double) Step.Value + (double) Start.Value)
+                : NumberValue.Get((i+1) * (double) Step.Value + (double) End.Value);
         return Contains(val) ? val : null;
     }
 
