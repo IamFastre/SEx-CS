@@ -4,6 +4,11 @@
     [SPAIME Executable]
 </p>
 
----
+
+# Definition
 
 **`SEx`** is a high-level, `C#`-based interpreted programming language made by me for the fun of it.
+
+# Documentation
+
+While there isn't much of documentations around [data types](docs/data-types.md) and [features](docs/feartures-table.md) should be a little enough for now.
