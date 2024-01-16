@@ -316,7 +316,7 @@ internal sealed class Evaluator
             if (func.IsBuiltin)
                 return BuiltIn.Backend.Evaluate(func, args);
 
-            Scope = new(func.ParentScope);
+            Scope = new(Scope);
 
             for (int i = 0; i < fc.Arguments.Length; i++)
                 Scope.Set(func.Parameters[i], args[i], true);
