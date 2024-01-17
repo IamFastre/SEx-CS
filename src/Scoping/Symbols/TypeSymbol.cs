@@ -85,7 +85,6 @@ public class TypeSymbol : Symbol
     public static readonly TypeSymbol Null    = new(CONSTS.NULL,    TypeID.Null);
     public static readonly TypeSymbol Boolean = new(CONSTS.BOOLEAN, TypeID.Boolean);
     public static readonly TypeSymbol Number  = new(CONSTS.NUMBER,  TypeID.Number);
-    public static readonly TypeSymbol Whole   = new(CONSTS.WHOLE,   TypeID.Whole);
     public static readonly TypeSymbol Integer = new(CONSTS.INTEGER, TypeID.Integer);
     public static readonly TypeSymbol Float   = new(CONSTS.FLOAT,   TypeID.Float);
     public static readonly TypeSymbol Char    = new(CONSTS.CHAR,    TypeID.Char);

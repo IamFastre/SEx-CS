@@ -35,10 +35,9 @@ internal static class CONSTS
     public const string INTEGER   = "int";
     public const string FLOAT     = "float";
     public const string NUMBER    = "number";
-    public const string WHOLE     = "whole";
+    public const string RANGE     = "range";
     public const string CHAR      = "char";
     public const string STRING    = "string";
-    public const string RANGE     = "range";
     public const string LIST      = "list";
     public const string FUNCTION  = "function";
     public const string ACTION    = "action";

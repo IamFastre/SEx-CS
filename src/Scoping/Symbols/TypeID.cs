@@ -18,7 +18,6 @@ public enum TypeID
 
     Any       = int.MaxValue - UAVTs,
     Immutable = Boolean | Integer | Float | Char | String,
-    Whole     = Integer | Char,
     Number    = Integer | Float,
     Numable   = Number  | Char,
     Iterable  = String  | Range   | List,
