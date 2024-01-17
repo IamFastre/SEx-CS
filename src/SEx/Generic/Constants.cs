@@ -1,5 +1,3 @@
-using SEx.Lex;
-
 namespace SEx.Generic.Constants;
 
 internal static class CONSTS
