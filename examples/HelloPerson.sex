@@ -1,0 +1,8 @@
+// Asks for an input and says hi to it
+>>> Hello() -> void: {
+    Print("Please tell me your name.")
+    # name:string = Read("> ")
+    Print($"Hello there, {name}!")
+}
+
+Hello()
