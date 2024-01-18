@@ -12,3 +12,7 @@
 ## Documentation
 
 While there isn't much of documentations around [data types](docs/data-types.md) and [features](docs/feartures-table.md) should be a little enough for now.
+
+## VS Code
+
+There is an under-development visual studio code extension that highlights the syntax right now releasing soon.
