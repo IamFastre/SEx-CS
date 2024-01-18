@@ -63,7 +63,7 @@ public class SemanticConversionExpression : SemanticExpression
         if (to.Matches(from))
             return ConversionKind.Implicit;
 
-        if (from.ID is TypeID.Any && to.ID is not TypeID.String)
+        if ((from.ID is TypeID.Any || (from.IsGeneric && from.ElementType!.ID is TypeID.Any)) && to.ID is not TypeID.String)
             return ConversionKind.Explicit;
 
         return (from.ID, to.ID) switch

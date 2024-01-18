@@ -6,6 +6,12 @@ namespace SEx.Evaluate.Conversions;
 
 internal static class Converter
 {
+    public static LiteralValue Convert(LiteralValue value, TypeSymbol to)
+    {
+        var kind = SemanticConversionExpression.GetConversionKind(value.Type, to);
+        return kind is not null ? Convert(kind.Value, value, to) : UnknownValue.Template;
+    }
+
     public static LiteralValue Convert(ConversionKind kind, LiteralValue value, TypeSymbol to)
     {
         if (!value.Type.IsKnown)
@@ -17,7 +23,7 @@ internal static class Converter
                 return value;
 
             case ConversionKind.Explicit:
-                return to.Matches(value.Type) ? value : UnknownValue.Template;
+                return Convert(value, to);
 
             case ConversionKind.AnyToString:
                 return new StringValue(value.GetString());
