@@ -421,7 +421,7 @@ internal sealed class Evaluator
         var value = EvaluateExpression(ce.Expression);
         var after = Converter.Convert(ce.ConversionKind, value, ce.Target);
 
-        if (!value.Type.IsKnown)
+        if (!after.Type.IsKnown)
             Diagnostics.Report.CannotConvert(value.Type.ToString(), ce.Target.ToString(), ce.Span);
 
         return after;
