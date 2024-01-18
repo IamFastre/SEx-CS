@@ -40,8 +40,11 @@ public record Report(Source Source)
     internal void InvalidSyntax(string token, Span span)
         => Except(ExceptionType.SyntaxError, $"Invalid syntax '{token}'", span);
 
+    internal void Expected(string token, Span span, bool rereadLine)
+        => Except(ExceptionType.SymbolError, $"Expected {("euioa".Contains(token[0]) ? "an" : "a")} '{token}'", span, rereadLine);
+
     internal void ExpectedToken(string token, string got, Span span, bool rereadLine)
-        => Except(ExceptionType.SymbolError, $"Expected '{token}' got '{got}'", span, rereadLine);
+        => Except(ExceptionType.SymbolError, $"Expected {("euioa".Contains(token[0]) ? "an" : "a")} '{token}' got '{got}'", span, rereadLine);
 
     internal void StatementExpected(Span span)
         => Except(ExceptionType.SyntaxError, $"Expected a statement", span, span.End.Equals(Source.GetLastPosition()));

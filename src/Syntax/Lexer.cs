@@ -86,7 +86,7 @@ internal class Lexer
 
         string SyncValue(bool includeCurrent = true)
         {
-            var range = span.Start.Index..(Index + (includeCurrent ? 1 : 0));
+            var range = span.Start.Index..(Index < Source.Length ? (Index + (includeCurrent ? 1 : 0)) : Source.Length - 1);
 
             value.Clear();
             value.Append(Source[range]);
@@ -95,6 +95,26 @@ internal class Lexer
             return value.ToString();
         }
 
+        if (Current == '/' && Peek() == '/')
+        {
+            Index += 2;
+            while (Peek() != '\n' && !EOF)
+                Index++;
+
+            return CreateToken(TokenKind.Comment);
+        }
+
+        if (Current == '/' && Peek() == '*')
+        {
+            Index += 2;
+            while (!(Peek(-1) == '*' && Current == '/') && !EOF)
+                Index++;
+
+            if (EOF)
+                Diagnostics.Report.Expected("*/", span, true);
+
+            return CreateToken(TokenKind.Comment);
+        }
 
         if (Current == '\0' || EOF)
             return new Token("\0", TokenKind.EOF, Source.GetLastPosition());
