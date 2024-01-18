@@ -1,19 +1,21 @@
 using System.Reflection;
 using SEx.Evaluate.Conversions;
 using SEx.Evaluate.Values;
+using SEx.Generic.Logic;
 using SEx.Semantics;
 
 namespace SEx.Scoping.Symbols;
 
 public static class BuiltIn
 {
-    public static readonly BuiltinFunctionValue Print       = new("print", TypeSymbol.Void, new NameSymbol("value", TypeSymbol.Any));
-    public static readonly BuiltinFunctionValue Floor       = new("floor", TypeSymbol.Integer, new NameSymbol("value", TypeSymbol.Number));
-    public static readonly BuiltinFunctionValue Round       = new("round", TypeSymbol.Integer, new NameSymbol("value", TypeSymbol.Number));
-    public static readonly BuiltinFunctionValue Ceiling     = new("ceiling", TypeSymbol.Integer, new NameSymbol("value", TypeSymbol.Number));
-    public static readonly BuiltinFunctionValue Absolute    = new("absolute", TypeSymbol.Number, new NameSymbol("value", TypeSymbol.Number));
-    public static readonly BuiltinFunctionValue RandomInt   = new("randomInt", TypeSymbol.Integer);
-    public static readonly BuiltinFunctionValue RandomFloat = new("randomFloat", TypeSymbol.Float);
+    public static readonly BuiltinFunctionValue Print       = new("Print", TypeSymbol.Void,      new NameSymbol("value", TypeSymbol.Any));
+    public static readonly BuiltinFunctionValue Read        = new("Read" , TypeSymbol.String,    new NameSymbol("value", TypeSymbol.String));
+    public static readonly BuiltinFunctionValue Floor       = new("Floor", TypeSymbol.Integer,   new NameSymbol("value", TypeSymbol.Number));
+    public static readonly BuiltinFunctionValue Round       = new("Round", TypeSymbol.Integer,   new NameSymbol("value", TypeSymbol.Number));
+    public static readonly BuiltinFunctionValue Ceiling     = new("Ceiling", TypeSymbol.Integer, new NameSymbol("value", TypeSymbol.Number));
+    public static readonly BuiltinFunctionValue Absolute    = new("Absolute", TypeSymbol.Number, new NameSymbol("value", TypeSymbol.Number));
+    public static readonly BuiltinFunctionValue RandomInt   = new("RandomInt", TypeSymbol.Integer);
+    public static readonly BuiltinFunctionValue RandomFloat = new("RandomFloat", TypeSymbol.Float);
 
     public static BuiltinFunctionValue[] GetFunctions()
         => typeof(BuiltIn).GetFields(BindingFlags.Public | BindingFlags.Static)
@@ -24,8 +26,14 @@ public static class BuiltIn
     {
         private static VoidValue Print(string value)
         {
-            Console.WriteLine(value);
+            Console.WriteLine(value.Unescape());
             return VoidValue.Template;
+        }
+
+        private static StringValue Read(string value)
+        {
+            Console.Write(value.Unescape());
+            return new(Console.ReadLine() ?? "");
         }
 
         private static IntegerValue Floor(double value)
@@ -51,6 +59,9 @@ public static class BuiltIn
         {
             if (func == BuiltIn.Print)
                 return Print((string) Converter.Convert(ConversionKind.AnyToString, args[0], TypeSymbol.String).Value);
+
+            else if (func == BuiltIn.Read)
+                return Read((string) args[0].Value);
 
             else if (func == BuiltIn.Floor)
                 return Floor((double) args[0].Value);
