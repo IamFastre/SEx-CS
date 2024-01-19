@@ -1,7 +1,7 @@
 <Project>
-  <Import Project="SEx.csproj" />
-
   <PropertyGroup>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
+
+  <Import Project="SEx.csproj" />
 </Project>
