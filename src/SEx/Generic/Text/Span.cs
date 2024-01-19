@@ -17,7 +17,6 @@ public class Span
         End   = end;
     }
 
-
     public override string ToString()
         => Start.Index == End.Index ? $"{Start}" : $"{Start} => {End}";
 }
