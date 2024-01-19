@@ -1,0 +1,7 @@
+<Project>
+  <Import Project="SEx.csproj" />
+
+  <PropertyGroup>
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+  </PropertyGroup>
+</Project>
