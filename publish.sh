@@ -1,3 +1,5 @@
+#!/bin/sh
+
 publish() {
     echo "[*] Building app for '$1'..."
     dotnet publish $1.csproj
@@ -13,3 +15,5 @@ publish() {
 publish "Linux" "linux-x64"
 publish "Windows" "win-x64"
 # publish "macOS" "osx-x64"
+
+exit 0
