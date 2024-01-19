@@ -24,6 +24,7 @@ public class Source
     public string this[Range    range] => Text[range];
     public string this[Span     span ] => Text[span.Start.Index..(span.End.Index + 1)];
 
+    public static readonly Source Empty = new("{?}", "");
 
     public int GetIndex(Position position)
     {

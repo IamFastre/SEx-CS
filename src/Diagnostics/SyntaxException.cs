@@ -11,6 +11,8 @@ public class SyntaxException
     public readonly bool          ReReadLine;
     public readonly Span          Span;
 
+    public bool IsInternal => Span.Start.Index == -1;
+
     public SyntaxException(ExceptionType type, string text, Span span, bool rereadLine = false)
     {
         Type       = type;
@@ -27,6 +29,7 @@ public class SyntaxException
 
     public void Print(string name = "<unknown>", string? line = null)
     {
+        name = name.StartsWith("<") ? name : $"\"{name}\"";
         if (line is not null)
         {
             if (C.UNDERLINE.Length > 0)
@@ -39,7 +42,7 @@ public class SyntaxException
 
         if (line is not null)
             Console.WriteLine($"    {C.RED}×> {C.RED2}{C.DIM}{C.ITALIC}{line}{C.END}");
-        Console.WriteLine($"    {C.YELLOW2}at {C.YELLOW}{name}{C.YELLOW2}, <{Span}>{C.END}");
+            Console.WriteLine($"    {C.YELLOW2}at {C.YELLOW}{name}{C.YELLOW2}, <{(IsInternal ? "stdin" : Span)}>{C.END}");
 
         void AutoUnderline()
         {

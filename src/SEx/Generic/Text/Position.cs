@@ -13,6 +13,8 @@ public sealed class Position
         Index  = index;
     }
 
+    public static readonly Position Subposition = new(-1, -1, -1); 
+
     public override bool Equals(object? obj) => obj is Position pos
                                              && Line   == pos.Line
                                              && Column == pos.Column
@@ -21,7 +23,5 @@ public sealed class Position
     public override int GetHashCode() => HashCode.Combine(Line, Column, Index);
 
     public override string ToString()
-    {
-        return $"{Line}:{Column}";
-    }
+        => $"{Line}:{Column}";
 }

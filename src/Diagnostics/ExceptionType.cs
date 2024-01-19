@@ -12,4 +12,5 @@ public enum ExceptionType
     ParsingException,
     SymbolError,
     IndexError,
+    SExError
 }

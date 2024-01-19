@@ -21,7 +21,7 @@ public class Diagnostics
         => Exceptions.OrderBy(e => e.Span.Start.Index).ToArray();
 
     public void Throw()
-        => Array.ForEach(Sorted(), e => e.Print(Source.Name, Source.Lines[e.Span.Start.Line - 1]));
+        => Array.ForEach(Sorted(), e => e.Print(Source.Name, e.IsInternal ? null : Source.Lines[e.Span.Start.Line - 1]));
 }
 
 public record Report(Source Source)
@@ -147,4 +147,11 @@ public record Report(Source Source)
 
     internal void InvalidTypeClause(Span span)
         => Except(ExceptionType.SymbolError, $"Type is invalid", span);
+
+
+    internal void SourcePathNotFound(string path)
+        => Except(ExceptionType.SExError, $"File path \"{path}\" not found", new(Position.Subposition));
+
+    internal void InternalError(string? obj, string message)
+        => Except(ExceptionType.SExError, $"An internal error has occurred{(obj is null ? "" : $" at {obj}")}, with message:\n{message}", new(Position.Subposition));
 }

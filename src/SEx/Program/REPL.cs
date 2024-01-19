@@ -12,9 +12,9 @@ using SEx.Generic.Constants;
 using SEx.Generic.Text;
 using SEx.Scoping.Symbols;
 
-namespace SEx.Main;
+namespace SEx.Main.REPL;
 
-internal sealed class REPL
+internal sealed class REPL : IRuntime
 {
     private bool DebugShown     = false;
     private bool TokensShown    = false;
@@ -27,7 +27,6 @@ internal sealed class REPL
 
     private string ValueString => UnescapedShown ? Value.ToString().Unescape() : Value.ToString();
     private string Text        => Script.ToString();
-    private Source Source      => new(Name, Text);
 
     public static string Name      => "<stdin>";
     public static string PInputChv => $"{C.GREEN2}<+> {C.END}";
@@ -47,29 +46,25 @@ internal sealed class REPL
         Scope         = new();
         Value         = UnknownValue.Template;
 
-        ParseArguments();
-        if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-        {
-            Console.OutputEncoding = Encoding.Unicode;
-            Console.InputEncoding  = Encoding.Unicode;
-        }
+        ParseArguments(args);
     }
 
     public Diagnostics                Diagnostics       { get; }
     public Scope                      Scope             { get; }
     public SemanticScope              SemanticScope     { get; }
     public StringBuilder              Script            { get; }
-    public string                     Line              { get; private set; }
-    public Token[]?                   Tokens            { get; private set; }
-    public ProgramStatement?          SimpleTree        { get; private set; }
-    public SemanticProgramStatement?  SemanticTree      { get; private set; }
-    public LiteralValue               Value             { get; private set; }
-    public Exception?                 PreviousException { get; private set; }
+    public Source                     Source            => new(Name, Text);
+    public string                     Line              { get; set; }
+    public Token[]?                   Tokens            { get; set; }
+    public ProgramStatement?          SimpleTree        { get; set; }
+    public SemanticProgramStatement?  SemanticTree      { get; set; }
+    public LiteralValue               Value             { get; set; }
+    public Exception?                 PreviousException { get; set; }
 
-    private void ParseArguments()
+    public void ParseArguments(string[] args)
     {
-        bool IsArg(string arg) => Args.Contains(arg);
-        bool AreArgs(params string[] args) => args.Any(IsArg);
+        bool IsArg(string arg) => args.Contains(arg);
+        bool AreArgs(params string[] _args) => _args.Any(IsArg);
 
         if (AreArgs("--monochrome", "-mch"))
             C.ToMono();
@@ -107,11 +102,13 @@ internal sealed class REPL
     public void PrintValue()
         => Console.WriteLine(TypeShown ? $"<{C.YELLOW2}{Value.Type}{C.END}>: {ValueString}" : ValueString);
 
-    public void Start()
+    public LiteralValue Run()
     {
         Console.WriteLine($"{C.BLUE2}SEx-{CONSTS._VERSION_} ({C.YELLOW2}{Environment.UserName} {C.BLUE2}on {C.RED2}{Environment.OSVersion.Platform}{C.BLUE2}){C.END}");
         Console.WriteLine($"{C.BLUE2}{C.DIM}{C.ITALIC}Type: {C.GREEN2}'help' {C.BLUE2}for more info.{C.END}");
         LoopWrapper();
+
+        return Value;
     }
 
     private void LoopWrapper()
