@@ -626,32 +626,43 @@ internal sealed class Analyzer
 
     private SemanticExpression BindAssignExpression(AssignmentExpression aexpr)
     {
+        var name = BindAssignee(aexpr.Assignee);
+        if (name is not SemanticName)
+        {
+            Diagnostics.Report.InvalidAssignee(aexpr.Assignee.Span);
+            return new SemanticFailedExpression(aexpr.Span);
+        }
+
+        var var = (SemanticName) name;
         var expr = aexpr.Operator is null
                  ? BindExpression(aexpr.Expression)
                  : BindBinaryOperation(new(aexpr.Assignee, aexpr.Operator, aexpr.Expression));
 
-        var name = BindName(aexpr.Assignee);
-
-        if (name is SemanticName var)
+        if (var.Symbol.IsConstant)
         {
-            if (var.Symbol.IsConstant)
-            {
-                Diagnostics.Report.CannotAssignToConst(var.Symbol.Name, aexpr.Assignee.Span);
-                return BindName(aexpr.Assignee);
-            }
-
-            if ((var.Symbol.Type, expr.Type).IsAssignable())
-                Scope.Assign(var.Symbol);
-            else
-            {
-                if (expr.Type.IsKnown)
-                    Diagnostics.Report.TypesDoNotMatch(var.Symbol.Type.ToString(), expr.Type.ToString(), aexpr.Span);
-                return BindName(aexpr.Assignee);
-            }
-
-            return new SemanticAssignment(var, expr, aexpr.Operator?.Value, aexpr.Span);
+            Diagnostics.Report.CannotAssignToConst(var.Symbol.Name, aexpr.Assignee.Span);
+            return expr;
         }
 
-        return expr;
+        if ((var.Symbol.Type, expr.Type).IsAssignable())
+            Scope.Assign(var.Symbol);
+        else
+        {
+            if (expr.Type.IsKnown)
+                Diagnostics.Report.TypesDoNotMatch(var.Symbol.Type.ToString(), expr.Type.ToString(), aexpr.Span);
+            return expr;
+        }
+
+        return new SemanticAssignment(var, expr, aexpr.Operator?.Value, aexpr.Span);
+    }
+
+    private SemanticExpression? BindAssignee(Expression assignee)
+    {
+        if (assignee is ParenthesizedExpression parenExpr)
+            return parenExpr.Expression is null ? null : BindAssignee(parenExpr.Expression);
+        else if (assignee is NameLiteral name)
+            return BindName(name);
+        else
+            return null;
     }
 }

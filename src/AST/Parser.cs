@@ -4,7 +4,6 @@ using SEx.Diagnose;
 using SEx.Generic.Constants;
 using SEx.Generic.Text;
 using System.Collections.Immutable;
-using System.Text.RegularExpressions;
 
 namespace SEx.Parse;
 
@@ -424,19 +423,13 @@ internal partial class Parser
             var eq   = Eat();
             var expr = GetExpression();
 
-            if (left is not NameLiteral)
-            {
-                Diagnostics.Report.InvalidAssignee(left.Span);
-                return left;
-            }
-
             if (expr is null)
             {
                 Diagnostics.Report.ExpressionExpectedAfter(eq.Value, eq.Span);
                 return FabricateExpression(new(left!.Span, eq.Span));
             }
 
-            return new AssignmentExpression((NameLiteral) left, eq, expr);
+            return new AssignmentExpression(left, eq, expr);
         }
 
         return left;

@@ -5,7 +5,7 @@ namespace SEx.AST;
 
 public sealed class AssignmentExpression : Expression
 {
-    public NameLiteral Assignee    { get; }
+    public Expression  Assignee    { get; }
     public Token       Equal       { get; }
     public Token?      Operator    { get; }
     public Expression  Expression  { get; }
@@ -13,7 +13,7 @@ public sealed class AssignmentExpression : Expression
     public override Span     Span  { get; }
     public override NodeKind Kind => NodeKind.AssignmentExpression;
 
-    public AssignmentExpression(NameLiteral name, Token equal, Expression expr)
+    public AssignmentExpression(Expression name, Token equal, Expression expr)
     {
         Assignee   = name;
         Equal      = equal;
