@@ -19,5 +19,6 @@ There is an under-development visual studio code extension that highlights the s
 
 ## TODOs
 
-- Completely redo lists and iterability
-- Better assignment operations like: `++` and `--`
+|   | Urgent!! | Important! | Can't Decide | Lazy... |
+|:-:|:--------:|:----------:|:------------:|:-------:|
+| - | `None` | `None` | Better assignment operations like: `++` and `--` | Completely redo lists and iterability |
