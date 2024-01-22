@@ -12,6 +12,7 @@ here is a list of them:
 - [`char`](#chars)
 - [`string`](#strings)
 - [`list`](#lists)
+- [`dict`](#dictionaries-to-be-added)
 - [`function`](#functions) & [`action`](#actions)
 
 <!----------------------------------------------------------------------->
@@ -284,7 +285,7 @@ StupidWayToKnowIfANumberIsSmallerThanOrEqualToPI(5) // output: false
 
 **- Operations:**
 
-- `in`: inclusion
+- `in`: range inclusion
 
 <!----------------------------------------------------------------------->
 ## Chars
@@ -367,7 +368,7 @@ They are iterable values that represent a string of characters.
 - **Binary:**
 - `+`: string concatenation
 - `*`: string multiplication
-- `in`: inclusion
+- `in`: string inclusion
 
 <!----------------------------------------------------------------------->
 ## Lists
@@ -419,7 +420,56 @@ MakeGrid(5)
 - **Binary:**
 - `+`: list concatenation
 - `*`: list multiplication
-- `in`: inclusion
+- `in`: list inclusion
+
+<!----------------------------------------------------------------------->
+## Dictionaries (to be added)
+
+They are mutable data structures that map a certain value type (say a `string`) to another (say a `list`).
+
+**- Syntax:**
+<!-- I picked these fruits just to piss people off -->
+```dart
+• { "fruits" : ["avocados", "tomatoes", "olives", "eggplants"],
+    "veggies": ["potatoes", "carrots", "corn", "beets"] }
+• { "Alice"       : "A",
+    "Hatter"      : "D-",
+    "White Rabbit": "A+",
+    "Dodo"        : "F-" }
+```
+
+**- Example:**
+<!-- Such random people names -->
+```dart
+# grades:{string:int} = { "Alice": 0, "Barbara": 0, "Riley": 0, "Adam": 0, "Ryan": 0 }
+>>> Grade(name:string, grande:int) -> void: {
+    if name in grades.Keys:
+        grades.Add(name, grade)
+    else:
+        Print($"Student {name} is not available to grade")
+}
+
+Grade("Alice", 57)
+Grade("Barbara", 12)
+Grade("Riley", 100)
+Grade("Adam", 69)
+Grade("Ryan", 2)
+
+Print(grades)
+// output:
+// { "Alice": 57, "Barbara": 12, "Riley": 100, "Adam": 69, "Ryan": 2 }
+```
+
+**- Conversions:**
+
+- `dict -> string`
+
+**- Operations:**
+
+- **Binary:**
+- `+`: dict concatenation
+- `*`: dict multiplication
+- `in`: dict inclusion
 
 <!----------------------------------------------------------------------->
 ## Functions
