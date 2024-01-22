@@ -16,3 +16,8 @@ While there isn't much of documentations around [data types](docs/data-types.md)
 ## VS Code
 
 There is an under-development visual studio code extension that highlights the syntax right now releasing soon.
+
+## TODOs
+
+- Completely redo lists and iterability
+- Better assignment operations like: `++` and `--`
