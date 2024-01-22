@@ -22,6 +22,7 @@ There is an under-development visual studio code extension that highlights the s
 <!--[ Urgent!!! | Tomorrow!! | Seems Important! | Can't Decide | Maybe Tomorrow. | When Free.. | Lazy... ]-->
 | Status | Urgency | Task  |
 |:------:|:-------:|:------|
+| ☐ | Seems Important! | Fix function calls scope |
 | ☐ | Can't Decide | Better assignment operations like: `++` and `--` |
 | ☐ | When Free.. | Add data structure type dictionary |
 | ☐ | Lazy... | Completely redo lists and iterability |
