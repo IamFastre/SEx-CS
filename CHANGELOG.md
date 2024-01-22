@@ -9,7 +9,7 @@ Changes made for `SEx` logged, can't get more apparent than that I believe.
 - Ability to comment using `//` and `/*`, `*/` like the `C` family (prone to change).
 - Now in a single self-contained file instead of the previous mess.
 - Removed hidden type `whole`.
-- New builtin functions such as: `Read` and `LengthOf`.
+- New built-in functions such as: `Read` and `LengthOf`.
 - Index assignments like: `people[0] = "Adam"` (says some religions).
 - More tolerance of what an assignee is.
 - Improves on conversions.
