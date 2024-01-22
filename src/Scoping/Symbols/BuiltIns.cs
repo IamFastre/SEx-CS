@@ -16,6 +16,7 @@ public static class BuiltIn
     public static readonly BuiltinFunctionValue Absolute    = new("Absolute", TypeSymbol.Number, new NameSymbol("value", TypeSymbol.Number));
     public static readonly BuiltinFunctionValue RandomInt   = new("RandomInt", TypeSymbol.Integer);
     public static readonly BuiltinFunctionValue RandomFloat = new("RandomFloat", TypeSymbol.Float);
+    public static readonly BuiltinFunctionValue LengthOf    = new("LengthOf", TypeSymbol.Integer, new NameSymbol("iterable", TypeSymbol.Any));
 
     public static BuiltinFunctionValue[] GetFunctions()
         => typeof(BuiltIn).GetFields(BindingFlags.Public | BindingFlags.Static)
@@ -80,6 +81,9 @@ public static class BuiltIn
 
             else if (func == BuiltIn.RandomFloat)
                 return RandomFloat();
+
+            else if (func == LengthOf)
+                return new IntegerValue(IEnumerableValue.GetIterator(args[0])?.Count() ?? 0);
 
             else
                 throw new Exception("Unknown builtin");
