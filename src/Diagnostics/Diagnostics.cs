@@ -112,6 +112,9 @@ public record Report(Source Source)
     internal void ReturnValueExpected(Span span)
         => Except(ExceptionType.TypeError, $"Expected a return value", span);
 
+    internal void TypeNotMutable(string type, Span span)
+        => Except(ExceptionType.TypeError, $"Type '{type}' is not mutable", span);
+
     internal void BadRangeDirection(Span span)
         => Except(ExceptionType.MathError, "Range end point and step direction don't match", span);
 

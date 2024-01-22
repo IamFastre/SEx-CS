@@ -626,40 +626,68 @@ internal sealed class Analyzer
 
     private SemanticExpression BindAssignExpression(AssignmentExpression aexpr)
     {
-        var name = BindAssignee(aexpr.Assignee);
-        if (name is not SemanticName)
-        {
-            Diagnostics.Report.InvalidAssignee(aexpr.Assignee.Span);
-            return new SemanticFailedExpression(aexpr.Span);
-        }
-
-        var var = (SemanticName) name;
+        var assignee = BindAssignee(aexpr.Assignee);
         var expr = aexpr.Operator is null
                  ? BindExpression(aexpr.Expression)
                  : BindBinaryOperation(new(aexpr.Assignee, aexpr.Operator, aexpr.Expression));
 
-        if (var.Symbol.IsConstant)
+        if (assignee is SemanticName name)
         {
-            Diagnostics.Report.CannotAssignToConst(var.Symbol.Name, aexpr.Assignee.Span);
+            if (name.Symbol.IsConstant)
+            {
+                Diagnostics.Report.CannotAssignToConst(name.Symbol.Name, aexpr.Assignee.Span);
+                return expr;
+            }
+
+            if ((name.Symbol.Type, expr.Type).IsAssignable())
+                Scope.Assign(name.Symbol);
+            else
+            {
+                if (expr.Type.IsKnown)
+                    Diagnostics.Report.TypesDoNotMatch(name.Symbol.Type.ToString(), expr.Type.ToString(), aexpr.Span);
+                return expr;
+            }
+
+            return new SemanticAssignment(name, expr, aexpr.Operator?.Value, aexpr.Span);
+        }
+        else if (assignee is SemanticIndexingExpression indexExpr)
+        {
+            if ((indexExpr.Type, expr.Type).IsAssignable())
+            {
+                if (indexExpr.Iterable.Type.IsMutable)
+                    return BindIndexAssignmentExpression(indexExpr, expr, aexpr.Span);
+
+                Diagnostics.Report.TypeNotMutable(indexExpr.Iterable.Type.ToString(), aexpr.Span);
+                return expr;
+            }
+
+            if (expr.Type.IsKnown)
+                Diagnostics.Report.TypesDoNotMatch(indexExpr.Type.ToString(), expr.Type.ToString(), aexpr.Span);
             return expr;
         }
-
-        if ((var.Symbol.Type, expr.Type).IsAssignable())
-            Scope.Assign(var.Symbol);
         else
         {
-            if (expr.Type.IsKnown)
-                Diagnostics.Report.TypesDoNotMatch(var.Symbol.Type.ToString(), expr.Type.ToString(), aexpr.Span);
-            return expr;
+            Diagnostics.Report.InvalidAssignee(aexpr.Assignee.Span);
+            return new SemanticFailedExpression(aexpr.Span);
+        }
+    }
+
+    private SemanticExpression BindIndexAssignmentExpression(SemanticIndexingExpression indexExpr, SemanticExpression expr, Span span)
+    {
+        if (indexExpr.Iterable.Type.IsMutable)
+        {
+            return new SemanticIndexAssignmentExpression(indexExpr, expr, span);
         }
 
-        return new SemanticAssignment(var, expr, aexpr.Operator?.Value, aexpr.Span);
+        return new SemanticFailedExpression(span);
     }
 
     private SemanticExpression? BindAssignee(Expression assignee)
     {
         if (assignee is ParenthesizedExpression parenExpr)
             return parenExpr.Expression is null ? null : BindAssignee(parenExpr.Expression);
+        else if (assignee is IndexingExpression indexExpr)
+            return BindIndexingExpression(indexExpr);
         else if (assignee is NameLiteral name)
             return BindName(name);
         else

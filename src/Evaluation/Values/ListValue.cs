@@ -111,4 +111,24 @@ public sealed class ListValue
         => new(_values.Concat(other._values), type);
 
     public IEnumerable<LiteralValue> GetEnumerator() => _values;
+
+    public void TryModify(LiteralValue index, LiteralValue value)
+    {
+        if (index is RangeValue rng && value is ListValue lst) Modify(rng, lst);
+        if (index is IntegerValue @int) Modify(@int, value);
+    }
+
+    public void Modify(RangeValue index, ListValue value)
+    {
+        int? first = null;
+        foreach (var i in index.GetEnumerator())
+            _values.RemoveAt(first ??= (int) Math.Floor((double) i.Value));
+        
+        if (first is not null)
+            for (int i = 0; i < value._values.Count; i++)
+                _values.Insert(first.Value + i, value._values[i]);
+    }
+
+    public void Modify(IntegerValue index, LiteralValue value)
+        => _values[(int)(double) index.Value] = value;
 }

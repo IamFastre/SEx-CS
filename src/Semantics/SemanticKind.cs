@@ -24,6 +24,7 @@ public enum SemanticKind
 
     // Expressions
     AssignExpression,
+    IndexAssignment,
     ParenExpression,
     Function,
     CallExpression,

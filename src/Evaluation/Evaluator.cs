@@ -93,18 +93,10 @@ internal sealed class Evaluator
     {
         var value = EvaluateExpression(ds.Expression);
 
-        if (!Scope.TryResolve(ds.Variable, out _))
-        {
-            if ((ds.Variable.Type, value.Type).IsAssignable())
-            {
-                if (DoPoint(value, ds.Expression, out var from))
-                    Scope.Point(from!, ds.Variable);
-                else
-                    Scope.Assign(ds.Variable, value, true);
-            }
-        }
-        else if (ds.Variable.IsConstant)
+        if (Scope.TryResolve(ds.Variable, out _) && ds.Variable.IsConstant)
             Scope.MakeConstant(ds.Variable.Name);
+        else
+            TryAssign(ds.Variable, ds.Expression, value, true);
     }
 
     private void EvaluateFunctionStatement(SemanticFunctionStatement fs)
@@ -189,6 +181,7 @@ internal sealed class Evaluator
             SemanticKind.BinaryOperation      => EvaluateBinaryOperation((SemanticBinaryOperation) expr),
             SemanticKind.TernaryOperation     => EvaluateTernaryOperation((SemanticTernaryOperation) expr),
             SemanticKind.AssignExpression     => EvaluateAssignExpression((SemanticAssignment) expr),
+            SemanticKind.IndexAssignment      => EvaluateIndexAssignment((SemanticIndexAssignmentExpression) expr),
             SemanticKind.FailedOperation      => EvaluateFailedExpression((SemanticFailedOperation) expr),
             SemanticKind.FailedExpression     => UnknownValue.Template,
 
@@ -660,15 +653,23 @@ internal sealed class Evaluator
     {
         var value = EvaluateExpression(aseprx.Expression);
 
-        if (Scope.TryResolve(aseprx.Assignee.Symbol, out _) && (!aseprx.Assignee.Symbol.IsConstant))
-        {
-            if (DoPoint(value, aseprx.Expression, out var from))
-                Scope.Point(from!, aseprx.Assignee.Symbol);
-            else
-                Scope.Assign(aseprx.Assignee.Symbol, value);
-        }
+        if (!aseprx.Assignee.Symbol.IsConstant)
+            TryAssign(aseprx.Assignee.Symbol, aseprx.Expression, value);
 
         return value;
+    }
+
+    private LiteralValue EvaluateIndexAssignment(SemanticIndexAssignmentExpression iae)
+    {
+        var iterable = EvaluateExpression(iae.Indexing.Iterable);
+        var index    = EvaluateExpression(iae.Indexing.Index);
+        var expr     = EvaluateExpression(iae.Expression);
+
+        ((ListValue) iterable).TryModify(index, expr);
+        if (iae.Indexing.Iterable is SemanticName name)
+            TryAssign(name.Symbol, iae.Expression, iterable);
+
+        return expr;
     }
 
     private LiteralValue EvaluateFailedExpression(SemanticFailedOperation fe)
@@ -682,6 +683,14 @@ internal sealed class Evaluator
     //=====================================================================//
     //=====================================================================//
     //=====================================================================//
+
+    private void TryAssign(NameSymbol symbol, SemanticExpression expr, LiteralValue value, bool force = false)
+    {
+        if (DoPoint(value, expr, out var from))
+            Scope.Point(from!, symbol, force);
+        else
+            Scope.Assign(symbol, value, force);
+    }
 
     private LiteralValue ParseNull(SemanticLiteral literal)
     {
