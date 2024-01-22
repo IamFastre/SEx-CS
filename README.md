@@ -19,6 +19,13 @@ There is an under-development visual studio code extension that highlights the s
 
 ## TODOs
 
-|   | Urgent!! | Important! | Can't Decide | Lazy... |
-|:-:|:--------:|:----------:|:------------:|:-------:|
-| - | `None` | `None` | Better assignment operations like: `++` and `--` | Completely redo lists and iterability |
+<!--[ Urgent!!! | Tomorrow!! | Seems Important! | Can't Decide | Maybe Tomorrow. | When Free.. | Lazy... ]-->
+| Status | Urgency | Task  |
+|:------:|:-------:|:------|
+| ☐ | Can't Decide | Better assignment operations like: `++` and `--` |
+| ☐ | When Free.. | Add data structure type dictionary |
+| ☐ | Lazy... | Completely redo lists and iterability |
+
+- `☐` > Planned
+- `☑` > Done
+- `☒` > Cancelled
