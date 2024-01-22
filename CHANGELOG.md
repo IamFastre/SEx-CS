@@ -1,8 +1,12 @@
 # Change Log
 
 Changes made for `SEx` logged, can't get more apparent than that I believe.
-> Latest alpha is [v0.1.3-alpha](#v013-alpha).
+> Latest [alpha](#alphas) is [v0.1.3-alpha](#v013-alpha).
 <!-- It's already on top, No idea why I added a link to it -->
+
+---
+
+# Alphas
 
 ## v0.1.3-alpha
 
