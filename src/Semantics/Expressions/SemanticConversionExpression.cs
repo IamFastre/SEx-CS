@@ -34,16 +34,16 @@ public enum ConversionKind
     StringToStringList,
 }
 
-public class SemanticConversionExpression : SemanticExpression
+public class SemanticConversionOperation : SemanticExpression
 {
     public SemanticExpression Expression     { get; }
     public TypeSymbol         Target         { get; }
     public ConversionKind     ConversionKind { get; }
 
     public override Span         Span        { get; }
-    public override SemanticKind Kind => SemanticKind.ConversionExpression;
+    public override SemanticKind Kind => SemanticKind.ConversionOperation;
 
-    public SemanticConversionExpression(SemanticExpression expr, TypeSymbol target, ConversionKind cvKind, Span span)
+    public SemanticConversionOperation(SemanticExpression expr, TypeSymbol target, ConversionKind cvKind, Span span)
         : base(target)
     {
         Expression     = expr;

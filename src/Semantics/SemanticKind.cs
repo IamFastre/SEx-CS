@@ -26,7 +26,6 @@ public enum SemanticKind
     // Expressions
     AssignExpression,
     IndexAssignExpression,
-    ParenExpression,
     CallExpression,
     IndexingExpression,
     FailedExpression,
@@ -35,7 +34,7 @@ public enum SemanticKind
     BinaryOperation,
     TernaryOperation,
     FailedOperation,
-    ConversionExpression,
+    ConversionOperation,
 
 
     StringFragment,

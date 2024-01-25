@@ -53,7 +53,7 @@ public abstract class SemanticNode
             SemanticUnaryOperation       u => $"<{C.BLUE2}{u.Kind}({C.YELLOW2}{u.OperationKind }{C.BLUE2}):{C.GREEN2}{u.Type}{C.END}>",
             SemanticCountingOperation    c => $"<{C.BLUE2}{c.Kind}({C.YELLOW2}{c.OperationKind }{C.BLUE2}):{C.GREEN2}{c.Type}{C.END}>",
             SemanticBinaryOperation      b => $"<{C.BLUE2}{b.Kind}({C.YELLOW2}{b.Operator.Kind }{C.BLUE2}):{C.GREEN2}{b.Type}{C.END}>",
-            SemanticConversionExpression c => $"<{C.BLUE2}{c.Kind}({C.YELLOW2}{c.ConversionKind}{C.BLUE2}):{C.GREEN2}{c.Type}{C.END}>",
+            SemanticConversionOperation c => $"<{C.BLUE2}{c.Kind}({C.YELLOW2}{c.ConversionKind}{C.BLUE2}):{C.GREEN2}{c.Type}{C.END}>",
 
             SemanticDeclarationStatement d => $"<{C.MAGENTA2}{d.Kind}({C.RED2}{(d.Variable.IsConstant ? "*" : "")}{C.YELLOW2}{d.Variable.Name}{C.MAGENTA2}:{C.GREEN2}{d.Variable.Type}{C.MAGENTA2}){C.END}>",
             SemanticFunctionStatement    f => $"<{C.MAGENTA2}{f.Kind}({C.YELLOW2}{f.Function}{C.MAGENTA2}){C.END}>",

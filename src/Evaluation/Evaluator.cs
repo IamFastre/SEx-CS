@@ -177,7 +177,7 @@ internal sealed class Evaluator
             SemanticKind.IndexingExpression    => EvaluateIndexingExpression((SemanticIndexingExpression) expr),
             SemanticKind.UnaryOperation        => EvaluateUnaryOperation((SemanticUnaryOperation) expr),
             SemanticKind.CountingOperation     => EvaluateCountingOperation((SemanticCountingOperation) expr),
-            SemanticKind.ConversionExpression  => EvaluateConversionExpression((SemanticConversionExpression) expr),
+            SemanticKind.ConversionOperation  => EvaluateConversionExpression((SemanticConversionOperation) expr),
             SemanticKind.BinaryOperation       => EvaluateBinaryOperation((SemanticBinaryOperation) expr),
             SemanticKind.TernaryOperation      => EvaluateTernaryOperation((SemanticTernaryOperation) expr),
             SemanticKind.AssignExpression      => EvaluateAssignExpression((SemanticAssignment) expr),
@@ -409,7 +409,7 @@ internal sealed class Evaluator
              : value;
     }
 
-    private LiteralValue EvaluateConversionExpression(SemanticConversionExpression ce)
+    private LiteralValue EvaluateConversionExpression(SemanticConversionOperation ce)
     {
         var value = EvaluateExpression(ce.Expression);
         var after = Converter.Convert(ce.ConversionKind, value, ce.Target);

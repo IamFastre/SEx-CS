@@ -583,7 +583,7 @@ internal sealed class Analyzer
     {
         var expr   = BindExpression(ce.Expression);
         var dest   = BindTypeClause(ce.Destination);
-        var cvKind = SemanticConversionExpression.GetConversionKind(expr.Type, dest);
+        var cvKind = SemanticConversionOperation.GetConversionKind(expr.Type, dest);
     
         if (cvKind is null)
         {
@@ -592,7 +592,7 @@ internal sealed class Analyzer
             return new SemanticFailedExpression(ce.Span);
         }
     
-        return new SemanticConversionExpression(expr, dest, cvKind.Value, ce.Span);
+        return new SemanticConversionOperation(expr, dest, cvKind.Value, ce.Span);
     }
 
     private SemanticExpression BindBinaryOperation(BinaryOperation biop)
