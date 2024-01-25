@@ -675,9 +675,7 @@ internal sealed class Analyzer
     private SemanticExpression BindIndexAssignmentExpression(SemanticIndexingExpression indexExpr, SemanticExpression expr, Span span)
     {
         if (indexExpr.Iterable.Type.IsMutable)
-        {
-            return new SemanticIndexAssignmentExpression(indexExpr, expr, span);
-        }
+            return new SemanticIndexAssignment(indexExpr, expr, span);
 
         return new SemanticFailedExpression(span);
     }

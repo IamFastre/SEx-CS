@@ -167,23 +167,23 @@ internal sealed class Evaluator
         ?  UnknownValue.Template
         :  expr.Kind switch
         {
-            SemanticKind.Literal              => EvaluateLiteral((SemanticLiteral) expr),
-            SemanticKind.FormatString         => EvaluateFormatString((SemanticFormatString) expr),
-            SemanticKind.Range                => EvaluateRange((SemanticRange) expr),
-            SemanticKind.Name                 => EvaluateName((SemanticName) expr),
-            SemanticKind.List                 => EvaluateList((SemanticList) expr),
-            SemanticKind.Function             => EvaluateFunction((SemanticFunction) expr),
-            SemanticKind.CallExpression       => EvaluateCallExpression((SemanticCallExpression) expr),
-            SemanticKind.IndexingExpression   => EvaluateIndexingExpression((SemanticIndexingExpression) expr),
-            SemanticKind.UnaryOperation       => EvaluateUnaryOperation((SemanticUnaryOperation) expr),
-            SemanticKind.CountingOperation    => EvaluateCountingOperation((SemanticCountingOperation) expr),
-            SemanticKind.ConversionExpression => EvaluateConversionExpression((SemanticConversionExpression) expr),
-            SemanticKind.BinaryOperation      => EvaluateBinaryOperation((SemanticBinaryOperation) expr),
-            SemanticKind.TernaryOperation     => EvaluateTernaryOperation((SemanticTernaryOperation) expr),
-            SemanticKind.AssignExpression     => EvaluateAssignExpression((SemanticAssignment) expr),
-            SemanticKind.IndexAssignment      => EvaluateIndexAssignment((SemanticIndexAssignmentExpression) expr),
-            SemanticKind.FailedOperation      => EvaluateFailedExpression((SemanticFailedOperation) expr),
-            SemanticKind.FailedExpression     => UnknownValue.Template,
+            SemanticKind.Literal               => EvaluateLiteral((SemanticLiteral) expr),
+            SemanticKind.FormatString          => EvaluateFormatString((SemanticFormatString) expr),
+            SemanticKind.Range                 => EvaluateRange((SemanticRange) expr),
+            SemanticKind.Name                  => EvaluateName((SemanticName) expr),
+            SemanticKind.List                  => EvaluateList((SemanticList) expr),
+            SemanticKind.Function              => EvaluateFunction((SemanticFunction) expr),
+            SemanticKind.CallExpression        => EvaluateCallExpression((SemanticCallExpression) expr),
+            SemanticKind.IndexingExpression    => EvaluateIndexingExpression((SemanticIndexingExpression) expr),
+            SemanticKind.UnaryOperation        => EvaluateUnaryOperation((SemanticUnaryOperation) expr),
+            SemanticKind.CountingOperation     => EvaluateCountingOperation((SemanticCountingOperation) expr),
+            SemanticKind.ConversionExpression  => EvaluateConversionExpression((SemanticConversionExpression) expr),
+            SemanticKind.BinaryOperation       => EvaluateBinaryOperation((SemanticBinaryOperation) expr),
+            SemanticKind.TernaryOperation      => EvaluateTernaryOperation((SemanticTernaryOperation) expr),
+            SemanticKind.AssignExpression      => EvaluateAssignExpression((SemanticAssignment) expr),
+            SemanticKind.IndexAssignExpression => EvaluateIndexAssignment((SemanticIndexAssignment) expr),
+            SemanticKind.FailedOperation       => EvaluateFailedExpression((SemanticFailedOperation) expr),
+            SemanticKind.FailedExpression      => UnknownValue.Template,
 
             _ => throw new Exception($"Unrecognized expression kind {expr.Kind}")
         };
@@ -659,7 +659,7 @@ internal sealed class Evaluator
         return value;
     }
 
-    private LiteralValue EvaluateIndexAssignment(SemanticIndexAssignmentExpression iae)
+    private LiteralValue EvaluateIndexAssignment(SemanticIndexAssignment iae)
     {
         var iterable = EvaluateExpression(iae.Indexing.Iterable);
         var index    = EvaluateExpression(iae.Indexing.Index);

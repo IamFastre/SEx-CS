@@ -2,15 +2,15 @@ using SEx.Generic.Text;
 
 namespace SEx.Semantics;
 
-public class SemanticIndexAssignmentExpression : SemanticExpression
+public class SemanticIndexAssignment : SemanticExpression
 {
     public SemanticIndexingExpression Indexing   { get; }
     public SemanticExpression         Expression { get; }
 
     public override Span         Span            { get; }
-    public override SemanticKind Kind => SemanticKind.IndexAssignment;
+    public override SemanticKind Kind => SemanticKind.IndexAssignExpression;
 
-    public SemanticIndexAssignmentExpression(SemanticIndexingExpression indexExpr, SemanticExpression expr, Span span)
+    public SemanticIndexAssignment(SemanticIndexingExpression indexExpr, SemanticExpression expr, Span span)
         : base(expr.Type)
     {
         Indexing   = indexExpr;
@@ -20,6 +20,7 @@ public class SemanticIndexAssignmentExpression : SemanticExpression
 
     public override IEnumerable<SemanticNode> GetChildren()
     {
-        throw new NotImplementedException();
+        yield return Indexing;
+        yield return Expression;
     }
 }

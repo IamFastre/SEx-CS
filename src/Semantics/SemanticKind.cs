@@ -21,22 +21,22 @@ public enum SemanticKind
     Range,
     List,
     Name,
+    Function,
 
     // Expressions
     AssignExpression,
-    IndexAssignment,
+    IndexAssignExpression,
     ParenExpression,
-    Function,
     CallExpression,
     IndexingExpression,
+    FailedExpression,
     UnaryOperation,
     CountingOperation,
     BinaryOperation,
     TernaryOperation,
+    FailedOperation,
     ConversionExpression,
 
-    FailedOperation,
-    FailedExpression,
-    FunctionBodyStatement,
+
     StringFragment,
 }
