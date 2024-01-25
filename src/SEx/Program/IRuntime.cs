@@ -1,10 +1,10 @@
 using SEx.AST;
-using SEx.Diagnose;
-using SEx.Evaluate.Values;
+using SEx.Diagnosing;
+using SEx.Evaluation.Values;
 using SEx.Generic.Text;
-using SEx.Lex;
+using SEx.Lexing;
 using SEx.Scoping;
-using SEx.Semantics;
+using SEx.SemanticAnalysis;
 
 namespace SEx.Main;
 

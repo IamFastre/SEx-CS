@@ -1,6 +1,6 @@
 using SEx.Generic.Text;
 
-namespace SEx.Semantics;
+namespace SEx.SemanticAnalysis;
 
 public class SemanticIndexAssignment : SemanticExpression
 {

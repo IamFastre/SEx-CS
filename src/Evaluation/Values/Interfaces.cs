@@ -1,4 +1,4 @@
-namespace SEx.Evaluate.Values;
+namespace SEx.Evaluation.Values;
 
 public interface IIndexableValue
 {

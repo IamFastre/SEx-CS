@@ -2,7 +2,7 @@ using SEx.Generic.Constants;
 using SEx.Generic.Logic;
 using SEx.Scoping.Symbols;
 
-namespace SEx.Evaluate.Values;
+namespace SEx.Evaluation.Values;
 
 public sealed class StringValue
     : LiteralValue,

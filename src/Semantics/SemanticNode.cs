@@ -3,7 +3,7 @@ using SEx.Generic.Constants;
 using SEx.Generic.Text;
 using SEx.Scoping.Symbols;
 
-namespace SEx.Semantics;
+namespace SEx.SemanticAnalysis;
 
 public abstract class SemanticNode
 {

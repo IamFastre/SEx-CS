@@ -1,4 +1,4 @@
-namespace SEx.Lex;
+namespace SEx.Lexing;
 
 // An enumeration of the token types possible in the source code
 public enum TokenKind

@@ -1,14 +1,14 @@
-using SEx.Diagnose;
-using SEx.Evaluate.Conversions;
-using SEx.Evaluate.Values;
+using SEx.Diagnosing;
+using SEx.Evaluation.Conversions;
+using SEx.Evaluation.Values;
 using SEx.Generic.Constants;
 using SEx.Generic.Logic;
 using SEx.Generic.Text;
 using SEx.Scoping;
 using SEx.Scoping.Symbols;
-using SEx.Semantics;
+using SEx.SemanticAnalysis;
 
-namespace SEx.Evaluate;
+namespace SEx.Evaluation;
 
 internal sealed class Evaluator
 {

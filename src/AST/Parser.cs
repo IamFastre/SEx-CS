@@ -1,11 +1,11 @@
-using SEx.Lex;
+using SEx.Lexing;
 using SEx.AST;
-using SEx.Diagnose;
+using SEx.Diagnosing;
 using SEx.Generic.Constants;
 using SEx.Generic.Text;
 using System.Collections.Immutable;
 
-namespace SEx.Parse;
+namespace SEx.Parsing;
 
 internal partial class Parser
 {

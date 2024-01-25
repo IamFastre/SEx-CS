@@ -1,7 +1,7 @@
 using SEx.Generic.Text;
 using SEx.Generic.Constants;
-using SEx.Lex;
-using SEx.Parse;
+using SEx.Lexing;
+using SEx.Parsing;
 
 namespace SEx.AST;
 

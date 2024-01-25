@@ -1,6 +1,6 @@
 using SEx.Generic.Constants;
 
-namespace SEx.Lex;
+namespace SEx.Lexing;
 
 // Provides methods and definitions for checking various characters and symbols
 public static class Checker

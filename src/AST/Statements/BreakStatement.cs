@@ -1,8 +1,8 @@
-using SEx.Lex;
+using SEx.Lexing;
 using SEx.AST;
 using SEx.Generic.Text;
 
-namespace SEx.Parse;
+namespace SEx.Parsing;
 
 public class BreakStatement : Statement
 {

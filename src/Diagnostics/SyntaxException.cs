@@ -2,7 +2,7 @@ using SEx.Generic.Text;
 using SEx.Generic.Constants;
 using SEx.Generic.Logic;
 
-namespace SEx.Diagnose;
+namespace SEx.Diagnosing;
 
 public class SyntaxException
 {

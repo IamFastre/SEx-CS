@@ -1,4 +1,4 @@
-namespace SEx.Diagnose;
+namespace SEx.Diagnosing;
 
 public enum ExceptionType
 {

@@ -1,5 +1,5 @@
 using SEx.Generic.Text;
-using SEx.Lex;
+using SEx.Lexing;
 
 namespace SEx.AST;
 

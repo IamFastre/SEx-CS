@@ -1,9 +1,9 @@
 using SEx.Generic.Constants;
 using SEx.Scoping;
 using SEx.Scoping.Symbols;
-using SEx.Semantics;
+using SEx.SemanticAnalysis;
 
-namespace SEx.Evaluate.Values;
+namespace SEx.Evaluation.Values;
 
 public class FunctionValue : LiteralValue
 {

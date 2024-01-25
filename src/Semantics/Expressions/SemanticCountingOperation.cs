@@ -1,9 +1,9 @@
-using SEx.Evaluate.Values;
+using SEx.Evaluation.Values;
 using SEx.Generic.Text;
-using SEx.Lex;
+using SEx.Lexing;
 using SEx.Scoping.Symbols;
 
-namespace SEx.Semantics;
+namespace SEx.SemanticAnalysis;
 
 public enum CountingKind
 {

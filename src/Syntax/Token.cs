@@ -2,7 +2,7 @@ using SEx.AST;
 using SEx.Generic.Text;
 using SEx.Generic.Constants;
 
-namespace SEx.Lex;
+namespace SEx.Lexing;
 
 // The Token class represents a token in a programming language,
 // storing its value, type, and position in the source code

@@ -1,6 +1,6 @@
 using SEx.Generic.Text;
 
-namespace SEx.Diagnose;
+namespace SEx.Diagnosing;
 
 public class Diagnostics
 {

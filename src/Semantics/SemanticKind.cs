@@ -1,4 +1,4 @@
-namespace SEx.Semantics;
+namespace SEx.SemanticAnalysis;
 
 public enum SemanticKind
 {

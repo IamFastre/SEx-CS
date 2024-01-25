@@ -1,6 +1,6 @@
 using SEx.Scoping.Symbols;
 
-namespace SEx.Evaluate.Values;
+namespace SEx.Evaluation.Values;
 
 public sealed class RangeValue
     : LiteralValue,

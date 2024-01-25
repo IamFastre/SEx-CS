@@ -1,7 +1,7 @@
 using SEx.Scoping.Symbols;
 using SEx.Generic.Text;
 
-namespace SEx.Semantics;
+namespace SEx.SemanticAnalysis;
 
 public class SemanticFunctionStatement : SemanticStatement
 {

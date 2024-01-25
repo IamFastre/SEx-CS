@@ -1,7 +1,7 @@
 using SEx.AST;
 using SEx.Generic.Text;
 
-namespace SEx.Parse;
+namespace SEx.Parsing;
 
 public class ParameterClause : Clause
 {

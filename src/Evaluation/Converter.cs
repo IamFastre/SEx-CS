@@ -1,8 +1,8 @@
-using SEx.Evaluate.Values;
+using SEx.Evaluation.Values;
 using SEx.Scoping.Symbols;
-using SEx.Semantics;
+using SEx.SemanticAnalysis;
 
-namespace SEx.Evaluate.Conversions;
+namespace SEx.Evaluation.Conversions;
 
 internal static class Converter
 {

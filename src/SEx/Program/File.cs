@@ -1,13 +1,13 @@
 using SEx.AST;
-using SEx.Diagnose;
-using SEx.Evaluate;
-using SEx.Evaluate.Values;
+using SEx.Diagnosing;
+using SEx.Evaluation;
+using SEx.Evaluation.Values;
 using SEx.Generic.Constants;
 using SEx.Generic.Text;
-using SEx.Lex;
-using SEx.Parse;
+using SEx.Lexing;
+using SEx.Parsing;
 using SEx.Scoping;
-using SEx.Semantics;
+using SEx.SemanticAnalysis;
 
 namespace SEx.Main.Files;
 

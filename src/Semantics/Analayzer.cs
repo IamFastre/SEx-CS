@@ -1,12 +1,12 @@
 using SEx.AST;
-using SEx.Diagnose;
+using SEx.Diagnosing;
 using SEx.Scoping;
 using SEx.Scoping.Symbols;
 using SEx.Generic.Text;
-using SEx.Parse;
+using SEx.Parsing;
 using System.Collections.Immutable;
 
-namespace SEx.Semantics;
+namespace SEx.SemanticAnalysis;
 
 internal sealed class Analyzer
 {

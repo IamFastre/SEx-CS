@@ -1,10 +1,9 @@
 using System.Collections.Immutable;
 using System.Text;
-using SEx.Diagnose;
-using SEx.Generic.Logic;
+using SEx.Diagnosing;
 using SEx.Generic.Text;
 
-namespace SEx.Lex;
+namespace SEx.Lexing;
 internal class Lexer
 {
     public List<Token> Tokens      { get; }

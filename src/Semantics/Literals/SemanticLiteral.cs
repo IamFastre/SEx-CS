@@ -1,7 +1,7 @@
 using SEx.AST;
 using SEx.Generic.Text;
 
-namespace SEx.Semantics;
+namespace SEx.SemanticAnalysis;
 
 public sealed class SemanticLiteral : SemanticExpression
 {

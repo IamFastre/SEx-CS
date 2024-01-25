@@ -1,8 +1,8 @@
 using SEx.AST;
 using SEx.Generic.Text;
-using SEx.Lex;
+using SEx.Lexing;
 
-namespace SEx.Parse;
+namespace SEx.Parsing;
 
 public sealed class ListLiteral : Expression
 {

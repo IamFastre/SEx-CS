@@ -1,4 +1,4 @@
-using SEx.Semantics;
+using SEx.SemanticAnalysis;
 
 namespace SEx.Rewriting;
 

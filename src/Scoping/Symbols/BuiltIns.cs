@@ -1,8 +1,8 @@
 using System.Reflection;
-using SEx.Evaluate.Conversions;
-using SEx.Evaluate.Values;
+using SEx.Evaluation.Conversions;
+using SEx.Evaluation.Values;
 using SEx.Generic.Logic;
-using SEx.Semantics;
+using SEx.SemanticAnalysis;
 
 namespace SEx.Scoping.Symbols;
 
