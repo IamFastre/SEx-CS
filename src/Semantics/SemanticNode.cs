@@ -8,7 +8,7 @@ namespace SEx.Semantics;
 public abstract class SemanticNode
 {
     public abstract SemanticKind Kind { get; }
-    public abstract Span Span { get; }
+    public abstract Span         Span { get; }
 
     public static TypeSymbol ToValueKind(NodeKind kind) => kind switch
     {
@@ -83,17 +83,12 @@ public abstract class SemanticNode
     }
 }
 
-public abstract class SemanticStatement  : SemanticNode {}
-public abstract class SemanticClause     : SemanticNode {}
+public abstract class SemanticStatement  : SemanticNode { }
+public abstract class SemanticClause     : SemanticNode { }
 public abstract class SemanticExpression : SemanticNode
 {
     public TypeSymbol Type { get; private set; }
 
     protected SemanticExpression(TypeSymbol type)
         => Type = type;
-
-    public void SetType(TypeSymbol type)
-    {
-        Type = type;
-    }
 }
