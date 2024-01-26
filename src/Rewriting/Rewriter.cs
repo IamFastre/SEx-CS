@@ -116,6 +116,13 @@ public abstract class Rewriter
     /* ====================================================================== */
     public SemanticExpression RewriteExpression(SemanticExpression expr) => expr.Kind switch
     {
+        SemanticKind.Literal       => RewriteLiteral((SemanticLiteral) expr),
+        SemanticKind.FormatString  => RewriteFormatString((SemanticFormatString) expr),
+        SemanticKind.Range         => RewriteRange((SemanticRange) expr),
+        SemanticKind.List          => RewriteList((SemanticList) expr),
+        SemanticKind.Name          => RewriteName((SemanticName) expr),
+        SemanticKind.Function      => RewriteFunction((SemanticFunction) expr),
+
         SemanticKind.FailedExpression      => RewriteFailedExpression((SemanticFailedExpression) expr),
         SemanticKind.AssignExpression      => RewriteAssignment((SemanticAssignment) expr),
         SemanticKind.IndexAssignExpression => RewriteIndexAssignment((SemanticIndexAssignment) expr),
@@ -131,29 +138,47 @@ public abstract class Rewriter
         _ => throw new Exception("Expression unadded")
     };
 
-    protected virtual SemanticFailedExpression RewriteFailedExpression(SemanticFailedExpression fe)
+    private SemanticExpression RewriteLiteral(SemanticLiteral l)
+        => l;
+
+    private SemanticExpression RewriteFormatString(SemanticFormatString fsl)
+        => fsl;
+
+    private SemanticExpression RewriteRange(SemanticRange rl)
+        => rl;
+
+    private SemanticExpression RewriteList(SemanticList ll)
+        => ll;
+
+    private SemanticExpression RewriteName(SemanticName nl)
+        => nl;
+
+    private SemanticExpression RewriteFunction(SemanticFunction fl)
+        => fl;
+
+    protected virtual SemanticExpression RewriteFailedExpression(SemanticFailedExpression fe)
         => fe;
 
-    protected virtual SemanticAssignment RewriteAssignment(SemanticAssignment ae)
+    protected virtual SemanticExpression RewriteAssignment(SemanticAssignment ae)
     {
         var expr = RewriteExpression(ae.Expression);
         if (expr == ae.Expression)
             return ae;
         
-        return new(ae.Assignee, expr, ae.Operator, ae.Span);
+        return new SemanticAssignment(ae.Assignee, expr, ae.Operator, ae.Span);
     }
 
-    protected virtual SemanticIndexAssignment RewriteIndexAssignment(SemanticIndexAssignment iae)
+    protected virtual SemanticExpression RewriteIndexAssignment(SemanticIndexAssignment iae)
     {    
         var indx = (SemanticIndexingExpression) RewriteExpression(iae.Indexing);
         var expr = RewriteExpression(iae.Expression);
         if (indx == iae.Indexing && expr == iae.Expression)
             return iae;
 
-        return new(indx, expr, iae.Span);
+        return new SemanticIndexAssignment(indx, expr, iae.Span);
     }
 
-    protected virtual SemanticCallExpression RewriteCallExpression(SemanticCallExpression ce)
+    protected virtual SemanticExpression RewriteCallExpression(SemanticCallExpression ce)
     {
         var func = RewriteExpression(ce.Function);
         var same = func == ce.Function;
@@ -168,20 +193,20 @@ public abstract class Rewriter
         if (same)
             return ce;
 
-        return new(func, ce.Type, args, ce.Span);
+        return new SemanticCallExpression(func, ce.Type, args, ce.Span);
     }
 
-    protected virtual SemanticIndexingExpression RewriteIndexingExpression(SemanticIndexingExpression ie)
+    protected virtual SemanticExpression RewriteIndexingExpression(SemanticIndexingExpression ie)
     {
         var expr = RewriteExpression(ie.Iterable);
         var indx = RewriteExpression(ie.Index);
         if (expr == ie.Iterable && indx == ie.Index)
             return ie;
 
-        return new(expr, indx, ie.Type, ie.Span);
+        return new SemanticIndexingExpression(expr, indx, ie.Type, ie.Span);
     }
 
-    protected virtual SemanticFailedOperation RewriteFailedOperation(SemanticFailedOperation fop)
+    protected virtual SemanticExpression RewriteFailedOperation(SemanticFailedOperation fop)
     {
         var same  = true;
         var exprs = ImmutableArray.CreateBuilder<SemanticExpression>();
@@ -195,38 +220,38 @@ public abstract class Rewriter
         if (same)
             return fop;
 
-        return new(exprs, fop.Span);
+        return new SemanticFailedOperation(exprs, fop.Span);
     }
 
-    protected virtual SemanticUnaryOperation RewriteUnaryOperation(SemanticUnaryOperation uop)
+    protected virtual SemanticExpression RewriteUnaryOperation(SemanticUnaryOperation uop)
     {
         var oprd = RewriteExpression(uop.Operand);
         if (oprd == uop.Operand)
             return uop;
         
-        return new(oprd, uop.OperationKind, uop.Span);
+        return new SemanticUnaryOperation(oprd, uop.OperationKind, uop.Span);
     }
 
-    protected virtual SemanticCountingOperation RewriteCountingOperation(SemanticCountingOperation cop)
+    protected virtual SemanticExpression RewriteCountingOperation(SemanticCountingOperation cop)
     {
         var name = (SemanticName) RewriteExpression(cop.Name);
         if (name == cop.Name)
             return cop;
         
-        return new(name, cop.OperationKind, cop.Span);
+        return new SemanticCountingOperation(name, cop.OperationKind, cop.Span);
     }
 
-    protected virtual SemanticBinaryOperation RewriteBinaryOperation(SemanticBinaryOperation biop)
+    protected virtual SemanticExpression RewriteBinaryOperation(SemanticBinaryOperation biop)
     {
         var right = RewriteExpression(biop.Right);
         var left  = RewriteExpression(biop.Left);
         if (right == biop.Right && left == biop.Left)
             return biop;
 
-        return new(right, biop.Operator, left, biop.Span);
+        return new SemanticBinaryOperation(right, biop.Operator, left, biop.Span);
     }
 
-    protected virtual SemanticTernaryOperation RewriteTernaryOperation(SemanticTernaryOperation terop)
+    protected virtual SemanticExpression RewriteTernaryOperation(SemanticTernaryOperation terop)
     {
         var condition = RewriteExpression(terop.Condition);
         var trueExpr  = RewriteExpression(terop.TrueExpression);
@@ -234,41 +259,15 @@ public abstract class Rewriter
         if (condition == terop.Condition && trueExpr == terop.TrueExpression && falseExpr == terop.FalseExpression)
             return terop;
 
-        return new(condition, trueExpr, falseExpr, terop.Span);
+        return new SemanticTernaryOperation(condition, trueExpr, falseExpr, terop.Span);
     }
 
-    protected virtual SemanticConversionOperation RewriteConversionOperation(SemanticConversionOperation cop)
+    protected virtual SemanticExpression RewriteConversionOperation(SemanticConversionOperation cop)
     {
         var expr = RewriteExpression(cop.Expression);
         if (expr == cop.Expression)
             return cop;
 
-        return new(expr, cop.Target, cop.ConversionKind, cop.Span);
+        return new SemanticConversionOperation(expr, cop.Target, cop.ConversionKind, cop.Span);
     }
-
-
-    /* ====================================================================== */
-    /*                                Literals                                */
-    /* ====================================================================== */
-    // public SemanticExpression RewriteLiteral(SemanticExpression litr) => litr.Kind switch
-    // {
-    //     SemanticKind.Literal       => litr,
-    //     SemanticKind.FormatString  => RewriteFormatString(litr),
-    //     SemanticKind.Range         => RewriteRange(litr),
-    //     SemanticKind.List          => RewriteList(litr),
-    //     SemanticKind.Name          => RewriteName(litr),
-    //     SemanticKind.Function      => RewriteFunction(litr),
-
-    //     _ => throw new Exception("Literal unadded")
-    // };
-
-    // private SemanticExpression RewriteFormatString(SemanticExpression litr) { }
-
-    // private SemanticExpression RewriteRange(SemanticExpression litr) { }
-
-    // private SemanticExpression RewriteList(SemanticExpression litr) { }
-
-    // private SemanticExpression RewriteName(SemanticExpression litr) { }
-
-    // private SemanticExpression RewriteFunction(SemanticExpression litr) { }
 }
