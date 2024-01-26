@@ -13,14 +13,14 @@ public sealed class SemanticBinaryOperation : SemanticExpression
     public override Span         Span { get; }
     public override SemanticKind Kind => SemanticKind.BinaryOperation;
 
-    public SemanticBinaryOperation(SemanticExpression left, SemanticBinaryOperator @operator, SemanticExpression right)
+    public SemanticBinaryOperation(SemanticExpression left, SemanticBinaryOperator @operator, SemanticExpression right, Span span)
         : base(@operator.ResultType)
     {
         Left     = left;
         Operator = @operator;
         Right    = right;
 
-        Span = new Span(left.Span.Start, right.Span.End);
+        Span = span;
     }
 
     public static BinaryOperationKind? GetOperationKind(TokenKind op, TypeSymbol left, TypeSymbol right)

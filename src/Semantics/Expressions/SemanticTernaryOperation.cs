@@ -12,14 +12,14 @@ public class SemanticTernaryOperation : SemanticExpression
     public override Span         Span         { get; }
     public override SemanticKind Kind => SemanticKind.TernaryOperation;
 
-    public SemanticTernaryOperation(SemanticExpression condition, SemanticExpression trueExpr, SemanticExpression falseExpr)
+    public SemanticTernaryOperation(SemanticExpression condition, SemanticExpression trueExpr, SemanticExpression falseExpr, Span span)
         : base(trueExpr.Type == falseExpr.Type ? trueExpr.Type : TypeSymbol.Unknown)
     {
         Condition       = condition;
         TrueExpression  = trueExpr;
         FalseExpression = falseExpr;
 
-        Span            = new(condition.Span, falseExpr.Span);
+        Span            = span;
     }
 
     public override IEnumerable<SemanticNode> GetChildren()

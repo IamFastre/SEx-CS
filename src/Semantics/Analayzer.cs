@@ -609,7 +609,7 @@ internal sealed class Analyzer
 
         var @operator = SemanticBinaryOperator.GetSemanticOperator(left.Type, opKind.Value, right.Type);
 
-        return new SemanticBinaryOperation(left, @operator, right);
+        return new SemanticBinaryOperation(left, @operator, right, new(left.Span, right.Span));
     }
 
     private SemanticTernaryOperation BindTernaryOperation(TernaryOperation terop)
@@ -621,7 +621,7 @@ internal sealed class Analyzer
         if (trueExpr.Type != falseExpr.Type)
             Except($"Types '{trueExpr.Type}' and '{falseExpr.Type}' don't match in ternary operation", terop.Span);
 
-        return new(condition, trueExpr, falseExpr);
+        return new(condition, trueExpr, falseExpr, new(condition.Span, falseExpr.Span));
     }
 
     private SemanticExpression BindAssignExpression(AssignmentExpression aexpr)

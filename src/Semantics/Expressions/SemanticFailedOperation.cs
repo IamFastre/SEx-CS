@@ -10,11 +10,11 @@ public sealed class SemanticFailedOperation : SemanticExpression
     public override Span         Span       { get; }
     public override SemanticKind Kind => SemanticKind.FailedOperation;
 
-    public SemanticFailedOperation(SemanticExpression[] expressions, Span? span = null)
+    public SemanticFailedOperation(IEnumerable<SemanticExpression> expressions, Span? span = null)
         : base(TypeSymbol.Unknown)
     {
-        Expressions = expressions;
-        Span        = span ?? new(expressions[0].Span.Start, expressions[^1].Span.End);
+        Expressions = expressions.ToArray();
+        Span        = span ?? new(Expressions[0].Span.Start, Expressions[^1].Span.End);
     }
 
     public override IEnumerable<SemanticNode> GetChildren() => Expressions;
