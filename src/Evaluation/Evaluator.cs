@@ -113,8 +113,8 @@ internal sealed class Evaluator
         {
             if ((bool) conditionVal.Value)
                 EvaluateStatement(@is.Then);
-            else if (@is.ElseClause is not null)
-                    EvaluateStatement(@is.ElseClause.Body);
+            else if (@is.ElseStatement is not null)
+                    EvaluateStatement(@is.ElseStatement);
         }
     }
 
@@ -127,8 +127,8 @@ internal sealed class Evaluator
             if ((bool) conditionVal.Value)
                 while ((bool) EvaluateExpression(ws.Condition).Value)
                     EvaluateStatement(ws.Body);
-            else if (ws.ElseClause is not null)
-                    EvaluateStatement(ws.ElseClause.Body);
+            else if (ws.ElseStatement is not null)
+                    EvaluateStatement(ws.ElseStatement);
         }
     }
 

@@ -4,28 +4,27 @@ namespace SEx.SemanticAnalysis;
 
 public sealed class SemanticWhileStatement : SemanticStatement
 {
-    public SemanticExpression  Condition  { get; }
-    public SemanticStatement   Body       { get; }
-    public SemanticElseClause? ElseClause { get; }
+    public SemanticExpression Condition     { get; }
+    public SemanticStatement  Body          { get; }
+    public SemanticStatement? ElseStatement { get; }
 
-    public override Span         Span { get; }
+    public override Span         Span       { get; }
     public override SemanticKind Kind => SemanticKind.WhileStatement;
 
-    public SemanticWhileStatement(SemanticExpression condition, SemanticStatement body, Span span, SemanticElseClause? elseClause = null)
+    public SemanticWhileStatement(SemanticExpression condition, SemanticStatement body, SemanticStatement? elseStmt, Span span)
     {
-        Condition  = condition;
-        Body       = body;
-        ElseClause = elseClause;
+        Condition     = condition;
+        Body          = body;
+        ElseStatement = elseStmt;
 
-        Span       = span;
+        Span          = span;
     }
 
     public override IEnumerable<SemanticNode> GetChildren()
     {
         yield return Condition;
         yield return Body;
-
-        if (ElseClause is not null)
-            yield return ElseClause;
+        if (ElseStatement is not null)
+            yield return ElseStatement;
     }
 }

@@ -24,18 +24,18 @@ public enum SemanticKind
     Function,
 
     // Expressions
+    FailedExpression,
     AssignExpression,
     IndexAssignExpression,
     CallExpression,
     IndexingExpression,
-    FailedExpression,
+    FailedOperation,
     UnaryOperation,
     CountingOperation,
     BinaryOperation,
     TernaryOperation,
-    FailedOperation,
     ConversionOperation,
 
-
+    // Others
     StringFragment,
 }

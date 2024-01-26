@@ -9,9 +9,9 @@ public sealed class SemanticBlockStatement : SemanticStatement
     public override Span         Span { get; }
     public override SemanticKind Kind => SemanticKind.BlockStatement;
 
-    public SemanticBlockStatement(SemanticStatement[] statements, Span span)
+    public SemanticBlockStatement(IEnumerable<SemanticStatement> statements, Span span)
     {
-        Body = statements;
+        Body = statements.ToArray();
         Span = span;
     }
 

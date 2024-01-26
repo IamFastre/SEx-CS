@@ -108,7 +108,7 @@ internal sealed class Analyzer
                     Diagnostics.Report.AlreadyDefined(var.Name, ds.Variable.Span);
         }
 
-        return new(var, ds.Variable.Span, expr, ds.Span);
+        return new(var, expr, ds.Span);
     }
 
     private NameSymbol? BindMakeConstant(DeclarationStatement ds)
@@ -175,34 +175,20 @@ internal sealed class Analyzer
 
     private SemanticIfStatement BindIfStatement(IfStatement @is)
     {
-        SemanticElseClause? elseClause = null;
-
         var condition = BindExpression(@is.Condition, TypeSymbol.Boolean);
         var thenStmt  = BindStatement(@is.Then);
+        var elseStmt  = @is.ElseClause is null ? null : BindStatement(@is.ElseClause.Body);
 
-        if (@is.ElseClause is not null)
-            elseClause = BindElseClause(@is.ElseClause);
-
-        return new(condition, thenStmt, @is.Span, elseClause);
+        return new(condition, thenStmt, elseStmt, @is.Span);
     }
 
     private SemanticWhileStatement BindWhileStatement(WhileStatement ws)
     {
-        SemanticElseClause? elseClause = null;
-
         var condition = BindExpression(ws.Condition, TypeSymbol.Boolean);
         var thenStmt  = BindStatement(ws.Body);
+        var elseStmt  = ws.ElseClause is null ? null : BindStatement(ws.ElseClause.Body);
 
-        if (ws.ElseClause is not null)
-            elseClause = BindElseClause(ws.ElseClause);
-
-        return new(condition, thenStmt, ws.Span, elseClause);
-    }
-
-    private SemanticElseClause BindElseClause(ElseClause ec)
-    {
-        var elseStmt = BindStatement(ec.Body);
-        return new(elseStmt, ec.Span);
+        return new(condition, thenStmt, elseStmt, ws.Span);
     }
 
     private SemanticForStatement BindForStatement(ForStatement fs)
