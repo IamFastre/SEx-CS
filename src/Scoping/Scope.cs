@@ -82,7 +82,7 @@ public class Scope
             goto Return;
 
         if (!(Names.ContainsKey(old) || declare))
-            throw new IndexOutOfRangeException($"Name {old} isn't added");
+            throw new IndexOutOfRangeException($"Name {old} was not added");
 
         var index = Names[old];
         Names[@new] = index;
