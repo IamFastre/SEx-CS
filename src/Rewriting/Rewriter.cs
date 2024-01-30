@@ -13,8 +13,8 @@ public abstract class Rewriter
     /* ====================================================================== */
     public SemanticStatement RewriteStatement(SemanticStatement stmt) => stmt.Kind switch
     {
-        SemanticKind.BlockStatement       => RewriteBlockStatement((SemanticBlockStatement) stmt),
         SemanticKind.ExpressionStatement  => RewriteExpressionStatement((SemanticExpressionStatement) stmt),
+        SemanticKind.BlockStatement       => RewriteBlockStatement((SemanticBlockStatement) stmt),
         SemanticKind.DeclarationStatement => RewriteDeclarationStatement((SemanticDeclarationStatement) stmt),
         SemanticKind.IfStatement          => RewriteIfStatement((SemanticIfStatement) stmt),
         SemanticKind.WhileStatement       => RewriteWhileStatement((SemanticWhileStatement) stmt),
@@ -25,23 +25,6 @@ public abstract class Rewriter
         _ => throw new Exception("Statement unadded")
     };
 
-    protected virtual SemanticBlockStatement RewriteBlockStatement(SemanticBlockStatement bs)
-    {
-        var same  = true;
-        var stmts = ImmutableArray.CreateBuilder<SemanticStatement>();
-        foreach (var stmt in bs.Body)
-        {
-            var reStmt = RewriteStatement(stmt);
-            same = same && reStmt == stmt;
-            stmts.Add(stmt);
-        }
-
-        if (same)
-            return bs;
-
-        return new(stmts, bs.Span);
-    }
-
     protected virtual SemanticExpressionStatement RewriteExpressionStatement(SemanticExpressionStatement es)
     {
         var expr = RewriteExpression(es.Expression);
@@ -49,6 +32,23 @@ public abstract class Rewriter
             return es;
 
         return new(expr);
+    }
+
+    protected virtual SemanticBlockStatement RewriteBlockStatement(SemanticBlockStatement bs)
+    {
+        var same  = true;
+        var stmts = ImmutableArray.CreateBuilder<SemanticStatement>();
+        foreach (var stmt in bs.Body)
+        {
+            var reStmt = RewriteStatement(stmt);
+            same &= reStmt == stmt;
+            stmts.Add(stmt);
+        }
+
+        if (same)
+            return bs;
+
+        return new(stmts, bs.Span);
     }
 
     protected virtual SemanticDeclarationStatement RewriteDeclarationStatement(SemanticDeclarationStatement ds)
@@ -116,13 +116,14 @@ public abstract class Rewriter
     /* ====================================================================== */
     public SemanticExpression RewriteExpression(SemanticExpression expr) => expr.Kind switch
     {
-        SemanticKind.Literal       => RewriteLiteral((SemanticLiteral) expr),
-        SemanticKind.FormatString  => RewriteFormatString((SemanticFormatString) expr),
-        SemanticKind.Range         => RewriteRange((SemanticRange) expr),
-        SemanticKind.List          => RewriteList((SemanticList) expr),
-        SemanticKind.Name          => RewriteName((SemanticName) expr),
-        SemanticKind.Function      => RewriteFunction((SemanticFunction) expr),
-
+        // Literals
+        SemanticKind.Literal               => RewriteLiteral((SemanticLiteral) expr),
+        SemanticKind.FormatString          => RewriteFormatString((SemanticFormatString) expr),
+        SemanticKind.Range                 => RewriteRange((SemanticRange) expr),
+        SemanticKind.List                  => RewriteList((SemanticList) expr),
+        SemanticKind.Name                  => RewriteName((SemanticName) expr),
+        SemanticKind.Function              => RewriteFunction((SemanticFunction) expr),
+        // Expressions
         SemanticKind.FailedExpression      => RewriteFailedExpression((SemanticFailedExpression) expr),
         SemanticKind.AssignExpression      => RewriteAssignment((SemanticAssignment) expr),
         SemanticKind.IndexAssignExpression => RewriteIndexAssignment((SemanticIndexAssignment) expr),
@@ -186,7 +187,7 @@ public abstract class Rewriter
         foreach (var arg in ce.Arguments)
         {
             var reArg = RewriteExpression(arg);
-            same = same && reArg == arg;
+            same &= reArg == arg;
             args.Add(arg);
         }
 
