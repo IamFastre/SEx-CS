@@ -25,16 +25,16 @@ public abstract class Rewriter
         _ => throw new Exception("Statement unadded")
     };
 
-    protected virtual SemanticExpressionStatement RewriteExpressionStatement(SemanticExpressionStatement es)
+    protected virtual SemanticStatement RewriteExpressionStatement(SemanticExpressionStatement es)
     {
         var expr = RewriteExpression(es.Expression);
         if (expr == es.Expression)
             return es;
 
-        return new(expr);
+        return new SemanticExpressionStatement(expr);
     }
 
-    protected virtual SemanticBlockStatement RewriteBlockStatement(SemanticBlockStatement bs)
+    protected virtual SemanticStatement RewriteBlockStatement(SemanticBlockStatement bs)
     {
         var same  = true;
         var stmts = ImmutableArray.CreateBuilder<SemanticStatement>();
@@ -48,19 +48,19 @@ public abstract class Rewriter
         if (same)
             return bs;
 
-        return new(stmts, bs.Span);
+        return new SemanticBlockStatement(stmts, bs.Span);
     }
 
-    protected virtual SemanticDeclarationStatement RewriteDeclarationStatement(SemanticDeclarationStatement ds)
+    protected virtual SemanticStatement RewriteDeclarationStatement(SemanticDeclarationStatement ds)
     {
         var expr = RewriteExpression(ds.Expression);
         if (expr == ds.Expression)
             return ds;
 
-        return new(ds.Variable, expr, ds.Span);
+        return new SemanticDeclarationStatement(ds.Variable, expr, ds.Span);
     }
 
-    protected virtual SemanticIfStatement RewriteIfStatement(SemanticIfStatement @is)
+    protected virtual SemanticStatement RewriteIfStatement(SemanticIfStatement @is)
     {
         var condition = RewriteExpression(@is.Condition);
         var thenStmt  = RewriteStatement(@is.Then);
@@ -68,10 +68,10 @@ public abstract class Rewriter
         if (condition == @is.Condition && thenStmt == @is.Then && elseStmt == @is.ElseStatement)
             return @is;
 
-        return new(condition, thenStmt, elseStmt, @is.Span);
+        return new SemanticIfStatement(condition, thenStmt, elseStmt, @is.Span);
     }
 
-    protected virtual SemanticWhileStatement RewriteWhileStatement(SemanticWhileStatement ws)
+    protected virtual SemanticStatement RewriteWhileStatement(SemanticWhileStatement ws)
     {
         var condition = RewriteExpression(ws.Condition);
         var thenStmt  = RewriteStatement(ws.Body);
@@ -79,35 +79,35 @@ public abstract class Rewriter
         if (condition == ws.Condition && thenStmt == ws.Body && elseStmt == ws.ElseStatement)
             return ws;
 
-        return new(condition, thenStmt, elseStmt, ws.Span);
+        return new SemanticWhileStatement(condition, thenStmt, elseStmt, ws.Span);
     }
 
-    protected virtual SemanticForStatement RewriteForStatement(SemanticForStatement fs)
+    protected virtual SemanticStatement RewriteForStatement(SemanticForStatement fs)
     {
         var expr = RewriteExpression(fs.Iterable);
         var body = RewriteStatement(fs.Body);
         if (expr == fs.Iterable && body == fs.Body)
             return fs;
 
-        return new(fs.Variable, expr, body, fs.Span);
+        return new SemanticForStatement(fs.Variable, expr, body, fs.Span);
     }
 
-    protected virtual SemanticFunctionStatement RewriteFunctionStatement(SemanticFunctionStatement fs)
+    protected virtual SemanticStatement RewriteFunctionStatement(SemanticFunctionStatement fs)
     {
         var body = RewriteStatement(fs.Body);
         if (body == fs.Body)
             return fs;
 
-        return new(fs.Function, fs.Parameters, fs.ReturnType, body, fs.Span);
+        return new SemanticFunctionStatement(fs.Function, fs.Parameters, fs.ReturnType, body, fs.Span);
     }
 
-    protected virtual SemanticReturnStatement RewriteReturnStatement(SemanticReturnStatement rs)
+    protected virtual SemanticStatement RewriteReturnStatement(SemanticReturnStatement rs)
     {
         var expr = rs.Expression is null ? null : RewriteExpression(rs.Expression);
         if (expr == rs.Expression)
             return rs;
 
-        return new(expr, rs.Span);
+        return new SemanticReturnStatement(expr, rs.Span);
     }
 
 
@@ -139,22 +139,22 @@ public abstract class Rewriter
         _ => throw new Exception("Expression unadded")
     };
 
-    private SemanticExpression RewriteLiteral(SemanticLiteral l)
+    protected virtual SemanticExpression RewriteLiteral(SemanticLiteral l)
         => l;
 
-    private SemanticExpression RewriteFormatString(SemanticFormatString fsl)
+    protected virtual SemanticExpression RewriteFormatString(SemanticFormatString fsl)
         => fsl;
 
-    private SemanticExpression RewriteRange(SemanticRange rl)
+    protected virtual SemanticExpression RewriteRange(SemanticRange rl)
         => rl;
 
-    private SemanticExpression RewriteList(SemanticList ll)
+    protected virtual SemanticExpression RewriteList(SemanticList ll)
         => ll;
 
-    private SemanticExpression RewriteName(SemanticName nl)
+    protected virtual SemanticExpression RewriteName(SemanticName nl)
         => nl;
 
-    private SemanticExpression RewriteFunction(SemanticFunction fl)
+    protected virtual SemanticExpression RewriteFunction(SemanticFunction fl)
         => fl;
 
     protected virtual SemanticExpression RewriteFailedExpression(SemanticFailedExpression fe)
