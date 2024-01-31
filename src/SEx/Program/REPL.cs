@@ -11,6 +11,7 @@ using SEx.Scoping;
 using SEx.Generic.Constants;
 using SEx.Generic.Text;
 using SEx.Scoping.Symbols;
+using System.Diagnostics;
 
 namespace SEx.Main.REPL;
 
@@ -23,6 +24,7 @@ internal sealed class REPL : IRuntime
     private bool TreeLogged     = false;
     private bool TypeShown      = false;
     private bool UnescapedShown = false;
+    private bool TimeShown      = false;
     private bool IsMonochrome   = false;
 
     private string ValueString => UnescapedShown ? Value.ToString().Unescape() : Value.ToString();
@@ -54,6 +56,7 @@ internal sealed class REPL : IRuntime
     public SemanticScope              SemanticScope     { get; }
     public StringBuilder              Script            { get; }
     public Source                     Source            => new(Name, Text);
+    public Stopwatch?                 Watch             { get; set; }
     public string                     Line              { get; set; }
     public Token[]?                   Tokens            { get; set; }
     public ProgramStatement?          SimpleTree        { get; set; }
@@ -72,13 +75,16 @@ internal sealed class REPL : IRuntime
         if (AreArgs("--debug", "-d"))
             ToggleAll();
 
-        if (AreArgs("--show-tokens", "-stks"))
+        if (AreArgs("--show-time", "-t"))
+            ToggleTime();
+
+        if (AreArgs("--show-tokens", "-tk"))
             ToggleTokens();
 
-        if (AreArgs("--show-AST", "-sast"))
+        if (AreArgs("--show-AST", "-ast"))
             ToggleTree();
 
-        if (AreArgs("--show-program", "-sprgm"))
+        if (AreArgs("--show-program", "-prgm"))
             ToggleProgram();
 
         if (AreArgs("--show-escaped", "-esc"))
@@ -87,10 +93,10 @@ internal sealed class REPL : IRuntime
 
     public static string[] commands =
     {
-        "DEBUG", "CLEAR",    "TOKENS",
-        "TREE",  "PROGRAM",  "LOGTREE",
-        "TYPE",  "ESCAPED",  "COLOR",
-        "EXIT",  "RESET",
+        "DEBUG", "CLEAR"  ,  "TOKENS" ,
+        "TREE" , "PROGRAM",  "LOGTREE",
+        "TYPE" , "ESCAPED",  "COLOR"  ,
+        "TIME" , "EXIT"   ,  "RESET"  ,
     };
 
     public void Throw()
@@ -178,10 +184,9 @@ internal sealed class REPL : IRuntime
                     continue;
                 }
 
+                Watch?.Restart();
                 var analyzer = new Analyzer(SimpleTree, SemanticScope, Diagnostics);
                 SemanticTree = analyzer.Analyze();
-
-                PrintDebugs();
 
                 if (!Diagnostics.Exceptions.Any())
                 {
@@ -190,7 +195,9 @@ internal sealed class REPL : IRuntime
                 }
                 else
                     Value = UnknownValue.Template;
+                Watch?.Stop();
 
+                PrintDebugs();
                 Throw();
 
                 if (!(Value.Type == TypeSymbol.Void))
@@ -237,6 +244,9 @@ internal sealed class REPL : IRuntime
             SimpleTree?.LogTree(Line);
             Console.WriteLine();
         }
+
+        if (TimeShown)
+            Console.WriteLine($"• {C.GREEN2}Time Elapsed{C.END}: {C.RED2}{Watch!.Elapsed.TotalMicroseconds/1000f:0.############}{C.YELLOW2}ms{C.END}");
     }
 
     private bool IsCommand()
@@ -274,6 +284,10 @@ internal sealed class REPL : IRuntime
                 ToggleEsc();
                 break;
 
+            case "TIME":
+                ToggleTime();
+                break;
+
             case "DEBUG":
                 ToggleAll();
                 break;
@@ -309,6 +323,13 @@ internal sealed class REPL : IRuntime
         ToggleProgram(DebugShown);
         ToggleType(DebugShown);
         ToggleEsc(DebugShown);
+    }
+
+    private void ToggleTime(bool _ = false)
+    {
+        TimeShown = !TimeShown || _;
+        Watch     = TimeShown ? new Stopwatch() : null;
+        Console.WriteLine($"Show time set to: {TimeShown}");
     }
 
     private void ToggleEsc(bool _ = false)
