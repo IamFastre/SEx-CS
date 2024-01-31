@@ -207,7 +207,7 @@ internal sealed class Analyzer
 
         Scope = Scope.Parent!;
 
-        return new(variable, iterable, body, fs.Span);
+        return new(variable, fs.Variable.Span, iterable, body, fs.Span);
     }
 
     private SemanticReturnStatement BindReturnStatement(ReturnStatement rs)

@@ -89,7 +89,7 @@ public abstract class Rewriter
         if (expr == fs.Iterable && body == fs.Body)
             return fs;
 
-        return new SemanticForStatement(fs.Variable, expr, body, fs.Span);
+        return new SemanticForStatement(fs.Variable, fs.VarSpan, expr, body, fs.Span);
     }
 
     protected virtual SemanticStatement RewriteFunctionStatement(SemanticFunctionStatement fs)

@@ -57,7 +57,7 @@ public class SemanticBinaryOperator
     public SemanticBinaryOperator(BinaryOperationKind kind, TypeSymbol operands, TypeSymbol result)
         : this(kind, operands, operands, result) {}
 
-    public SemanticBinaryOperator(BinaryOperationKind kind, TypeSymbol left, TypeSymbol right, TypeSymbol result)
+    private SemanticBinaryOperator(BinaryOperationKind kind, TypeSymbol left, TypeSymbol right, TypeSymbol result)
     {
         LeftType   = left;
         RightType  = right;

@@ -10,7 +10,7 @@ public abstract class SemanticNode
     public abstract SemanticKind Kind { get; }
     public abstract Span         Span { get; }
 
-    public static TypeSymbol ToValueKind(NodeKind kind) => kind switch
+    public static TypeSymbol ToValueType(NodeKind kind) => kind switch
     {
         NodeKind.Unknown      => TypeSymbol.Unknown,
         NodeKind.Null         => TypeSymbol.Null,
@@ -83,8 +83,13 @@ public abstract class SemanticNode
     }
 }
 
-public abstract class SemanticStatement  : SemanticNode { }
 public abstract class SemanticClause     : SemanticNode { }
+
+public abstract class SemanticStatement  : SemanticNode
+{
+    public bool HasScope { get; set; } = false;
+}
+
 public abstract class SemanticExpression : SemanticNode
 {
     public TypeSymbol Type { get; private set; }

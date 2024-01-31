@@ -5,16 +5,18 @@ namespace SEx.SemanticAnalysis;
 
 public sealed class SemanticForStatement : SemanticStatement
 {
-    public NameSymbol      Variable { get; }
+    public NameSymbol          Variable { get; }
+    public Span                VarSpan  { get; }
     public SemanticExpression  Iterable { get; }
     public SemanticStatement   Body     { get; }
 
     public override Span         Span   { get; }
     public override SemanticKind Kind => SemanticKind.ForStatement;
 
-    public SemanticForStatement(NameSymbol variable, SemanticExpression iterable, SemanticStatement body, Span span)
+    public SemanticForStatement(NameSymbol variable, Span varSpan, SemanticExpression iterable, SemanticStatement body, Span span)
     {
         Variable = variable;
+        VarSpan  = varSpan;
         Iterable = iterable;
         Body     = body;
 

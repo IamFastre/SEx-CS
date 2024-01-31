@@ -11,10 +11,10 @@ public class SemanticCallExpression : SemanticExpression
     public override Span         Span     { get; }
     public override SemanticKind Kind => SemanticKind.CallExpression;
 
-    public SemanticCallExpression(SemanticExpression fs, TypeSymbol returnType, IEnumerable<SemanticExpression> arguments, Span span)
+    public SemanticCallExpression(SemanticExpression function, TypeSymbol returnType, IEnumerable<SemanticExpression> arguments, Span span)
         : base(returnType)
     {
-        Function  = fs;
+        Function  = function;
         Arguments = arguments.ToArray();
 
         Span      = span;
