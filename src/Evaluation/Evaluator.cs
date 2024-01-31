@@ -61,6 +61,9 @@ internal sealed class Evaluator
                     case SemanticKind.DeclarationStatement:
                         EvaluateDeclarationStatement((SemanticDeclarationStatement) statement);
                         break;
+                    case SemanticKind.DeletionStatement:
+                        EvaluateDeletionStatement((SemanticDeletionStatement) statement);
+                        break;
                     case SemanticKind.FunctionStatement:
                         EvaluateFunctionStatement((SemanticFunctionStatement) statement);
                         break;
@@ -87,7 +90,11 @@ internal sealed class Evaluator
         => Value = EvaluateExpression(es.Expression);
 
     private void EvaluateBlockStatement(SemanticBlockStatement stmt)
-        => EvaluateStatement(stmt.Body);
+    {
+        Scope = stmt.HasScope ? new(Scope)    : Scope;
+        EvaluateStatement(stmt.Body);
+        Scope = stmt.HasScope ? Scope.Parent! : Scope;
+    }
 
     private void EvaluateDeclarationStatement(SemanticDeclarationStatement ds)
     {
@@ -97,6 +104,11 @@ internal sealed class Evaluator
             Scope.MakeConstant(ds.Variable.Name);
         else
             TryAssign(ds.Variable, ds.Expression, value, true);
+    }
+
+    private void EvaluateDeletionStatement(SemanticDeletionStatement ds)
+    {
+        Scope.Delete(ds.Name.Symbol);
     }
 
     private void EvaluateFunctionStatement(SemanticFunctionStatement fs)

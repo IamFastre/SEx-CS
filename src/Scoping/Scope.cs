@@ -108,11 +108,24 @@ public class Scope
         return UnknownValue.Template;
     }
 
+    public void Delete(NameSymbol name)
+    {
+        Names.Remove(name);
+        Parent?.Delete(name);
+
+        CleanUp();
+        Parent?.CleanUp();
+    }
+
     public void CleanUp()
     {
+        // Nullify values with no pointer
         for (int i = 0; i < Values.Count; i++)
             if (!Names.ContainsValue(i))
                 Values[i] = null;
+        // Remove 'null' tail
+        while (Values.Count > 0 && Values.LastOrDefault() is null)
+            Values.RemoveAt(Values.Count - 1);
     }
 
     //=====================================================================//
@@ -155,5 +168,16 @@ public class Scope
                 sym.MakeConstant();
                 return;
             }
+    }
+
+    //=====================================================================//
+    //=====================================================================//
+
+    public void Coordinate(SemanticScope semantic)
+    {
+        for (int i = 0; i < semantic.Symbols.Values.Count; i++)
+        {
+            var semSym = semantic.Symbols.Values.ElementAt(i);
+        }
     }
 }

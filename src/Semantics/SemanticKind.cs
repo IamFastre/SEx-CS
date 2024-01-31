@@ -6,6 +6,7 @@ public enum SemanticKind
     ProgramStatement,
     BlockStatement,
     DeclarationStatement,
+    DeletionStatement,
     ExpressionStatement,
     FunctionStatement,
     // Conditional
