@@ -1,1 +1,1 @@
-dotnet run --project SEx.csproj
+dotnet run --project SEx.csproj -- %*
