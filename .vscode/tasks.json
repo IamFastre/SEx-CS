@@ -5,12 +5,8 @@
             "label": "build",
             "command": "dotnet",
             "type": "process",
-            "args": [
-                "build",
-                "${workspaceFolder}/SEx.sln",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
-            ],
+            "windows":{ "args": [ "build", "${workspaceFolder}/Windows.csproj" ] },
+            "linux": { "args": [ "build", "${workspaceFolder}/Linux.csproj" ] },
             "problemMatcher": "$msCompile",
             "group": {
                 "kind": "build",
@@ -19,27 +15,14 @@
         },
         {
             "label": "publish",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "publish",
-                "${workspaceFolder}/SEx.sln",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "watch",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "watch",
-                "run",
-                "--project",
-                "${workspaceFolder}/SEx.sln"
-            ],
-            "problemMatcher": "$msCompile"
+            "type": "shell",
+            "windows":{
+                "command": "${workspaceFolder}/publish.cmd"
+            },
+            "linux":{
+                "command": "${workspaceFolder}/publish.sh"
+            },
+            "problemMatcher": "$msCompile",
         }
     ]
 }
