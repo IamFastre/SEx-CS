@@ -9,8 +9,8 @@ help() {
   echo
   echo "[*] Options:"
   echo "      -h, --help      Show this menu"
-  echo "      -w              Publish app for windows"
-  echo "      -l              Publish app for linux"
+  echo "      -w              Publish app for Windows"
+  echo "      -l              Publish app for Linux"
   echo "      -m              Publish app for macOS/OSX"
   exit 0
 }
