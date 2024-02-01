@@ -21,10 +21,10 @@ publish() {
   echo  "[*] Done!"
 
   echo  "[*] Moving files..."
-  rm    "./build/$1" -r
-  mkdir "./build/$1"
-  mv    "./build/Debug/$2/publish/" "./build/$1" -v
-  rm    "./build/Debug/$2" -r -v
+  rm    ./build/$1 -r
+  mkdir ./build/$1
+  mv    ./build/Debug/$2/publish/* ./build/$1 -v
+  rm    ./build/Debug/$2 -r -v
   echo  "[*] Done!"
 
   echo
