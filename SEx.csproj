@@ -3,13 +3,13 @@
   <PropertyGroup>
     <AssemblyName>SEx</AssemblyName>
     <Product>SEx</Product>
-    <Version>0.1.3-alpha</Version>
+    <Version>0.1.4-alpha</Version>
     <ApplicationIcon>res/SEx.ico</ApplicationIcon>
     <Authors>Fastre</Authors>
     <Company>neRIA</Company>
 
     <OutputType>exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>SEx</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
