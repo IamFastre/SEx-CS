@@ -9,11 +9,11 @@ public sealed class ProgramStatement : Statement
     public override Span     Span { get; }
     public override NodeKind Kind => NodeKind.ProgramStatement;
 
-    public ProgramStatement(Statement[] statements)
+    public ProgramStatement(IEnumerable<Statement> statements)
     {
-        Body = statements;
+        Body = statements.ToArray();
 
-        Span = statements.Length > 0
+        Span = Body.Length > 0
              ? new(Body.First().Span, Body.Last().Span)
              : new();
     }

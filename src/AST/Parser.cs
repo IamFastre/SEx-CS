@@ -21,10 +21,10 @@ internal partial class Parser
     private bool  EOL             => Current.Span.Start.Line != Peek().Span.Start.Line;
     private bool  EOS             => Current.Kind == TokenKind.CloseCurlyBracket;
  
-    public Parser(Token[] tokens, Diagnostics diagnostics)
+    public Parser(IEnumerable<Token> tokens, Diagnostics diagnostics)
     {
         Diagnostics = diagnostics;
-        Tokens      = new();
+        Tokens      = [];
 
         foreach (var tk in tokens)
             if (!tk.Kind.IsParserIgnorable())
@@ -33,7 +33,7 @@ internal partial class Parser
 
     public ProgramStatement Parse()
     {
-        var stmts = new List<Statement>();
+        var stmts = ImmutableArray.CreateBuilder<Statement>();
         while (!EOF)
         {
             var start = Current;
@@ -45,7 +45,7 @@ internal partial class Parser
                 Eat();
         }
 
-        return Tree = new(stmts.ToArray());
+        return Tree = new(stmts);
     }
 
     private Token Eat()
@@ -129,7 +129,7 @@ internal partial class Parser
         }
     }
 
-    private Expression? GetFormatString()
+    private FormatStringLiteral GetFormatString()
     {
         var opener = Eat();
         var values = ImmutableArray.CreateBuilder<Expression>();
@@ -150,18 +150,18 @@ internal partial class Parser
         }
         var closer = Eat();
 
-        return new FormatStringLiteral(opener, values.ToArray(), closer);
+        return new(opener, values.ToArray(), closer);
     }
 
     private Expression GetParenthesized()
     {
         // TODO: Fix this massive pile of shit
         Node?  node  = null;
-        Token? arrow = null;
+        Token? colon = null;
 
         var openParen = Eat();
 
-        if (Current.Kind == TokenKind.Identifier && Peek().Kind == TokenKind.Colon)
+        if (Current.Kind == TokenKind.Identifier && Peek().Kind == TokenKind.Colon && Peek(2).Kind == TokenKind.Type)
             node = GetSeparated(GetParameterClause, TokenKind.CloseParenthesis);
         else if (Current.Kind != TokenKind.CloseParenthesis)
             node = GetRange();
@@ -174,18 +174,18 @@ internal partial class Parser
         if (node is SeparatedClause<ParameterClause> pc)
         {
             var hint  = IsNextKind(TokenKind.DashArrow) ? GetTypeClause() : null;
-            arrow = Expect(TokenKind.EqualArrow);
+            colon = Expect(TokenKind.Colon);
             var stmt  = GetFunctionBodyStatement();
 
-            return new FunctionLiteral(openParen, pc, closeParen, hint, arrow, stmt);
+            return new FunctionLiteral(openParen, pc, closeParen, hint, colon, stmt);
         }
 
-        if (IsNextKind(TokenKind.EqualArrow, out arrow) || IsNextKind(TokenKind.DashArrow))
+        if (IsNextKind(TokenKind.Colon, out colon) || IsNextKind(TokenKind.DashArrow))
         {
             var hint  = Peek(-1).Kind == TokenKind.DashArrow ? GetTypeClause() : null;
-            arrow ??= Expect(TokenKind.EqualArrow);
+            colon ??= Expect(TokenKind.Colon);
             var stmt  = GetFunctionBodyStatement();
-            return new FunctionLiteral(openParen, SeparatedClause<ParameterClause>.Empty, closeParen, hint, arrow, stmt);
+            return new FunctionLiteral(openParen, SeparatedClause<ParameterClause>.Empty, closeParen, hint, colon, stmt);
         }
 
         if (node is null)
@@ -260,13 +260,13 @@ internal partial class Parser
         return start;
     }
 
-    private Expression? GetCall(Expression func)
+    private CallExpression GetCall(Expression func)
     {
         var openParen  = Eat();
         var args       = GetSeparated(TokenKind.CloseParenthesis);
         var closeParen = Expect(TokenKind.CloseParenthesis);
 
-        return new CallExpression(func, openParen, args, closeParen);
+        return new(func, openParen, args, closeParen);
     }
 
     private Expression? GetIndexing(Expression iterable)
