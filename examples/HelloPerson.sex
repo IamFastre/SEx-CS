@@ -1,8 +1,16 @@
+# RED   :string = "\33[91m"
+# GREEN :string = "\33[92m"
+# BLUE  :string = "\33[94m"
+# YELLOW:string = "\33[93m"
+# END   :string = "\33[00m"
+
 // Asks for an input and says hi to it
 >>> Hello() -> void: {
-    Print("Please tell me your name.")
-    # name:string = Read("> ")
-    Print($"Hello there, {name}!")
+    Clear()
+    Print($"• {BLUE}What's your name?!{END}")
+    # name:string = Read($"{YELLOW}> {GREEN}")
+    Print(END)
+    Print($"{YELLOW}Hello there, {RED}{name}{YELLOW}!{END}")
 }
 
 Hello()
