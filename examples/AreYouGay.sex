@@ -1,0 +1,39 @@
+# RED   :string = "\33[91m"
+# GREEN :string = "\33[92m"
+# BLUE  :string = "\33[94m"
+# YELLOW:string = "\33[93m"
+# END   :string = "\33[00m"
+
+// Decides if you're gay or not
+>>> AreYouGay() -> bool: {
+    # ans   :string = ""
+    # isMale:bool   = false
+    Clear()
+    Print($"• {BLUE}What's your gender?{YELLOW} (m/f/n){END}")
+    ans = Read($"> {YELLOW}")
+    Print(END)
+
+    if ans == "n":
+        return true
+    else if ans == "m":
+        isMale = true
+    else if ans != "f": {
+        Print($"{RED}Doesn't seem valid, {YELLOW}I'm just gonna guess!{END}")
+        isMale = maybe
+    }
+
+    Print($"• {BLUE}Do you like {isMale ? "men" : "women"}?{YELLOW} (y/n){END}")
+    ans = Read($"> {YELLOW}")
+    Print(END)
+
+    if ans == "n":
+        return false
+    else if ans != "y":
+        Print($"{RED}You're so gay you can't give me a straight answer, gosh!{END}")
+    return true
+}
+
+if AreYouGay():
+    Print($"{RED}You are gay!{END}")
+else:
+    Print($"{GREEN}You're not gay!{END}")
