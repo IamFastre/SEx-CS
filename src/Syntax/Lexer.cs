@@ -126,7 +126,7 @@ internal class Lexer
         {
             while (Peek() == Current && char.IsWhiteSpace(Peek()))
                 AddValue(-1);
-
+            
             return CreateToken(value.Length > 1 ? TokenKind.BigWhiteSpace : TokenKind.WhiteSpace);
         }
 
