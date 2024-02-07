@@ -1,1 +1,2 @@
-dotnet run --project SEx.csproj -- $*
+#!/bin/sh
+dotnet run --project $(dirname $0)/SEx.csproj -- $*

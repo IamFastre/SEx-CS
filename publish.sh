@@ -9,23 +9,23 @@ help() {
   echo
   echo "[*] Options:"
   echo "      -h, --help      Show this menu"
-  echo "      -w              Publish app for Windows"
-  echo "      -l              Publish app for Linux"
-  echo "      -m              Publish app for macOS/OSX"
+  echo "      -w, --windows   Publish app for Windows"
+  echo "      -l, --linux     Publish app for Linux"
+  echo "      -m, --macos     Publish app for macOS/OSX"
   echo
   exit 0
 }
 
 publish() {
   echo  "[*] Building app for $1..."
-  dotnet publish $1.csproj
+  dotnet publish $(dirname $0)/$1.csproj
   echo  "[*] Done!"
 
   echo  "[*] Moving files..."
-  rm    ./build/$1 -r
-  mkdir ./build/$1
-  mv    ./build/Debug/$2/publish/* ./build/$1 -v
-  rm    ./build/Debug/$2 -r -v
+  rm    $(dirname $0)/build/$1 -r
+  mkdir $(dirname $0)/build/$1
+  mv    $(dirname $0)/build/Debug/$2/publish/* $(dirname $0)/build/$1 -v
+  rm    $(dirname $0)/build/Debug/$2 -r -v
   echo  "[*] Done!"
 
   echo
@@ -49,6 +49,13 @@ else
       then publish "Windows" "win-x64"
     elif [ "$i" = "-h" ];
       then help
+
+    elif [ "$i" = "--linux" ];
+      then publish "Linux"   "linux-x64"
+    elif [ "$i" = "--macos" ];
+      then publish "macOS"   "osx-x64"
+    elif [ "$i" = "--windows" ];
+      then publish "Windows" "win-x64"
     elif [ "$i" = "--help" ];
       then help
     fi

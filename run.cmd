@@ -1,1 +1,2 @@
-dotnet run --project SEx.csproj -- %*
+@echo off
+dotnet run --project %~dp0\SEx.csproj -- %*
