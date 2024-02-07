@@ -12,6 +12,7 @@ help() {
   echo "      -w              Publish app for Windows"
   echo "      -l              Publish app for Linux"
   echo "      -m              Publish app for macOS/OSX"
+  echo
   exit 0
 }
 

@@ -31,6 +31,7 @@ IF "%*"=="" GOTO :ALL
     echo [*] Done!
 
     echo.
+    EXIT /B 0
 
 :HELP
     echo.
@@ -44,4 +45,5 @@ IF "%*"=="" GOTO :ALL
     echo       -w              Publish app for Windows
     echo       -l              Publish app for Linux
     echo       -m              Publish app for macOS/OSX
+    echo.
     EXIT /B 0
