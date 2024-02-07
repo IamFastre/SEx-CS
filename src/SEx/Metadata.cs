@@ -1,3 +1,5 @@
+using SEx.Generic.Constants;
+
 namespace SEx;
 
 public static class SEx
@@ -7,6 +9,8 @@ public static class SEx
 
     public const string Name = "SEx";
 
+    public static bool   IsValentine => DateTime.Now.Month == 2 && DateTime.Now.Day == 14;
+    public static string PINK        => C.RGB(255, 70, 130) + C.BLINK;
 
     public class Path
     {
