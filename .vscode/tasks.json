@@ -2,11 +2,35 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "run",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/SEx.csproj"
+            ],
+            "problemMatcher": "$msCompile",
+        },
+        {
+            "label": "run file",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/SEx.csproj",
+                "--",
+                "${file}"
+            ],
+            "problemMatcher": "$msCompile",
+        },
+        {
             "label": "build",
             "command": "dotnet",
             "type": "process",
-            "windows":{ "args": [ "build", "${workspaceFolder}/Windows.csproj" ] },
-            "linux": { "args": [ "build", "${workspaceFolder}/Linux.csproj" ] },
+            "windows": { "args": [ "build", "${workspaceFolder}/Windows.csproj" ] },
+            "linux":   { "args": [ "build", "${workspaceFolder}/Linux.csproj" ] },
             "problemMatcher": "$msCompile",
             "group": {
                 "kind": "build",
@@ -16,12 +40,8 @@
         {
             "label": "publish",
             "type": "shell",
-            "windows":{
-                "command": "${workspaceFolder}/publish.cmd"
-            },
-            "linux":{
-                "command": "${workspaceFolder}/publish.sh"
-            },
+            "windows": { "command": "${workspaceFolder}/publish.cmd" },
+            "linux":   { "command": "${workspaceFolder}/publish.sh" },
             "problemMatcher": "$msCompile",
         }
     ]
