@@ -31,11 +31,11 @@ internal sealed class REPL : IRuntime
     private string Text        => Script.ToString();
 
     public static string Name      => "<stdin>";
-    public static string PInputChv => $"{C.GREEN2}<+> {C.END}";
-    public static string SInputChv => $"{C.BLUE2 }... {C.END}";
+    public static string PInputChv => SEx.IsValentine ? $"{SEx.PINK }<♥> {C.END}" : $"{C.GREEN2}<+> {C.END}";
+    public static string SInputChv => SEx.IsValentine ? $"{C.MAGENTA}... {C.END}" : $"{C.BLUE2 }... {C.END}";
     public readonly string[] Args;
 
-    public const char Prefix = '.';
+    public const char Prefix = '$';
 
     public REPL(string[] args)
     {
@@ -92,12 +92,13 @@ internal sealed class REPL : IRuntime
     }
 
     public static string[] commands =
-    {
+    [
         "DEBUG", "CLEAR"  ,  "TOKENS" ,
         "TREE" , "PROGRAM",  "LOGTREE",
         "TYPE" , "ESCAPED",  "COLOR"  ,
         "TIME" , "EXIT"   ,  "RESET"  ,
-    };
+                 "WELCOME",
+    ];
 
     public void Throw()
     {
@@ -108,13 +109,12 @@ internal sealed class REPL : IRuntime
     public void PrintValue()
         => Console.WriteLine(TypeShown ? $"<{C.YELLOW2}{Value.Type}{C.END}>: {ValueString}" : ValueString);
 
-    public LiteralValue Run()
+    public static void Run(string[] args)
     {
-        Console.WriteLine($"{C.BLUE2}SEx-{CONSTS._VERSION_} ({C.YELLOW2}{Environment.UserName} {C.BLUE2}on {C.RED2}{Environment.OSVersion.Platform}{C.BLUE2}){C.END}");
-        Console.WriteLine($"{C.BLUE2}{C.DIM}{C.ITALIC}Type: {C.GREEN2}'help' {C.BLUE2}for more info.{C.END}");
-        LoopWrapper();
+        Welcome();
 
-        return Value;
+        var repl = new REPL(args);
+        repl.LoopWrapper();
     }
 
     private void LoopWrapper()
@@ -208,6 +208,12 @@ internal sealed class REPL : IRuntime
         }
     }
 
+    private static void Welcome()
+    {
+        Console.WriteLine($"{C.BLUE2}SEx-{CONSTS._VERSION_} ({C.YELLOW2}{Environment.UserName} {C.BLUE2}on {C.RED2}{Environment.OSVersion.Platform}{C.BLUE2}){C.END}");
+        Console.WriteLine($"{C.BLUE2}{C.DIM}{C.ITALIC}Type: {C.GREEN2}'{Prefix}HELP' {C.BLUE2}for more info.{C.END}");
+    }
+
     private void Reset()
     {
         Script.Clear();
@@ -290,6 +296,10 @@ internal sealed class REPL : IRuntime
 
             case "DEBUG":
                 ToggleAll();
+                break;
+
+            case "WELCOME":
+                Welcome();
                 break;
 
             case "CLEAR":

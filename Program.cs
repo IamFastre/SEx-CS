@@ -8,13 +8,7 @@ if (Environment.OSVersion.Platform == PlatformID.Win32NT)
     Console.InputEncoding  = Encoding.Unicode;
 }
 
-if (args.Length > 0 && !args[0].StartsWith("-"))
-{
-    SExFile file = new(args);
-    file.Run();
-}
+if (args.Length > 0 && !args[0].StartsWith('-'))
+    SExFile.Run(args);
 else
-{
-    REPL repl = new(args);
-    repl.Run();
-}
+    REPL.Run(args);

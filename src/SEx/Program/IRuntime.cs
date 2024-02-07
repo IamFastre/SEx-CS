@@ -19,6 +19,6 @@ internal interface IRuntime
     public abstract SemanticProgramStatement?  SemanticTree      { get; protected set; }
     public abstract LiteralValue               Value             { get; protected set; }
 
-    public    abstract LiteralValue Run();
-    protected abstract void         ParseArguments(string[] arg);
+    public    static abstract void Run(string[] args);
+    protected        abstract void ParseArguments(string[] args);
 }

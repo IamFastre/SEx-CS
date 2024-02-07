@@ -11,7 +11,7 @@ using SEx.SemanticAnalysis;
 
 namespace SEx.Main.Files;
 
-internal class SExFile : IRuntime
+internal sealed class SExFile : IRuntime
 {
     public string                     FilePath          { get; }
     public Source                     Source            { get; }
@@ -23,7 +23,7 @@ internal class SExFile : IRuntime
     public SemanticProgramStatement?  SemanticTree      { get; set; }
     public LiteralValue               Value             { get; set; } = UnknownValue.Template;
 
-    public SExFile(string[] args)
+    private SExFile(string[] args)
     {
         Source      = GetSource(args[0]);
         Diagnostics = new(Source);
@@ -40,9 +40,15 @@ internal class SExFile : IRuntime
     }
 
     public static Source GetSource(string path)
-        => Path.Exists(path) ? new(Path.GetFileName(path), File.ReadAllText(path)): Source.Empty;
+        => Path.Exists(path) ? new(Path.GetFileName(path), File.ReadAllText(path)) : Source.Empty;
 
-    public LiteralValue Run()
+    public static void Run(string[] args)
+    {
+        var file = new SExFile(args);
+        file.RunFile();
+    }
+
+    public void RunFile()
     {
         try
         {
@@ -65,7 +71,6 @@ internal class SExFile : IRuntime
         }
 
         Throw();
-        return Value;
     }
 
     public void Throw()
