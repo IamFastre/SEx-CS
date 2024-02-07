@@ -8,6 +8,7 @@ namespace SEx.Scoping.Symbols;
 
 public static class BuiltIn
 {
+    public static readonly BuiltinFunctionValue Clear       = new("Clear", TypeSymbol.Void);
     public static readonly BuiltinFunctionValue Print       = new("Print", TypeSymbol.Void,      new NameSymbol("value", TypeSymbol.Any));
     public static readonly BuiltinFunctionValue Read        = new("Read" , TypeSymbol.String,    new NameSymbol("value", TypeSymbol.String));
     public static readonly BuiltinFunctionValue Floor       = new("Floor", TypeSymbol.Integer,   new NameSymbol("value", TypeSymbol.Number));
@@ -25,6 +26,12 @@ public static class BuiltIn
 
     internal static class Backend
     {
+        private static VoidValue Clear()
+        {
+            Console.Clear();
+            return VoidValue.Template;
+        }
+
         private static VoidValue Print(string value)
         {
             Console.WriteLine(value.Unescape());
@@ -58,7 +65,10 @@ public static class BuiltIn
 
         public static LiteralValue Evaluate(FunctionValue func, LiteralValue[] args)
         {
-            if (func == BuiltIn.Print)
+            if (func == BuiltIn.Clear)
+                return Clear();
+
+            else if (func == BuiltIn.Print)
                 return Print((string) Converter.Convert(ConversionKind.AnyToString, args[0], TypeSymbol.String).Value);
 
             else if (func == BuiltIn.Read)
