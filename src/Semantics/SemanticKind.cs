@@ -4,15 +4,14 @@ public enum SemanticKind
 {
     // Statements & Their clauses
     ProgramStatement,
+    ExpressionStatement,
     BlockStatement,
     DeclarationStatement,
     DeletionStatement,
-    ExpressionStatement,
     FunctionStatement,
     // Conditional
     IfStatement,
     WhileStatement,
-    ElseClause,
     ForStatement,
     ReturnStatement,
 
